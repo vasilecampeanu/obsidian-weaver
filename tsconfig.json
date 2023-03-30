@@ -24,7 +24,6 @@
 	},
 	"include": [
 		"**/*.ts",
-		"**/*.tsx", 
-		"src/components/BloomCopilotView.tsx"	
+		"**/*.tsx"
 	]
 }
