@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, Platform } from 'obsidian';
 
 import { createRoot, Root } from "react-dom/client";
-import * as React from "react";
+import React from 'react';
 
 import { WEAVER_VIEW_TYPE } from '../constants';
 import Weaver from '../main'
@@ -56,7 +56,7 @@ export class WeaverView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<ChatView plugin={this.plugin} />
+			<ChatView plugin={ this.plugin } />
  		);
 	}
 }
