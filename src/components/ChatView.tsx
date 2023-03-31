@@ -30,45 +30,45 @@ export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
 
 	useEffect(() => {
-		startNewConversation();
+		if (conversation === undefined) {
+			startNewConversation();
+		}
 	}, []);
 	
 	const startNewConversation = async () => {
-		if (conversation === undefined) {
-			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+		const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
 	
-			const conversation: IConversation = {
-				id: Date.now(),
-				title: `Untitled`,
-				timestamp: new Date().toISOString(),
-				messages: [
-					{
-						role: 'assistant',
-						timestamp: new Date().toLocaleTimeString(),
-						content: 'Welcome back! What would you like to chat about?',
-					}
-				]
-			};
+		const newConversation: IConversation = {
+			id: Date.now(),
+			title: `Untitled`,
+			timestamp: new Date().toISOString(),
+			messages: [
+				{
+					role: 'assistant',
+					timestamp: new Date().toLocaleTimeString(),
+					content: 'Welcome back! What would you like to chat about?',
+				}
+			]
+		};
 	
-			setConversation(conversation);
+		setConversation(newConversation);
 	
-			if (!(await adapter.exists(normalizedPath))) {
-				await adapter.write(normalizedPath, JSON.stringify([conversation], null, 4));
-			} else {
-				const data = await adapter.read(normalizedPath);
+		if (!(await adapter.exists(normalizedPath))) {
+			await adapter.write(normalizedPath, JSON.stringify([newConversation], null, 4));
+		} else {
+			const data = await adapter.read(normalizedPath);
 	
-				const existingConversations = data ? JSON.parse(data) : [];
-				const mergedConversations = [...existingConversations, conversation];
+			const existingConversations = data ? JSON.parse(data) : [];
+			const mergedConversations = [...existingConversations, newConversation];
 	
-				const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
-					return index === array.findIndex((c) => c.id === conversation.id);
-				});
+			const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
+				return index === array.findIndex((c) => c.id === conversation.id);
+			});
 	
-				await adapter.write(normalizedPath, JSON.stringify(uniqueConversations, null, 4));
-			}
+			await adapter.write(normalizedPath, JSON.stringify(uniqueConversations, null, 4));
 		}
-	};
+	};	
 
 	const updateConversation = async (newMessage: IMessage, callback: (updatedMessages: IMessage[]) => void) => {
 		if (conversation) {
@@ -139,6 +139,11 @@ export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 		});
 	};	
 	
+	const handleClear = () => {
+		setConversation(undefined);
+		startNewConversation();
+	};
+
 	return (
 		<div className="chat-view">
 			<div className="chat-history">
@@ -150,13 +155,16 @@ export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 			</div>
 			<div>
 				<form onSubmit={handleSubmit}>
+					<button type="button" onClick={handleClear}>
+						CLEAR
+					</button>
 					<input
 						type="text"
 						value={inputText}
 						onChange={(event) => setInputText(event.target.value)}
 					/>
 					<button type="submit">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+						SEND						
 					</button>
 				</form>
 			</div>
