@@ -54,7 +54,7 @@ export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 			setConversation(conversation);
 	
 			if (!(await adapter.exists(normalizedPath))) {
-				await adapter.write(normalizedPath, "[]");
+				await adapter.write(normalizedPath, JSON.stringify([conversation], null, 4));
 			} else {
 				const data = await adapter.read(normalizedPath);
 	
