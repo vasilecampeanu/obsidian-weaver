@@ -29,7 +29,7 @@ export class WeaverView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'flower';
+		return 'rotate-3d';
 	}
 
 	getDisplayText(): string {
