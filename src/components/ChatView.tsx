@@ -3,20 +3,20 @@ import React, { useState, useEffect } from 'react';
 
 import Weaver from 'main';
 
-interface IMessage {
+export interface IMessage {
 	role: string;
 	timestamp: string;
 	content: string;
 }
 
-interface IConversation {
+export interface IConversation {
 	id: number;
 	title: string;
 	timestamp: string;
 	messages: IMessage[];
 }
 
-const MessageBubble: React.FC<{ role: string; content: string; timestamp: string }> = ({ role, content, timestamp }) => {
+export const MessageBubble: React.FC<{ role: string; content: string; timestamp: string }> = ({ role, content, timestamp }) => {
 	return (
 		<div className={role === 'user' ? 'user-message' : 'assistant-message'}>
 			<div>{content}</div>
@@ -25,23 +25,34 @@ const MessageBubble: React.FC<{ role: string; content: string; timestamp: string
 	);
 };
 
-export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
+export const ChatView: React.FC<{ 
+	plugin: Weaver, 
+	selectedConversationId: number | null, 
+	lastActiveConversationId: number | null,
+	setLastActiveConversationId: (id: number) => void;
+}> = ({ plugin, selectedConversationId, lastActiveConversationId, setLastActiveConversationId}) => {
 	const [inputText, setInputText] = useState<string>('');
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
 
 	useEffect(() => {
 		if (conversation === undefined) {
-			startNewConversation();
+			if (selectedConversationId !== null) {
+				loadConversationById(selectedConversationId);
+			} else if (lastActiveConversationId !== null) {
+				loadConversationById(lastActiveConversationId);
+			} else {
+				startNewConversation();
+			}
 		}
-	}, []);
-	
+	}, [selectedConversationId, lastActiveConversationId]);	
+
 	const startNewConversation = async () => {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 		const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
 	
 		const newConversation: IConversation = {
 			id: Date.now(),
-			title: `Untitled`,
+			title: `Untitled ${Date.now()}`,
 			timestamp: new Date().toISOString(),
 			messages: [
 				{
@@ -53,6 +64,7 @@ export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 		};
 	
 		setConversation(newConversation);
+		setLastActiveConversationId(newConversation.id);
 	
 		if (!(await adapter.exists(normalizedPath))) {
 			await adapter.write(normalizedPath, JSON.stringify([newConversation], null, 4));
@@ -68,7 +80,23 @@ export const ChatView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 	
 			await adapter.write(normalizedPath, JSON.stringify(uniqueConversations, null, 4));
 		}
-	};	
+	};
+
+	const loadConversationById = async (conversationId: number) => {
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+		const normalizedPath = normalizePath(plugin.app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
+	
+		const data = await adapter.read(normalizedPath);
+		const existingConversations = data ? JSON.parse(data) : [];
+	
+		const selectedConversation = existingConversations.find((c: IConversation) => c.id === conversationId);
+	
+		if (selectedConversation) {
+			setConversation(selectedConversation);
+		} else {
+			console.error('Conversation not found in the existing conversations array.');
+		}
+	};
 
 	const updateConversation = async (newMessage: IMessage, callback: (updatedMessages: IMessage[]) => void) => {
 		if (conversation) {
