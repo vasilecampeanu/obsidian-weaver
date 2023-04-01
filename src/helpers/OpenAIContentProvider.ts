@@ -12,14 +12,12 @@ export default class OpenAIContentProvider {
 	constructor(app: App, plugin: Weaver) {
 		this.app = app;
 		this.plugin = plugin;
-		this.reqFormatter = new RequestFormatter(app, plugin,);
+		this.reqFormatter = new RequestFormatter(app, plugin);
 	}
 
-	async generate(messages: IMessage[], params: any = this.plugin.settings, additionalParams: any = {}) {
-		let prompt = messages.map(msg => `${msg.role === 'user' ? 'user' : 'assistant'}: ${msg.content}`).join('\n');
-		console.log(prompt)
-		let reqParameters: any = this.reqFormatter.addContext(params, prompt);
-		reqParameters = this.reqFormatter.prepareRequestParameters(reqParameters, additionalParams);
+	async generate(conversationHistory: IMessage[], params: any = this.plugin.settings, additionalParams: any = {}) {
+		let reqParameters: any = this.reqFormatter.addContext(params, "");
+		reqParameters = this.reqFormatter.prepareRequestParameters(reqParameters, additionalParams, conversationHistory);
 		const [error, result] = await safeAwait(this.getGeneratedResponse(reqParameters));
 	
 		if (error) {

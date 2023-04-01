@@ -1,6 +1,7 @@
-import Weaver from "main";
 import { App } from "obsidian";
+import Weaver from "main";
 import { WeaverSettings } from "settings";
+import { IMessage } from "components/ChatView";
 
 export default class RequestFormatter {
 	plugin: Weaver;
@@ -21,7 +22,7 @@ export default class RequestFormatter {
 	}
 	
 
-	prepareRequestParameters(params: WeaverSettings, additionalParams: any = {}) {
+	prepareRequestParameters(params: WeaverSettings, additionalParams: any = {}, conversationHistory: IMessage[] = []) {
 		const bodyParams: any = {
 			model: params.engine,
 			max_tokens: params.max_tokens,
@@ -39,9 +40,8 @@ export default class RequestFormatter {
 		if (params.engine && chatModels.includes(params.engine)) {
 			requestUrl = `${requestUrlBase}/chat/completions`;
 			requestExtractResult = "jsonResponse?.choices[0].message.content";
-			bodyParams.messages = params.prompt.split('\n').map(line => {
-				const [role, content] = line.split(/:(.+)/);
-				return { role: role.toLowerCase(), content };
+			bodyParams.messages = conversationHistory.map((message) => {
+				return { role: message.role, content: message.content };
 			});
 		} else {
 			bodyParams.prompt = params.prompt;
