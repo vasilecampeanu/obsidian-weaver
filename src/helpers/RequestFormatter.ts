@@ -16,9 +16,10 @@ export default class RequestFormatter {
 			...parameters,
 			prompt
 		}
-
+	
 		return params;
 	}
+	
 
 	prepareRequestParameters(params: WeaverSettings, additionalParams: any = {}) {
 		const bodyParams: any = {
@@ -38,7 +39,10 @@ export default class RequestFormatter {
 		if (params.engine && chatModels.includes(params.engine)) {
 			requestUrl = `${requestUrlBase}/chat/completions`;
 			requestExtractResult = "jsonResponse?.choices[0].message.content";
-			bodyParams.messages = [{ role: "user", content: params.prompt }];
+			bodyParams.messages = params.prompt.split('\n').map(line => {
+				const [role, content] = line.split(/:(.+)/);
+				return { role: role.toLowerCase(), content };
+			});
 		} else {
 			bodyParams.prompt = params.prompt;
 		}

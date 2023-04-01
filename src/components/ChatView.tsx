@@ -152,9 +152,13 @@ export const ChatView: React.FC<{
 				}
 			});
 		});
-	
+		
+		// Create a new array of messages including the user's inputText
+		const updatedMessages = [...(conversation?.messages || []), userMessage];
+		console.log(updatedMessages);
+
 		// Generate the assistant's response message
-		const assistantGeneratedResponse = await openAIContentProvider.generate(inputText) || 'Unable to generate a response';
+		const assistantGeneratedResponse = await openAIContentProvider.generate(updatedMessages) || 'Unable to generate a response';
 		const assistantMessage = { role: 'assistant', content: assistantGeneratedResponse, timestamp };
 	
 		// Update the conversation with the assistant's message
