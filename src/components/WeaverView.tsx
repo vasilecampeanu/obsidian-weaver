@@ -6,7 +6,7 @@ import React from 'react';
 import { WEAVER_VIEW_TYPE } from '../constants';
 import Weaver from '../main'
 
-import { ChatView } from './ChatView';
+import { TabView } from './TabView';
 
 export class WeaverView extends ItemView {
 	private readonly plugin: Weaver;
@@ -56,7 +56,7 @@ export class WeaverView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<ChatView plugin={ this.plugin } />
+			<TabView plugin={ this.plugin } />
  		);
 	}
 }
