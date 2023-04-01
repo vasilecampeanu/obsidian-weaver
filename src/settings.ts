@@ -4,21 +4,21 @@ import Weaver from "main";
 export interface WeaverSettings {
 	api_key: string,
 	engine: string,
+	models: any,
 	max_tokens: number,
 	temperature: number,
 	frequency_penalty: number,
-	prompt: string,
-	models: any
+	prompt: string
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
 	api_key: "",
 	engine: "gpt-3.5-turbo",
+	models: undefined,
 	max_tokens: 512,
 	temperature: 0.7,
 	frequency_penalty: 0.5,
-	prompt: "",
-	models: undefined
+	prompt: ""
 }
 
 export class WeaverSettingTab extends PluginSettingTab {
