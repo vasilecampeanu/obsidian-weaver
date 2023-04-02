@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Weaver from 'main';
 
 import OpenAIContentProvider from '../helpers/OpenAIContentProvider';
+import { MessageBubble } from './MessageBouble';
+
+import { ConversationHelper } from '../helpers/ConversationHelpers';
 
 export interface IMessage {
 	role: string;
@@ -17,25 +20,6 @@ export interface IConversation {
 	timestamp: string;
 	messages: IMessage[];
 }
-
-export interface MessageBubbleProps {
-	role: string; 
-	timestamp: string
-	content: string; 
-}
-
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ 
-	role, 
-	timestamp,
-	content
-}) => {
-	return (
-		<div className={`message-bubble ${role === 'user' ? 'user-message' : 'assistant-message'}`}>
-			<div>{content}</div>
-			<div className="timestamp">{timestamp}</div>
-		</div>
-	);
-};
 
 export interface ChatViewProps {
 	plugin: Weaver;
