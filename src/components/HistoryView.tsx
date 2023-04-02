@@ -33,11 +33,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 	};
 
 	return (
-		<div>
-			<h2>History</h2>
-			<ul>
+		<div className="history-component">
+			<div className="history">
 				{conversations.map((conversation, index) => (
-					<li
+					<div
+						className="conversation"
 						key={index}
 						onClick={() => {
 							handleConversationSelect(conversation.id);
@@ -45,9 +45,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 						style={{ cursor: 'pointer' }}
 					>
 						{conversation.title}
-					</li>
+					</div>
 				))}
-			</ul>
+			</div>
 		</div>
 	);
 };

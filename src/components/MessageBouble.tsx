@@ -12,8 +12,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 	content
 }) => {
 	return (
-		<div className={`message-bubble ${role === 'user' ? 'user-message' : 'assistant-message'}`}>
-			<div>{content}</div>
+		<div className={`message-bubble ${role === 'user' ? 'message-user' : 'message-assistant'}`}>
+			<div className="message-content">{content}</div>
 			<div className="timestamp">{timestamp}</div>
 		</div>
 	);

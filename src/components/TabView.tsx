@@ -9,7 +9,7 @@ export interface TabViewProps {
 }
 
 export const TabView: React.FC<TabViewProps> = ({ plugin }) => {
-	const [activeTab, setActiveTab] = useState('chat');
+	const [activeTab, setActiveTab] = useState('history');
 	const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
 	const [lastActiveConversationId, setLastActiveConversationId] = useState<number | null>(null);
 
@@ -19,15 +19,21 @@ export const TabView: React.FC<TabViewProps> = ({ plugin }) => {
 	};
 
 	return (
-		<div>
-			<ul className="tab-header">
-				<li className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}>
+		<div className="tab-component">
+			<div className="tab-header">
+				<div
+					className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+					onClick={() => setActiveTab('history')}
+				>
+					Chats
+				</div>
+				<div 
+					className={`tab ${activeTab === 'chat' ? 'active' : ''}`} 
+					onClick={() => setActiveTab('chat')}
+				>
 					Chat
-				</li>
-				<li className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>
-					History
-				</li>
-			</ul>
+				</div>
+			</div>
 			<div className="tab-content">
 				{activeTab === 'chat' ? (
 					<ChatView
