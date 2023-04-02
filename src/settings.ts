@@ -7,8 +7,7 @@ export interface WeaverSettings {
 	models: any,
 	max_tokens: number,
 	temperature: number,
-	frequency_penalty: number,
-	prompt: string
+	frequency_penalty: number
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -17,8 +16,7 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	models: undefined,
 	max_tokens: 512,
 	temperature: 0.7,
-	frequency_penalty: 0.5,
-	prompt: ""
+	frequency_penalty: 0.5
 }
 
 export class WeaverSettingTab extends PluginSettingTab {

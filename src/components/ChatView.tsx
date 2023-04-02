@@ -36,7 +36,7 @@ export const ChatView: React.FC<{
 	const [inputText, setInputText] = useState<string>('');
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
 	
-	const openAIContentProvider = new OpenAIContentProvider(plugin.app, plugin);
+	const openAIContentProvider = new OpenAIContentProvider(plugin);
 
 	useEffect(() => {
 		if (conversation === undefined) {
@@ -158,7 +158,7 @@ export const ChatView: React.FC<{
 		console.log(updatedMessages);
 
 		// Generate the assistant's response message
-		const assistantGeneratedResponse = await openAIContentProvider.generate(updatedMessages) || 'Unable to generate a response';
+		const assistantGeneratedResponse = await openAIContentProvider.generateResponse(plugin.settings, {}, updatedMessages) || 'Unable to generate a response';
 		const assistantMessage = { role: 'assistant', content: assistantGeneratedResponse, timestamp };
 	
 		// Update the conversation with the assistant's message

@@ -3,59 +3,48 @@ import Weaver from "main";
 import { WeaverSettings } from "settings";
 import { IMessage } from "components/ChatView";
 
+interface BodyParameters {
+	model: string;
+	max_tokens: number;
+	temperature: number;
+	frequency_penalty: number;
+	messages?: { role: string; content: string }[];
+}
+
 export default class RequestFormatter {
 	plugin: Weaver;
-	app: App;
 
-	constructor(app: App, plugin: Weaver) {
+	constructor(plugin: Weaver) {
 		this.plugin = plugin;
-		this.app = app;
 	}
 
-	prepareRequestParameters(params: WeaverSettings, additionalParams: any = {}, conversationHistory: IMessage[] = []) {
-		const bodyParams: {
-			model: string;
-			max_tokens: number;
-			temperature: number;
-			frequency_penalty: number;
-			messages?: { role: string; content: string }[];
-		} = {
-			model: params.engine,
-			max_tokens: params.max_tokens,
-			temperature: params.temperature,
-			frequency_penalty: params.frequency_penalty,
-		};
-		
-
+	prepareRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversationHistory: IMessage[] = []) {
 		const requestUrlBase = "https://api.openai.com/v1";
+		let requestUrl = `${requestUrlBase}/chat/completions`;
 
-		let requestUrl = `${requestUrlBase}/completions`;
-		let requestExtractResult = "jsonResponse?.choices[0].text";
+		const bodyParameters: BodyParameters = {
+			model: parameters.engine,
+			max_tokens: parameters.max_tokens,
+			temperature: parameters.temperature,
+			frequency_penalty: parameters.frequency_penalty,
+		};
 
-		const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-4"];
+		bodyParameters.messages = conversationHistory.map((message) => {
+			return { role: message.role, content: message.content };
+		});
 
-		if (params.engine && chatModels.includes(params.engine)) {
-			requestUrl = `${requestUrlBase}/chat/completions`;
-			requestExtractResult = "jsonResponse?.choices[0].message.content";
-			bodyParams.messages = conversationHistory.map((message) => {
-				return { role: message.role, content: message.content };
-			});
-		} else {
-		}
+		const mergedBodyParameters = { ...bodyParameters, ...additionalParameters?.bodyParameters };
 
-		const mergedBodyParams = { ...bodyParams, ...additionalParams?.bodyParams };
-
-		const requestParams = {
+		const requestParameters = {
 			url: requestUrl,
 			method: "POST",
-			body: JSON.stringify(mergedBodyParams),
+			body: JSON.stringify(mergedBodyParameters),
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${params.api_key}`,
-			},
-			extractResult: requestExtractResult,
+				Authorization: `Bearer ${parameters.api_key}`,
+			}
 		};
 
-		return { ...requestParams, ...additionalParams?.requestParams };
+		return { ...requestParameters, ...additionalParameters?.requestParameters };
 	}
 }

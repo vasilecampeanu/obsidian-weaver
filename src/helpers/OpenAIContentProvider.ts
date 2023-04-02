@@ -6,18 +6,16 @@ import { IMessage } from "../components/ChatView";
 
 export default class OpenAIContentProvider {
 	plugin: Weaver;
-	app: App;
-	reqFormatter: RequestFormatter;
+	requestFormatter: RequestFormatter;
 
-	constructor(app: App, plugin: Weaver) {
-		this.app = app;
+	constructor(plugin: Weaver) {
 		this.plugin = plugin;
-		this.reqFormatter = new RequestFormatter(app, plugin);
+		this.requestFormatter = new RequestFormatter(this.plugin);
 	}
 
-	async generate(conversationHistory: IMessage[], params: any = this.plugin.settings, additionalParams: any = {}) {
-		const reqParameters = this.reqFormatter.prepareRequestParameters(params, additionalParams, conversationHistory);
-		const [error, result] = await safeAwait(this.getGeneratedResponse(reqParameters));
+	async generateResponse(parameters: any = this.plugin.settings, additionalParameters: any = {}, conversationHistory: IMessage[]) {
+		const requestParameters = this.requestFormatter.prepareRequestParameters(parameters, additionalParameters, conversationHistory);
+		const [error, result] = await safeAwait(this.requestAssistantResponse(requestParameters));
 	
 		if (error) {
 			console.error("Error in generate:", error);
@@ -26,18 +24,16 @@ export default class OpenAIContentProvider {
 	
 		return result;
 	}
-	
 
-	async getGeneratedResponse(reqParams: any) {
-		const { extractResult, ...remainingReqParams } = reqParams;
-		const [errorRequest, requestResults] = await safeAwait(request(remainingReqParams));
+	async requestAssistantResponse(requestParameters: any) {
+		const [errorRequest, requestResults] = await safeAwait(request(requestParameters));
 
 		if (errorRequest) {
 			return Promise.reject(errorRequest);
 		}
 
 		const jsonResponse = JSON.parse(requestResults as string);
-		const response = eval(extractResult);
+		const response = jsonResponse?.choices[0].message.content;
 
 		return response;
 	}
