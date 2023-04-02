@@ -18,7 +18,17 @@ export interface IConversation {
 	messages: IMessage[];
 }
 
-export const MessageBubble: React.FC<{ role: string; content: string; timestamp: string }> = ({ role, content, timestamp }) => {
+export interface MessageBubbleProps {
+	role: string; 
+	timestamp: string
+	content: string; 
+}
+
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ 
+	role, 
+	timestamp,
+	content
+}) => {
 	return (
 		<div className={`message-bubble ${role === 'user' ? 'user-message' : 'assistant-message'}`}>
 			<div>{content}</div>
@@ -27,15 +37,22 @@ export const MessageBubble: React.FC<{ role: string; content: string; timestamp:
 	);
 };
 
-export const ChatView: React.FC<{ 
-	plugin: Weaver, 
-	selectedConversationId: number | null, 
-	lastActiveConversationId: number | null,
+export interface ChatViewProps {
+	plugin: Weaver;
+	selectedConversationId: number | null;
+	lastActiveConversationId: number | null;
 	setLastActiveConversationId: (id: number) => void;
-}> = ({ plugin, selectedConversationId, lastActiveConversationId, setLastActiveConversationId}) => {
+}
+
+export const ChatView: React.FC<ChatViewProps> = ({ 
+	plugin, 
+	selectedConversationId, 
+	lastActiveConversationId, 
+	setLastActiveConversationId
+}) => {
 	const [inputText, setInputText] = useState<string>('');
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
-	
+
 	const openAIContentProvider = new OpenAIContentProvider(plugin);
 
 	useEffect(() => {
@@ -48,7 +65,7 @@ export const ChatView: React.FC<{
 				startNewConversation();
 			}
 		}
-	}, [selectedConversationId, lastActiveConversationId]);	
+	}, [selectedConversationId, lastActiveConversationId, conversation]);	
 
 	const startNewConversation = async () => {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
@@ -176,8 +193,10 @@ export const ChatView: React.FC<{
 	};	
 	
 	const handleClear = () => {
-		setConversation(undefined);
-		startNewConversation();
+		if (conversation?.messages.length as number > 1) {
+			setConversation(undefined);
+			startNewConversation();	
+		}
 	};
 
 	return (

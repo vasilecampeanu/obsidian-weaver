@@ -3,12 +3,12 @@ import { ItemView, WorkspaceLeaf, Platform } from 'obsidian';
 import { createRoot, Root } from "react-dom/client";
 import React from 'react';
 
-import { WEAVER_VIEW_TYPE } from '../constants';
+import { WEAVER_CHAT_VIEW_TYPE } from '../constants';
 import Weaver from '../main'
 
 import { TabView } from './TabView';
 
-export class WeaverView extends ItemView {
+export class WeaverChatView extends ItemView {
 	private readonly plugin: Weaver;
 	private root: Root;
 
@@ -18,10 +18,18 @@ export class WeaverView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
-		this.constructWeaverView();
+		this.destroy();
+		this.constructWeaverChatView();
 	}
 
 	async onClose(): Promise<void> {
+		this.destroy();
+	}
+
+	destroy() {
+		if (this.root){
+			this.root.unmount();
+		}
 	}
 
 	onResize() {
@@ -37,10 +45,12 @@ export class WeaverView extends ItemView {
 	}	
 
 	getViewType(): string {
-		return WEAVER_VIEW_TYPE;
+		return WEAVER_CHAT_VIEW_TYPE;
 	}
 
-	constructWeaverView() {
+	constructWeaverChatView() {
+		this.destroy();
+
 		const viewContent = this.containerEl.querySelector(
 			".view-content"
 		) as HTMLElement;

@@ -12,7 +12,7 @@ interface BodyParameters {
 }
 
 export default class RequestFormatter {
-	plugin: Weaver;
+	private readonly plugin: Weaver;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;

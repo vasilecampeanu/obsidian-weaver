@@ -4,7 +4,11 @@ import { HistoryView } from './History View';
 
 import Weaver from 'main'
 
-export const TabView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
+export interface TabViewProps {
+	plugin: Weaver
+}
+
+export const TabView: React.FC<TabViewProps> = ({ plugin }) => {
 	const [activeTab, setActiveTab] = useState('chat');
 	const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
 	const [lastActiveConversationId, setLastActiveConversationId] = useState<number | null>(null);

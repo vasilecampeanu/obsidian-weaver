@@ -5,8 +5,8 @@ import safeAwait from "safe-await";
 import { IMessage } from "../components/ChatView";
 
 export default class OpenAIContentProvider {
-	plugin: Weaver;
-	requestFormatter: RequestFormatter;
+	private readonly plugin: Weaver;
+	private requestFormatter: RequestFormatter;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;

@@ -1,5 +1,12 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import Weaver from "main";
+import { text } from "stream/consumers";
+
+export const DEFAULT_MODELS: Record<string, string> = {
+	"gpt-3.5-turbo": "gpt-3.5-turbo",
+	"gpt-3.5-turbo-0301": "gpt-3.5-turbo-0301",
+	"gpt-4": "gpt-4"
+};
 
 export interface WeaverSettings {
 	api_key: string,
@@ -13,38 +20,28 @@ export interface WeaverSettings {
 export const DEFAULT_SETTINGS: WeaverSettings = {
 	api_key: "",
 	engine: "gpt-3.5-turbo",
-	models: undefined,
+	models: DEFAULT_MODELS,
 	max_tokens: 512,
 	temperature: 0.7,
 	frequency_penalty: 0.5
 }
 
 export class WeaverSettingTab extends PluginSettingTab {
-	plugin: Weaver;
-	app: App;
+	private readonly plugin: Weaver;
+	public app: App;
 
 	constructor(app: App, plugin: Weaver) {
 		super(app, plugin);
-
 		this.plugin = plugin;
 		this.app = app;
-
-		let models = new Map();
-
-		if (this.plugin.settings.models?.size > 0) {
-			models = this.plugin.settings.models;
-		} else {
-			["gpt-3.5-turbo"].forEach(e => models.set(e, ''));
-			this.plugin.settings.models = models;
-			this.plugin.saveSettings();
-		}
 	}
 
 	display(): void {
 		const { containerEl } = this;
+
 		containerEl.empty();
 		containerEl.createEl('h1', { text: 'Weaver Plugin Settings' });
-		
+
 		containerEl.createEl('h2', {
 			text: 'OpenAI Settings'
 		});
@@ -68,24 +65,22 @@ export class WeaverSettingTab extends PluginSettingTab {
 			)
 
 		// Models
-		let models = new Map();
-		models = this.plugin.settings.models;
+		let models: Record<string, string> = this.plugin.settings.models;
 
 		new Setting(containerEl)
 			.setName('Model')
 			.setDesc('The model setting allows you to choose which OpenAI model the chat view should be using.')
 			.addDropdown((cb) => {
-				models.forEach((value, key) => {
-					cb.addOption(key, key);
-
-				})
+				Object.entries(models).forEach(([key, value]) => {
+					cb.addOption(key, value);
+				});
 				cb.setValue(this.plugin.settings.engine);
 				cb.onChange(async (value) => {
 					this.plugin.settings.engine = value;
 					await this.plugin.saveSettings();
 				});
 			})
-		
+			
 		// Engine Settinhgs
 		containerEl.createEl('h2', {
 			text: 'Model Configuration Settings'
@@ -101,7 +96,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 					this.plugin.settings.max_tokens = parseInt(value);
 					await this.plugin.saveSettings();
 				}));
-		
+
 		// Temperature
 		new Setting(containerEl)
 			.setName('Temperature')

@@ -1,12 +1,12 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings'
-import { WEAVER_VIEW_TYPE } from './constants'
+import { WEAVER_CHAT_VIEW_TYPE } from './constants'
 
-import { WeaverView } from './components/WeaverView';
+import { WeaverChatView } from './components/WeaverChatView';
 
 export default class Weaver extends Plugin {
-	settings: WeaverSettings;
+	public settings: WeaverSettings;
 
 	async onload() {
 		// Display a message when loading
@@ -22,7 +22,7 @@ export default class Weaver extends Plugin {
 		this.initListeners();
 
 		// Register Views
-		this.registerView(WEAVER_VIEW_TYPE, (leaf) => new WeaverView(leaf, this));
+		this.registerView(WEAVER_CHAT_VIEW_TYPE, (leaf) => new WeaverChatView(leaf, this));
 
 		// Bind plugin components
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
@@ -47,11 +47,11 @@ export default class Weaver extends Plugin {
 	}
 
 	openWeaver = async () => {
-		let leafs = this.app.workspace.getLeavesOfType(WEAVER_VIEW_TYPE);
+		let leafs = this.app.workspace.getLeavesOfType(WEAVER_CHAT_VIEW_TYPE);
 
 		if (leafs.length == 0) {
 			let leaf = this.app.workspace.getRightLeaf(false);
-			await leaf.setViewState({ type: WEAVER_VIEW_TYPE });
+			await leaf.setViewState({ type: WEAVER_CHAT_VIEW_TYPE });
 			this.app.workspace.revealLeaf(leaf);
 		} else {
 			leafs.forEach((leaf) => this.app.workspace.revealLeaf(leaf));
@@ -59,13 +59,13 @@ export default class Weaver extends Plugin {
 	};
 
 	async onLayoutReady(): Promise<void> {
-		// Settings Tab
+		// Load Settings Tab
 		this.addSettingTab(new WeaverSettingTab(this.app, this));
 
 		// Commands
 		this.addCommand({
-			id: "open-weaver",
-			name: "Open Weaver",
+			id: "open-weaver-chat-view",
+			name: "Open Chat View",
 			callback: () => this.openWeaver(),
 			hotkeys: []
 		});
