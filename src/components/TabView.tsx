@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChatView, IConversation } from './ChatView';
-import { HistoryView } from './History View';
+import { HistoryView } from './HistoryView';
 
 import Weaver from 'main'
 
