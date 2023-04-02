@@ -12,23 +12,20 @@ export default class RequestFormatter {
 		this.app = app;
 	}
 
-	addContext(parameters: WeaverSettings, prompt: string) {
-		const params = {
-			...parameters,
-			prompt
-		}
-	
-		return params;
-	}
-	
-
 	prepareRequestParameters(params: WeaverSettings, additionalParams: any = {}, conversationHistory: IMessage[] = []) {
-		const bodyParams: any = {
+		const bodyParams: {
+			model: string;
+			max_tokens: number;
+			temperature: number;
+			frequency_penalty: number;
+			messages?: { role: string; content: string }[];
+		} = {
 			model: params.engine,
 			max_tokens: params.max_tokens,
 			temperature: params.temperature,
 			frequency_penalty: params.frequency_penalty,
 		};
+		
 
 		const requestUrlBase = "https://api.openai.com/v1";
 
@@ -44,7 +41,6 @@ export default class RequestFormatter {
 				return { role: message.role, content: message.content };
 			});
 		} else {
-			bodyParams.prompt = params.prompt;
 		}
 
 		const mergedBodyParams = { ...bodyParams, ...additionalParams?.bodyParams };
@@ -60,6 +56,6 @@ export default class RequestFormatter {
 			extractResult: requestExtractResult,
 		};
 
-		return {...requestParams, ...additionalParams?.requestParams};
+		return { ...requestParams, ...additionalParams?.requestParams };
 	}
 }

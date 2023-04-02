@@ -16,8 +16,7 @@ export default class OpenAIContentProvider {
 	}
 
 	async generate(conversationHistory: IMessage[], params: any = this.plugin.settings, additionalParams: any = {}) {
-		let reqParameters: any = this.reqFormatter.addContext(params, "");
-		reqParameters = this.reqFormatter.prepareRequestParameters(reqParameters, additionalParams, conversationHistory);
+		const reqParameters = this.reqFormatter.prepareRequestParameters(params, additionalParams, conversationHistory);
 		const [error, result] = await safeAwait(this.getGeneratedResponse(reqParameters));
 	
 		if (error) {
