@@ -39,4 +39,3 @@ export const TabView: React.FC<{ plugin: Weaver }> = ({ plugin }) => {
 		</div>
 	);
 };
-

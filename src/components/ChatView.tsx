@@ -20,7 +20,7 @@ export interface IConversation {
 
 export const MessageBubble: React.FC<{ role: string; content: string; timestamp: string }> = ({ role, content, timestamp }) => {
 	return (
-		<div className={role === 'user' ? 'user-message' : 'assistant-message'}>
+		<div className={`message-bubble ${role === 'user' ? 'user-message' : 'assistant-message'}`}>
 			<div>{content}</div>
 			<div className="timestamp">{timestamp}</div>
 		</div>
@@ -155,7 +155,6 @@ export const ChatView: React.FC<{
 		
 		// Create a new array of messages including the user's inputText
 		const updatedMessages = [...(conversation?.messages || []), userMessage];
-		console.log(updatedMessages);
 
 		// Generate the assistant's response message
 		const assistantGeneratedResponse = await openAIContentProvider.generateResponse(plugin.settings, {}, updatedMessages) || 'Unable to generate a response';
