@@ -1,0 +1,175 @@
+.view-content.weaver-view
+{
+	padding: 0px 0px !important;
+	padding-bottom: 27px !important;
+}
+
+.home-page
+{
+	display: grid;
+	grid-template-rows: auto 1fr;
+	gap: 10px;
+
+	.header
+	{
+		display: grid;
+		gap: 5px;
+		position: sticky;
+		top: 0;
+		background-color: var(--background-secondary);
+		padding: 16px;
+		z-index: 99;
+
+		.tool-bar
+		{
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 5px;
+	
+			.title
+			{
+				align-self: center;
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 5px;
+				place-items: center;
+				font-size: 16px;
+				font-weight: var(--font-medium);
+
+				svg
+				{
+					width: 18px;
+					height: 18px;
+					aspect-ratio: 1/1;
+					display: none;
+				}
+	
+				span
+				{
+					justify-self: start;
+				}
+			}
+	
+			.btn-new-chat
+			{
+				all: unset;
+				cursor: pointer;
+				display: grid;
+				background-color: var(--background-modifier-hover);
+				padding: 5px;
+				border-radius: 5px;
+				// border: 1px solid var(--prompt-border-color);
+				box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+
+				svg
+				{
+					place-self: center;
+					width: 18px;
+					height: 18px;
+					aspect-ratio: 1/1;
+					color: var(--icon-color);
+				}
+			}
+		}
+	
+		.info-bar
+		{
+			.conversation-count
+			{
+				font-size: 13px;
+				opacity: .75;
+				color: var(--nav-item-color);
+			}
+		}
+	}
+
+	.chat-history
+	{
+		display: grid;
+		padding: 0px 16px;
+		padding-bottom: 10px;
+		gap: 7.5px;
+
+		.conversation
+		{
+			display: grid;
+			grid-template-columns: auto 1fr auto;
+			gap: 10px;
+
+			background-color: var(--tab-container-background);
+			border: 1px solid var(--prompt-border-color);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+
+			padding: 5px 10px;
+			border-radius: 5px;
+
+			svg
+			{
+				align-self: center;
+				width: 20px;
+				aspect-ratio: 1/1;
+				color: var(--icon-color);
+			}
+
+			.info
+			{
+				display: grid;
+				grid-template-columns: auto;
+
+				span
+				{
+					&.title
+					{
+						color: var(--nav-item-color);
+						font-size: 14px;
+					}
+	
+					&.timestamp
+					{
+						font-size: 9px;
+					}	
+				}
+			}
+
+			.item-actions
+			{
+				display: grid;
+
+				.messaje-count
+				{
+					place-self: center;
+					opacity: .5 !important;
+				}	
+
+				.actions
+				{
+					place-self: center;
+					display: none;
+
+					.open-chat
+					{
+						svg
+						{
+							width: 18px !important;
+							aspect-ratio: 1/1;
+							color: var(--icon-color);
+						}
+					}
+				}
+			}
+
+			&:hover
+			{
+				.messaje-count
+				{
+					display: none;
+				}
+
+				.actions
+				{
+					display: block;
+				}
+			}
+		}
+	}
+}
