@@ -5,10 +5,16 @@ import Weaver from 'main'
 import { IConversation } from './ChatView';
 
 export interface HomePage {
-	plugin: Weaver
+	plugin: Weaver,
+	onTabSwitch: () => void,
+	onConversationLoad: (conversationId: number) => void
 }
 
-export const HomePage: React.FC<HomePage> = ({ plugin }) => {
+export const HomePage: React.FC<HomePage> = ({ 
+	plugin, 
+	onTabSwitch, 
+	onConversationLoad 
+}) => {
 	const [conversations, setConversations] = useState<IConversation[]>([]);
 
 	useEffect(() => {
@@ -24,6 +30,15 @@ export const HomePage: React.FC<HomePage> = ({ plugin }) => {
 		setConversations(existingConversations);
 	};
 
+	const handleNewChat = () => {
+		onTabSwitch();
+	}
+
+	const handleConversationLoad = (conversationId: number) => {
+		onTabSwitch();
+		onConversationLoad(conversationId);
+	};
+
 	return(
 		<div className="home-page">
 			<div className="header">
@@ -32,7 +47,12 @@ export const HomePage: React.FC<HomePage> = ({ plugin }) => {
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="9" height="6" rx="2"></rect><rect x="6" y="4" width="16" height="6" rx="2"></rect><path d="M2 2v20"></path></svg>
 						<span>Chats</span>
 					</div>
-					<button className="btn-new-chat">
+					<button 
+						className="btn-new-chat"
+						onClick={() => {
+							handleNewChat();
+						}}
+					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 					</button>
 				</div>
@@ -63,9 +83,14 @@ export const HomePage: React.FC<HomePage> = ({ plugin }) => {
 								{conversation.messages.length}
 							</span>
 							<div className="actions">
-								<div className="open-chat">
+								<button 
+									className="btn-open-chat"
+									onClick={() => {
+										handleConversationLoad(conversation.id);
+									}}
+								>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-								</div>
+								</button>
 							</div>
 						</div>
 					</div>

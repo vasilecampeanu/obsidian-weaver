@@ -6,7 +6,7 @@ import React from 'react';
 import { WEAVER_CHAT_VIEW_TYPE } from '../constants';
 import Weaver from '../main'
 
-import { HomePage } from './HomePage';
+import { TabsManager } from './TabsManager';
 
 export class WeaverChatView extends ItemView {
 	private readonly plugin: Weaver;
@@ -66,7 +66,7 @@ export class WeaverChatView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<HomePage plugin={ this.plugin } />
+			<TabsManager plugin={ this.plugin } />
  		);
 	}
 }
