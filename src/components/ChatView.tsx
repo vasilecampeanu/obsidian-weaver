@@ -22,17 +22,19 @@ export interface IConversation {
 }
 
 export interface ChatViewProps {
-	plugin: Weaver;
-	selectedConversationId: number | null;
-	lastActiveConversationId: number | null;
-	setLastActiveConversationId: (id: number) => void;
+	plugin: Weaver,
+	selectedConversationId: number | null,
+	lastActiveConversationId: number | null,
+	setLastActiveConversationId: (id: number) => void,
+	onTabSwitch: (tabId: string) => void
 }
 
 export const ChatView: React.FC<ChatViewProps> = ({ 
 	plugin, 
 	selectedConversationId, 
 	lastActiveConversationId, 
-	setLastActiveConversationId
+	setLastActiveConversationId,
+	onTabSwitch
 }) => {
 	const [inputText, setInputText] = useState<string>('');
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
@@ -183,8 +185,27 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		}
 	};
 
+	const handleBackToHomePage = () => {
+		onTabSwitch("home-page");
+	}
+
 	return (
-		<div className="chat-component">
+		<div className="chat-view">
+			<div className="header">
+				<div className="tool-bar">
+					<button 
+						className="btn-back"
+						onClick={() => {
+							handleBackToHomePage();
+						}}
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+					</button>
+					<div className="title">
+						{conversation?.title}
+					</div>
+				</div>
+			</div>
 			<div className="conversation-history">
 				{
 					conversation?.messages.map((message, index) => (

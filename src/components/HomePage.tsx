@@ -6,7 +6,7 @@ import { IConversation } from './ChatView';
 
 export interface HomePage {
 	plugin: Weaver,
-	onTabSwitch: () => void,
+	onTabSwitch: (tabId: string) => void,
 	onConversationLoad: (conversationId: number) => void
 }
 
@@ -31,11 +31,11 @@ export const HomePage: React.FC<HomePage> = ({
 	};
 
 	const handleNewChat = () => {
-		onTabSwitch();
+		onTabSwitch("chat-view");
 	}
 
 	const handleConversationLoad = (conversationId: number) => {
-		onTabSwitch();
+		onTabSwitch("chat-view");
 		onConversationLoad(conversationId);
 	};
 
@@ -57,7 +57,7 @@ export const HomePage: React.FC<HomePage> = ({
 					</button>
 				</div>
 				<div className="info-bar">
-					<div className="conversation-count">
+					<div className="chat-count">
 						Number of chats: {conversations.length}
 					</div>
 				</div>
@@ -65,9 +65,8 @@ export const HomePage: React.FC<HomePage> = ({
 			<div className="chat-history">
 				{conversations.map((conversation, index) => (
 					<div
-						className="conversation"
+						className="history-list-item"
 						key={index}
-						style={{ cursor: 'pointer' }}
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
 						<div className="info">

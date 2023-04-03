@@ -1,0 +1,21 @@
+// .workspace-leaf-content[data-type="weaver_chat_view"] 
+// {
+// 	.view-header
+// 	{
+// 		display: none !important;
+// 	}
+// }
+
+.view-content.weaver-view
+{
+	padding: 0px !important;
+	background-color: var(--background-secondary) !important;
+}
+
+.tabs-manager 
+{
+	display: grid;
+	grid-template-rows: 1fr;
+	width: 100%;
+	height: 100%;
+}
