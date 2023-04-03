@@ -9,29 +9,32 @@
 
 		.header
 		{
+			padding: var(--padding-sm) var(--padding-lg);
 			background-color: var(--background-secondary);
 
 			.tool-bar
 			{
 				display: grid;
 				grid-template-columns: auto 1fr;
-				gap: 5px;
+				gap: var(--grid-gap-md);
 
 				.btn-back
 				{
+					align-self: center;
 					all: unset;
-					cursor: pointer;
 					display: grid;
-					background-color: var(--background-modifier-hover);
-					padding: 5px;
+					padding: var(--padding-xs);
 					border-radius: 5px;
 					box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+					background-color: var(--background-modifier-hover);
+					
+					cursor: pointer;
 	
 					svg
 					{
 						place-self: center;
-						width: 18px;
-						height: 18px;
+						width: var(--svg-size-sm);
+						height: var(--svg-size-sm);
 						aspect-ratio: 1/1;
 						color: var(--icon-color);
 					}
@@ -40,7 +43,7 @@
 				.title
 				{
 					align-self: center;
-					font-size: 16px;
+					font-size: var(--padding-lg);
 					font-weight: var(--font-medium);
 				}
 			}
@@ -51,18 +54,18 @@
 			display: grid;
 			grid-auto-rows: min-content;
 			align-content: start;
-			gap: 10px;
+			gap: var(--grid-gap-md);
 			overflow-y: auto;
-			padding: 30px 15px;
-			background-color: #363636;
+			padding: var(--padding-sm) var(--padding-lg);
+			background: var(--background-secondary);
 
 			.message-bubble 
 			{
 				user-select: text;
-				font-size: 13px !important;
+				font-size: var(--font-size-sm);
 				display: grid;
 				grid-template-rows: auto auto;
-				padding: 10px;
+				padding: var(--padding-md);
 				max-width: 95%;
 				border-radius: 10px;
 				border: 1px solid var(--prompt-border-color);
@@ -71,8 +74,8 @@
 				&.message-user 
 				{
 					justify-self: end;
-					background-color: #007bff;
-					color: #fff;
+					background-color: var(--interactive-accent);
+					color: #ffffff;
 				}
 
 				&.message-assistant 
@@ -89,6 +92,47 @@
 				.timestamp 
 				{
 					display: none;
+				}
+			}
+		}
+
+		.input-area
+		{
+			padding: var(--padding-sm) var(--padding-lg);
+			padding-bottom: 37px;
+
+			.input-form
+			{
+				display: grid;
+				grid-template-columns: auto 1fr;
+				position: relative;
+
+				.chat-box
+				{
+					display: grid;
+					grid-template-columns: 1fr auto;
+					transition: width 0.3s, height 0.3s;
+
+					&.expanded 
+					{
+						height: 100%;
+						width: 100%;
+						position: absolute;
+						top: 0;
+						left: 0;
+						z-index: 1;
+					}
+
+					textarea
+					{
+						height: 100px;
+						vertical-align: top !important;
+					}
+
+					.button
+					{
+
+					}
 				}
 			}
 		}

@@ -29,10 +29,10 @@ export interface ChatViewProps {
 	onTabSwitch: (tabId: string) => void
 }
 
-export const ChatView: React.FC<ChatViewProps> = ({ 
-	plugin, 
-	selectedConversationId, 
-	lastActiveConversationId, 
+export const ChatView: React.FC<ChatViewProps> = ({
+	plugin,
+	selectedConversationId,
+	lastActiveConversationId,
 	setLastActiveConversationId,
 	onTabSwitch
 }) => {
@@ -40,6 +40,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
 
 	const openAIContentProvider = new OpenAIContentProvider(plugin);
+
+	const [isExpanded, setIsExpanded] = useState(false);
 
 	useEffect(() => {
 		if (conversation === undefined) {
@@ -51,12 +53,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				startNewConversation();
 			}
 		}
-	}, [selectedConversationId, lastActiveConversationId, conversation]);	
+	}, [selectedConversationId, lastActiveConversationId, conversation]);
 
 	const startNewConversation = async () => {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 		const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
-	
+
 		const newConversation: IConversation = {
 			id: Date.now(),
 			title: `Untitled ${Date.now()}`,
@@ -69,22 +71,22 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				}
 			]
 		};
-	
+
 		setConversation(newConversation);
 		setLastActiveConversationId(newConversation.id);
-	
+
 		if (!(await adapter.exists(normalizedPath))) {
 			await adapter.write(normalizedPath, JSON.stringify([newConversation], null, 4));
 		} else {
 			const data = await adapter.read(normalizedPath);
-	
+
 			const existingConversations = data ? JSON.parse(data) : [];
 			const mergedConversations = [...existingConversations, newConversation];
-	
+
 			const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
 				return index === array.findIndex((c) => c.id === conversation.id);
 			});
-	
+
 			await adapter.write(normalizedPath, JSON.stringify(uniqueConversations, null, 4));
 		}
 	};
@@ -92,12 +94,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const loadConversationById = async (conversationId: number) => {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 		const normalizedPath = normalizePath(plugin.app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
-	
+
 		const data = await adapter.read(normalizedPath);
 		const existingConversations = data ? JSON.parse(data) : [];
-	
+
 		const selectedConversation = existingConversations.find((c: IConversation) => c.id === conversationId);
-	
+
 		if (selectedConversation) {
 			setConversation(selectedConversation);
 		} else {
@@ -109,20 +111,20 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		if (conversation) {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
-	
+
 			const data = await adapter.read(normalizedPath);
 			const existingConversations = data ? JSON.parse(data) : [];
-	
+
 			const conversationIndex = existingConversations.findIndex((c: IConversation) => c.id === conversation.id);
-	
+
 			if (conversationIndex !== -1) {
 				existingConversations[conversationIndex].messages.push(newMessage);
-	
+
 				await adapter.write(
 					normalizePath(normalizedPath),
 					JSON.stringify(existingConversations, null, 4)
 				);
-	
+
 				// Call the callback function to update the state
 				callback(existingConversations[conversationIndex].messages);
 			} else {
@@ -133,14 +135,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
-	
+
 		if (inputText.trim() === '') {
 			return;
 		}
-	
+
 		const timestamp: string = new Date().toLocaleTimeString();
 		const userMessage: IMessage = { role: 'user', content: inputText, timestamp };
-	
+
 		// Update the conversation with the user's message
 		await updateConversation(userMessage, (updatedMessages) => {
 			setInputText('');
@@ -155,14 +157,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				}
 			});
 		});
-		
+
 		// Create a new array of messages including the user's inputText
 		const updatedMessages = [...(conversation?.messages || []), userMessage];
 
 		// Generate the assistant's response message
 		const assistantGeneratedResponse = await openAIContentProvider.generateResponse(plugin.settings, {}, updatedMessages) || 'Unable to generate a response';
 		const assistantMessage = { role: 'assistant', content: assistantGeneratedResponse, timestamp };
-	
+
 		// Update the conversation with the assistant's message
 		await updateConversation(assistantMessage, (updatedMessages) => {
 			setConversation((prevState) => {
@@ -176,12 +178,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				}
 			});
 		});
-	};	
-	
+	};
+
 	const handleClear = () => {
 		if (conversation?.messages.length as number > 1) {
 			setConversation(undefined);
-			startNewConversation();	
+			startNewConversation();
 		}
 	};
 
@@ -189,11 +191,30 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		onTabSwitch("home-page");
 	}
 
+	const handleKeyDown = (event: any) => {
+		if (event.key === 'Enter' && !event.shiftKey) {
+			event.preventDefault(); // Prevents the default action (newline) when Enter is pressed
+			handleSubmit(event);
+		}
+	};
+
+	const handleMouseEnter = (event: any) => {
+		if (event.target.tagName.toLowerCase() === 'textarea') {
+			setIsExpanded(true);
+		}
+	};
+
+	const handleMouseLeave = (event: any) => {
+		if (event.target.tagName.toLowerCase() === 'textarea') {
+			setIsExpanded(false);
+		}
+	};
+
 	return (
 		<div className="chat-view">
 			<div className="header">
 				<div className="tool-bar">
-					<button 
+					<button
 						className="btn-back"
 						onClick={() => {
 							handleBackToHomePage();
@@ -218,10 +239,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
 					<button className="btn-clean" type="button" onClick={handleClear}>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
 					</button>
-					<div className="chat-box">
+					<div
+						className={`chat-box ${isExpanded ? 'expanded' : ''}`}
+						onMouseEnter={handleMouseEnter}
+					>
 						<textarea
 							placeholder="Ask me anything..."
 							value={inputText}
+							onKeyDown={handleKeyDown}
 							onChange={(event) => setInputText(event.target.value)}
 						/>
 						<button className="btn-submit" type="submit">
