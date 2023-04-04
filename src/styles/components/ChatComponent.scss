@@ -16,7 +16,7 @@
 			{
 				display: grid;
 				grid-template-columns: auto 1fr;
-				gap: var(--grid-gap-md);
+				gap: var(--grid-gap-sm);
 
 				.btn-back
 				{
@@ -25,9 +25,12 @@
 					display: grid;
 					padding: var(--padding-xs);
 					border-radius: 5px;
-					box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
-					background-color: var(--background-modifier-hover);
 					
+					&:hover
+					{
+						background-color: var(--background-modifier-hover);	
+					}
+
 					cursor: pointer;
 	
 					svg
@@ -45,6 +48,7 @@
 					align-self: center;
 					font-size: var(--padding-lg);
 					font-weight: var(--font-medium);
+					cursor: text;
 
 					input
 					{

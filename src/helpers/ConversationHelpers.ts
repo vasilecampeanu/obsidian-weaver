@@ -21,17 +21,17 @@ export class ConversationHelper {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const filePath = '/bins/weaver/conversations.bson';
-	
+
 			// Check if the file exists and create it if it doesn't
 			if (!(await ConversationHelper.storageDirExists(plugin))) {
 				await ConversationHelper.writeConversations(plugin, []);
 			}
-	
+
 			const arrayBuffer = await adapter.readBinary(filePath);
-	
+
 			const bsonData = new Uint8Array(arrayBuffer);
 			const deserializedData = BSON.deserialize(bsonData);
-	
+
 			return Array.isArray(deserializedData.conversations) ? deserializedData.conversations : [];
 		} catch (error) {
 			console.error('Error reading conversations:', error);
@@ -42,7 +42,7 @@ export class ConversationHelper {
 	static async writeConversations(plugin: Weaver, conversations: IConversation[]): Promise<void> {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-	
+
 			if (!(await ConversationHelper.storageDirExists(plugin))) {
 				try {
 					await plugin.app.vault.createFolder("/bins/weaver/");
@@ -63,5 +63,11 @@ export class ConversationHelper {
 			console.error('Error writing conversations:', error);
 			throw error;
 		}
+	}
+
+	static async deleteConversation(plugin: Weaver, conversationId: number): Promise<void> {
+		const conversations = await this.readConversations(plugin);
+		const updatedConversations = conversations.filter((conversation) => conversation.id !== conversationId);
+		await this.writeConversations(plugin, updatedConversations);
 	}
 }

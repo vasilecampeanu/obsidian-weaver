@@ -50,10 +50,13 @@
 				all: unset;
 				cursor: pointer;
 				display: grid;
-				background-color: var(--background-modifier-hover);
-				padding: var(--padding-xs);
-				box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 				border-radius: 5px;
+				padding: var(--padding-xs);
+
+				&:hover
+				{
+					background-color: var(--background-modifier-hover);
+				}
 
 				svg
 				{
@@ -131,7 +134,7 @@
 
 			.item-actions
 			{
-				display: grid;
+				display: flex;
 
 				.messaje-count
 				{
@@ -143,17 +146,71 @@
 
 				.actions
 				{
-					place-self: center;
 					display: none;
+					gap: var(--grid-gap-sm);
 
-					.btn-open-chat
+					.delete-confirmation-dialog
+					{
+						display: flex;
+						gap: var(--grid-gap-sm);
+
+						.btn-cancel
+						{
+							all: unset;
+							display: grid;
+							cursor: pointer;
+	
+							svg
+							{
+								place-items: center;
+								width: var(--svg-size-xs) !important;
+								aspect-ratio: 1/1;
+								color: var(--icon-color);
+								color: var(--color-green);
+							}
+						}
+
+						.btn-confirm
+						{
+							all: unset;
+							display: grid;
+							cursor: pointer;
+	
+							svg
+							{
+								place-items: center;
+								width: var(--svg-size-xs) !important;
+								aspect-ratio: 1/1;
+								color: var(--color-red);
+							}
+						}
+					}
+
+					.btn-delete-conversation
 					{
 						all: unset;
+						display: grid;
 						cursor: pointer;
 
 						svg
 						{
-							width: var(--svg-size-sm) !important;
+							place-items: center;
+							width: var(--svg-size-xs) !important;
+							aspect-ratio: 1/1;
+							color: var(--icon-color);
+						}
+					}
+
+					.btn-open-chat
+					{
+						all: unset;
+						display: grid;
+						cursor: pointer;
+
+						svg
+						{
+							place-items: center;
+							width: var(--svg-size-xs) !important;
 							aspect-ratio: 1/1;
 							color: var(--icon-color);
 						}
@@ -170,7 +227,7 @@
 
 				.actions
 				{
-					display: block;
+					display: flex;
 				}
 			}
 		}
