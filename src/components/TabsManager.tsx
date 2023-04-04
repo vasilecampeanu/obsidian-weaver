@@ -21,10 +21,15 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 		setSelectedConversationId(conversationId);
 	};
 
+	const handleNewConversation = () => {
+		setLastActiveConversationId(null);
+		setSelectedConversationId(null);
+	};
+
 	return (
 		<div className="tabs-manager">
 			{activeTab === "home-page" ? (
-				<HomePage plugin={plugin} onTabSwitch={handleTabSwitch} onConversationLoad={handleConversationSelect}/>
+				<HomePage plugin={plugin} onNewConversation={handleNewConversation} onTabSwitch={handleTabSwitch} onConversationLoad={handleConversationSelect}/>
 			) : (
 				<ChatView
 					plugin={plugin}

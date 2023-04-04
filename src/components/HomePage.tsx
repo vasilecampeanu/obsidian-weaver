@@ -3,17 +3,20 @@ import React, { useEffect, useState } from 'react';
 import Weaver from 'main'
 
 import { IConversation } from './ChatView';
+import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 export interface HomePage {
 	plugin: Weaver,
 	onTabSwitch: (tabId: string) => void,
-	onConversationLoad: (conversationId: number) => void
+	onConversationLoad: (conversationId: number) => void,
+	onNewConversation: () => void;
 }
 
 export const HomePage: React.FC<HomePage> = ({ 
 	plugin, 
 	onTabSwitch, 
-	onConversationLoad 
+	onConversationLoad,
+	onNewConversation
 }) => {
 	const [conversations, setConversations] = useState<IConversation[]>([]);
 
@@ -22,21 +25,18 @@ export const HomePage: React.FC<HomePage> = ({
 	}, []);
 
 	const fetchConversations = async () => {
-		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-		const normalizedPath = normalizePath(plugin.app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
-		const data = await adapter.read(normalizedPath);
-		const existingConversations = data ? JSON.parse(data) : [];
-		
-		setConversations(existingConversations);
+		const data = await ConversationHelper.readConversations(plugin);
+		setConversations(data);
 	};
 
 	const handleNewChat = () => {
+		onNewConversation();
 		onTabSwitch("chat-view");
 	}
 
 	const handleConversationLoad = (conversationId: number) => {
-		onTabSwitch("chat-view");
 		onConversationLoad(conversationId);
+		onTabSwitch("chat-view");
 	};
 
 	return(

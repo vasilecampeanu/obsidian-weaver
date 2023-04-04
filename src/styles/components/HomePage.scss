@@ -80,6 +80,7 @@
 	.chat-history
 	{
 		display: grid;
+		align-content: start;
 		padding: var(--padding-sm) var(--padding-lg);
 		gap: var(--grid-gap-md);
 		background: var(--background-secondary);

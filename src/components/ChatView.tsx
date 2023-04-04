@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import Weaver from 'main';
 
 import OpenAIContentProvider from '../helpers/OpenAIContentProvider';
+import { ConversationHelper } from '../helpers/ConversationHelpers';
 import { MessageBubble } from './MessageBouble';
 
-import { ConversationHelper } from '../helpers/ConversationHelpers';
 
 export interface IMessage {
 	role: string;
@@ -64,49 +64,39 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	}, [conversation?.messages.length]);
 
 	const startNewConversation = async () => {
-		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-		const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
-
 		const newConversation: IConversation = {
 			id: Date.now(),
 			title: `Untitled ${Date.now()}`,
 			timestamp: new Date().toISOString(),
-			messages: [
-				{
-					role: 'assistant',
-					timestamp: new Date().toLocaleTimeString(),
-					content: 'Welcome back! What would you like to chat about?',
-				}
-			]
+			messages: []
 		};
 
 		setConversation(newConversation);
 		setLastActiveConversationId(newConversation.id);
 
-		if (!(await adapter.exists(normalizedPath))) {
-			await adapter.write(normalizedPath, JSON.stringify([newConversation], null, 4));
-		} else {
-			const data = await adapter.read(normalizedPath);
-
-			const existingConversations = data ? JSON.parse(data) : [];
-			const mergedConversations = [...existingConversations, newConversation];
-
-			const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
-				return index === array.findIndex((c) => c.id === conversation.id);
-			});
-
-			await adapter.write(normalizedPath, JSON.stringify(uniqueConversations, null, 4));
-		}
+		try {
+			if (await ConversationHelper.storageDirExists(plugin)) {
+				const existingConversations = await ConversationHelper.readConversations(plugin);
+		
+				const mergedConversations = [...existingConversations, newConversation];
+		
+				const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
+					return index === array.findIndex((c) => c.id === conversation.id);
+				});
+		
+				ConversationHelper.writeConversations(plugin, uniqueConversations);
+			} else {
+				ConversationHelper.writeConversations(plugin, [newConversation]);
+			}
+		} catch (error) {
+			console.error('Error in conversation handling:', error);
+		}		
 	};
 
 	const loadConversationById = async (conversationId: number) => {
-		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-		const normalizedPath = normalizePath(plugin.app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
+		const data = await ConversationHelper.readConversations(plugin);
 
-		const data = await adapter.read(normalizedPath);
-		const existingConversations = data ? JSON.parse(data) : [];
-
-		const selectedConversation = existingConversations.find((c: IConversation) => c.id === conversationId);
+		const selectedConversation = data.find((c: IConversation) => c.id === conversationId);
 
 		if (selectedConversation) {
 			setConversation(selectedConversation);
@@ -117,24 +107,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 	const updateConversation = async (newMessage: IMessage, callback: (updatedMessages: IMessage[]) => void) => {
 		if (conversation) {
-			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const normalizedPath = normalizePath(app.vault.configDir + "/plugins/obsidian-weaver/conversations.json");
-
-			const data = await adapter.read(normalizedPath);
-			const existingConversations = data ? JSON.parse(data) : [];
-
-			const conversationIndex = existingConversations.findIndex((c: IConversation) => c.id === conversation.id);
+			const data = await ConversationHelper.readConversations(plugin);
+			const conversationIndex = data.findIndex((c: IConversation) => c.id === conversation.id);
 
 			if (conversationIndex !== -1) {
-				existingConversations[conversationIndex].messages.push(newMessage);
-
-				await adapter.write(
-					normalizePath(normalizedPath),
-					JSON.stringify(existingConversations, null, 4)
-				);
-
-				// Call the callback function to update the state
-				callback(existingConversations[conversationIndex].messages);
+				data[conversationIndex].messages.push(newMessage);
+				ConversationHelper.writeConversations(plugin, data);
+				callback(data[conversationIndex].messages); // Call the callback function to update the state
 			} else {
 				console.error('Conversation not found in the existing conversations array.');
 			}
@@ -190,6 +169,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 	const handleClear = () => {
 		if (conversation?.messages.length as number > 1) {
+			console.log("Hello world!")
 			setConversation(undefined);
 			startNewConversation();
 		}
