@@ -20,7 +20,14 @@ export class ConversationHelper {
 	static async readConversations(plugin: Weaver): Promise<IConversation[]> {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const arrayBuffer = await adapter.readBinary('/bins/weaver/conversations.bson');
+			const filePath = '/bins/weaver/conversations.bson';
+	
+			// Check if the file exists and create it if it doesn't
+			if (!(await ConversationHelper.storageDirExists(plugin))) {
+				await ConversationHelper.writeConversations(plugin, []);
+			}
+	
+			const arrayBuffer = await adapter.readBinary(filePath);
 	
 			const bsonData = new Uint8Array(arrayBuffer);
 			const deserializedData = BSON.deserialize(bsonData);
@@ -30,7 +37,7 @@ export class ConversationHelper {
 			console.error('Error reading conversations:', error);
 			throw error;
 		}
-	}	
+	}
 
 	static async writeConversations(plugin: Weaver, conversations: IConversation[]): Promise<void> {
 		try {

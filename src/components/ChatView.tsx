@@ -39,10 +39,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const [inputText, setInputText] = useState<string>('');
 	const [conversation, setConversation] = useState<IConversation | undefined>(undefined)
 
+	const [isTitleEditing, setIsTitleEditing] = useState<boolean>(false);
+	const [titleInput, setTitleInput] = useState<string>('');
+
 	const openAIContentProvider = new OpenAIContentProvider(plugin);
-
-	const [isExpanded, setIsExpanded] = useState(false);
-
 	const conversationHistoryRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -75,22 +75,15 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		setLastActiveConversationId(newConversation.id);
 
 		try {
-			if (await ConversationHelper.storageDirExists(plugin)) {
-				const existingConversations = await ConversationHelper.readConversations(plugin);
-		
-				const mergedConversations = [...existingConversations, newConversation];
-		
-				const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
-					return index === array.findIndex((c) => c.id === conversation.id);
-				});
-		
-				ConversationHelper.writeConversations(plugin, uniqueConversations);
-			} else {
-				ConversationHelper.writeConversations(plugin, [newConversation]);
-			}
+			const existingConversations = await ConversationHelper.readConversations(plugin);
+			const mergedConversations = [...existingConversations, newConversation];
+			const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
+				return index === array.findIndex((c) => c.id === conversation.id);
+			});
+			ConversationHelper.writeConversations(plugin, uniqueConversations);
 		} catch (error) {
 			console.error('Error in conversation handling:', error);
-		}		
+		}
 	};
 
 	const loadConversationById = async (conversationId: number) => {
@@ -114,6 +107,32 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				data[conversationIndex].messages.push(newMessage);
 				ConversationHelper.writeConversations(plugin, data);
 				callback(data[conversationIndex].messages); // Call the callback function to update the state
+			} else {
+				console.error('Conversation not found in the existing conversations array.');
+			}
+		}
+	};
+
+	const updateConversationTitle = async (newTitle: string) => {
+		if (conversation) {
+			const data = await ConversationHelper.readConversations(plugin);
+			const conversationIndex = data.findIndex((c: IConversation) => c.id === conversation.id);
+
+			if (conversationIndex !== -1) {
+				data[conversationIndex].title = newTitle;
+
+				ConversationHelper.writeConversations(plugin, data);
+				
+				setConversation((prevState) => {
+					if (prevState) {
+						return {
+							...prevState,
+							title: newTitle
+						};
+					} else {
+						return prevState;
+					}
+				});
 			} else {
 				console.error('Conversation not found in the existing conversations array.');
 			}
@@ -205,8 +224,34 @@ export const ChatView: React.FC<ChatViewProps> = ({
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
 					</button>
 					<div className="title">
-						{conversation?.title}
+						{isTitleEditing ? (
+							<input
+								autoFocus
+								type="text"
+								value={titleInput}
+								onBlur={() => {
+									setIsTitleEditing(false);
+									updateConversationTitle(titleInput);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										setIsTitleEditing(false);
+										updateConversationTitle(titleInput);
+									}
+								}}
+								onChange={(e) => setTitleInput(e.target.value)}
+							/>
+						) : (
+							<span onDoubleClick={() => {
+								setIsTitleEditing(true);
+								setTitleInput(conversation?.title || '');
+							}}>
+								{conversation?.title}
+							</span>
+						)}
 					</div>
+
 				</div>
 			</div>
 			<div ref={conversationHistoryRef} className="conversation-history">

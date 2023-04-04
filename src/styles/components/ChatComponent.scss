@@ -45,6 +45,11 @@
 					align-self: center;
 					font-size: var(--padding-lg);
 					font-weight: var(--font-medium);
+
+					input
+					{
+						all: unset;
+					}
 				}
 			}
 		}

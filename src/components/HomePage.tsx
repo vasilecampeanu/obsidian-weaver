@@ -63,37 +63,43 @@ export const HomePage: React.FC<HomePage> = ({
 				</div>
 			</div>
 			<div className="chat-history">
-				{conversations.map((conversation, index) => (
-					<div
-						className="history-list-item"
-						key={index}
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-						<div className="info">
-							<span className="title">
-								{conversation.title}
-							</span>
-							<span className="timestamp">
-								{conversation.timestamp}
-							</span>
-						</div>
-						<div className="item-actions">
-							<span className="messaje-count">
-								{conversation.messages.length}
-							</span>
-							<div className="actions">
-								<button 
-									className="btn-open-chat"
-									onClick={() => {
-										handleConversationLoad(conversation.id);
-									}}
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-								</button>
+				{conversations.length > 0 ? (
+					conversations.map((conversation, index) => (
+						<div
+							className="history-list-item"
+							key={index}
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+							<div className="info">
+								<span className="title">
+									{conversation.title}
+								</span>
+								<span className="timestamp">
+									{conversation.timestamp}
+								</span>
+							</div>
+							<div className="item-actions">
+								<span className="messaje-count">
+									{conversation.messages.length}
+								</span>
+								<div className="actions">
+									<button 
+										className="btn-open-chat"
+										onClick={() => {
+											handleConversationLoad(conversation.id);
+										}}
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+									</button>
+								</div>
 							</div>
 						</div>
+					))
+				) : (
+					<div className="welcome-prompt">
+						No conversations available. Click the "+" button to start a new chat.
 					</div>
-				))}
+				)}
 			</div>
 		</div>
 	)
