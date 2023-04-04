@@ -37,7 +37,7 @@ export class WeaverChatView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'rotate-3d';
+		return 'git-branch-plus';
 	}
 
 	getDisplayText(): string {
