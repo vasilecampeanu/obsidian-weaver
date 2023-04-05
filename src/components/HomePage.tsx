@@ -25,6 +25,8 @@ export const HomePage: React.FC<HomePage> = ({
 
 	const listItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 	const [clickedTarget, setClickedTarget] = useState<HTMLElement | null>(null);
+	
+	const activeProfileId = 1;
 
 	useEffect(() => {
 		document.addEventListener("mousedown", handleMouseDown);
@@ -53,7 +55,7 @@ export const HomePage: React.FC<HomePage> = ({
 	}, [clickedTarget]);
 
 	const fetchConversations = async () => {
-		const data = await ConversationHelper.readConversations(plugin);
+		const data = await ConversationHelper.readConversations(plugin, activeProfileId);
 		setConversations(data);
 	};
 
@@ -78,7 +80,7 @@ export const HomePage: React.FC<HomePage> = ({
 	};
 
 	const handleDeleteConversation = async (conversationId: number) => {
-		await ConversationHelper.deleteConversation(plugin, conversationId);
+		await ConversationHelper.deleteConversation(plugin, activeProfileId ,conversationId);
 		fetchConversations();
 		setShowDeleteConfirmation(null);
 		setConversationToDelete(null);

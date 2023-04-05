@@ -17,29 +17,38 @@ export class ConversationHelper {
 		}
 	}
 
-	static async readConversations(plugin: Weaver): Promise<IConversation[]> {
+	static async readData(plugin: Weaver) {
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+		const filePath = '/bins/weaver/conversations.bson';
+
+		// Check if the file exists and create it if it doesn't
+		if (!(await ConversationHelper.storageDirExists(plugin))) {
+			await ConversationHelper.writeData(plugin, {
+				version: '1.0.0',
+				profiles: [],
+			});
+		}
+
+		const arrayBuffer = await adapter.readBinary(filePath);
+		const bsonData = new Uint8Array(arrayBuffer);
+		const deserializedData = BSON.deserialize(bsonData);
+
+		return deserializedData;
+	}
+
+	static async readConversations(plugin: Weaver, profileId: number): Promise<IConversation[]> {
 		try {
-			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const filePath = '/bins/weaver/conversations.bson';
-
-			// Check if the file exists and create it if it doesn't
-			if (!(await ConversationHelper.storageDirExists(plugin))) {
-				await ConversationHelper.writeConversations(plugin, []);
-			}
-
-			const arrayBuffer = await adapter.readBinary(filePath);
-
-			const bsonData = new Uint8Array(arrayBuffer);
-			const deserializedData = BSON.deserialize(bsonData);
-
-			return Array.isArray(deserializedData.conversations) ? deserializedData.conversations : [];
+			const data = await ConversationHelper.readData(plugin);
+			console.log(data);
+			const profile = data.profiles.find((p: { profileId: number; }) => p.profileId === profileId);
+			return profile ? profile.conversations : [];
 		} catch (error) {
 			console.error('Error reading conversations:', error);
 			throw error;
 		}
 	}
 
-	static async writeConversations(plugin: Weaver, conversations: IConversation[]): Promise<void> {
+	static async writeData(plugin: Weaver, data: object): Promise<void> {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 
@@ -54,20 +63,32 @@ export class ConversationHelper {
 				}
 			}
 
-			const dataToSerialize = { conversations: conversations };
-			const bsonData = BSON.serialize(dataToSerialize);
+			const bsonData = BSON.serialize(data);
 			const buffer = Buffer.from(bsonData.buffer);
 
 			await adapter.writeBinary('/bins/weaver/conversations.bson', buffer);
 		} catch (error) {
-			console.error('Error writing conversations:', error);
+			console.error('Error writing data:', error);
 			throw error;
 		}
 	}
 
-	static async deleteConversation(plugin: Weaver, conversationId: number): Promise<void> {
-		const conversations = await this.readConversations(plugin);
+	static async writeConversations(plugin: Weaver, profileId: number, conversations: IConversation[]): Promise<void> {
+		const data = await ConversationHelper.readData(plugin);
+		const profileIndex = data.profiles.findIndex((p: { profileId: number; }) => p.profileId === profileId);
+
+		if (profileIndex !== -1) {
+			data.profiles[profileIndex].conversations = conversations;
+		} else {
+			data.profiles.push({ profileId, profileName: `Profile ${profileId}`, conversations });
+		}
+
+		await ConversationHelper.writeData(plugin, data);
+	}
+
+	static async deleteConversation(plugin: Weaver, profileId: number, conversationId: number): Promise<void> {
+		const conversations = await this.readConversations(plugin, profileId);
 		const updatedConversations = conversations.filter((conversation) => conversation.id !== conversationId);
-		await this.writeConversations(plugin, updatedConversations);
+		await this.writeConversations(plugin, profileId, updatedConversations);
 	}
 }

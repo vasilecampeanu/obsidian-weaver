@@ -16,7 +16,7 @@ export interface IMessage {
 }
 
 export interface IConversation {
-	id: number;
+	conversationId: number;
 	title: string;
 	timestamp: string;
 	messages: IMessage[];
@@ -54,6 +54,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const [isPinned, setIsPinned] = useState<Boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
+	const activeProfileId = 1;
+
 	useEffect(() => {
 		if (conversation === undefined) {
 			if (selectedConversationId !== null) {
@@ -84,19 +86,19 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		setLastActiveConversationId(newConversation.id);
 
 		try {
-			const existingConversations = await ConversationHelper.readConversations(plugin);
+			const existingConversations = await ConversationHelper.readConversations(plugin, activeProfileId);
 			const mergedConversations = [...existingConversations, newConversation];
 			const uniqueConversations = mergedConversations.filter((conversation, index, array) => {
 				return index === array.findIndex((c) => c.id === conversation.id);
 			});
-			ConversationHelper.writeConversations(plugin, uniqueConversations);
+			ConversationHelper.writeConversations(plugin, activeProfileId, uniqueConversations);
 		} catch (error) {
 			console.error('Error in conversation handling:', error);
 		}
 	};
 
 	const loadConversationById = async (conversationId: number) => {
-		const data = await ConversationHelper.readConversations(plugin);
+		const data = await ConversationHelper.readConversations(plugin, activeProfileId);
 
 		const selectedConversation = data.find((c: IConversation) => c.id === conversationId);
 
@@ -109,12 +111,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 	const updateConversation = async (newMessage: IMessage, callback: (updatedMessages: IMessage[]) => void) => {
 		if (conversation) {
-			const data = await ConversationHelper.readConversations(plugin);
+			const data = await ConversationHelper.readConversations(plugin, activeProfileId);
 			const conversationIndex = data.findIndex((c: IConversation) => c.id === conversation.id);
 
 			if (conversationIndex !== -1) {
 				data[conversationIndex].messages.push(newMessage);
-				ConversationHelper.writeConversations(plugin, data);
+				ConversationHelper.writeConversations(plugin, activeProfileId, data);
 				callback(data[conversationIndex].messages); // Call the callback function to update the state
 			} else {
 				console.error('Conversation not found in the existing conversations array.');
@@ -124,13 +126,13 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 	const updateConversationTitle = async (newTitle: string) => {
 		if (conversation) {
-			const data = await ConversationHelper.readConversations(plugin);
+			const data = await ConversationHelper.readConversations(plugin, activeProfileId);
 			const conversationIndex = data.findIndex((c: IConversation) => c.id === conversation.id);
 
 			if (conversationIndex !== -1) {
 				data[conversationIndex].title = newTitle;
 
-				ConversationHelper.writeConversations(plugin, data);
+				ConversationHelper.writeConversations(plugin, activeProfileId, data);
 
 				setConversation((prevState) => {
 					if (prevState) {
@@ -147,6 +149,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 			}
 		}
 	};
+
 
 	useEffect(() => {
 		console.log(conversation);
@@ -203,7 +206,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		// Generate the assistant's response message
 		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
 		let assistantResponseContent = 'Unable to generate a response';
-		
+
 		if (assistantGeneratedResponse) {
 			assistantResponseContent = assistantGeneratedResponse;
 		}
