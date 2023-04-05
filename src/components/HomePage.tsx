@@ -1,5 +1,5 @@
 import { FileSystemAdapter, normalizePath } from 'obsidian';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Weaver from 'main'
 
 import { IConversation } from './ChatView';
@@ -23,9 +23,34 @@ export const HomePage: React.FC<HomePage> = ({
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<number | null>(null);
 	const [conversationToDelete, setConversationToDelete] = useState<number | null>(null);
 
+	const listItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+	const [clickedTarget, setClickedTarget] = useState<HTMLElement | null>(null);
+
 	useEffect(() => {
+		document.addEventListener("mousedown", handleMouseDown);
+
 		fetchConversations();
+
+		return () => {
+			document.removeEventListener("mousedown", handleMouseDown);
+		};
 	}, []);
+
+	const handleMouseDown = (event: MouseEvent) => {
+		setClickedTarget(event.target as HTMLElement);
+	};
+
+	useEffect(() => {
+		if (showDeleteConfirmation !== null && clickedTarget) {
+			const isClickedOutside = !Object.values(listItemRefs.current).some((ref) =>
+				ref?.contains(clickedTarget)
+			);
+
+			if (isClickedOutside) {
+				closeDeleteConfirmation();
+			}
+		}
+	}, [clickedTarget]);
 
 	const fetchConversations = async () => {
 		const data = await ConversationHelper.readConversations(plugin);
@@ -58,7 +83,7 @@ export const HomePage: React.FC<HomePage> = ({
 		setShowDeleteConfirmation(null);
 		setConversationToDelete(null);
 	};
-	
+
 	return (
 		<div className="home-page">
 			<div className="header">
@@ -88,6 +113,9 @@ export const HomePage: React.FC<HomePage> = ({
 						<div
 							className="history-list-item"
 							key={index}
+							ref={(element) => {
+								listItemRefs.current[index] = element;
+							}}
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
 							<div className="info">
