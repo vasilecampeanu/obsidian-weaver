@@ -18,6 +18,16 @@ export default class RequestFormatter {
 		this.plugin = plugin;
 	}
 
+	generateMarkdownContent = (message : string, role: string) => {
+		if (role === "user") {
+			return `
+				Task: The AGENT will provide a response in Markdown format for the following prompt: "${message}".
+			`;
+		} else {
+			return message;
+		}
+	}
+
 	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversationHistory: IMessage[] = []) {
 		try {
 			const requestUrlBase = "https://api.openai.com/v1";
@@ -29,9 +39,9 @@ export default class RequestFormatter {
 				temperature: parameters.temperature,
 				frequency_penalty: parameters.frequency_penalty,
 			};
-	
+
 			bodyParameters.messages = conversationHistory.map((message) => {
-				return { role: message.role, content: message.content };
+				return { role: message.role, content: this.generateMarkdownContent(message.content, message.role) };
 			});
 	
 			const mergedBodyParameters = { ...bodyParameters, ...additionalParameters?.bodyParameters };

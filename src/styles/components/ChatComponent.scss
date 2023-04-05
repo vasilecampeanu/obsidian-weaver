@@ -96,6 +96,29 @@
 				.message-content 
 				{
 					word-wrap: break-word;
+
+					p
+					{
+						&:first-child
+						{
+							margin-top: 0px;
+						}
+
+						&:only-child
+						{
+							margin: 0px;
+						}
+
+						&:not(:only-child) 
+						{
+							margin-bottom: 10px 0px;
+						}
+
+						&:last-child
+						{
+							margin-bottom: 0px;
+						}
+					}
 				}
 
 				.timestamp 

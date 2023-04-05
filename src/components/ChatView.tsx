@@ -145,7 +145,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		if (inputText.trim() === '') {
 			return;
 		}
-
+		
 		const timestamp: string = new Date().toLocaleTimeString();
 		const userMessage: IMessage = { role: 'user', content: inputText, timestamp };
 
