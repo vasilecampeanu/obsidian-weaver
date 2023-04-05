@@ -219,6 +219,11 @@
 						height: 150px;
 					}
 
+					&.pinned
+					{
+						height: 250px !important;
+					}
+
 					.input
 					{
 						display: grid;
@@ -278,6 +283,14 @@
 								aspect-ratio: 1/1;
 								color: var(--icon-color);
 								opacity: .5;
+							}
+
+							&.pinned
+							{
+								svg
+								{
+									opacity: 1 !important;
+								}
 							}
 						}
 					}
