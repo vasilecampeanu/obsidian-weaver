@@ -1,5 +1,5 @@
 import { FileSystemAdapter, normalizePath } from 'obsidian';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import Weaver from 'main';
 
@@ -43,7 +43,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const [isTitleEditing, setIsTitleEditing] = useState<boolean>(false);
 	const [titleInput, setTitleInput] = useState<string>('');
 
-	const openAIContentProvider = new OpenAIContentProvider(plugin);
+	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
+
+	const handleStopButtonClick = useCallback(() => {
+		openAIContentProviderRef.current.cancelRequest();
+	}, []);
+
 	const conversationHistoryRef = useRef<HTMLDivElement>(null);
 
 	const [isPinned, setIsPinned] = useState<Boolean>(false);
@@ -174,14 +179,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 		// Create a new array of messages including the user's inputText
 		const updatedMessages = [...(conversation?.messages || []), userMessage];
-		
+
 		const loadingAssistantMessage: IMessage = {
-			role: 'assistant', 
-			content: '', 
-			timestamp: '', 
+			role: 'assistant',
+			content: '',
+			timestamp: '',
 			isLoading: true
 		};
-		
+
 		setIsLoading(true);
 
 		setConversation((prevConversation) => {
@@ -196,8 +201,14 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		});
 
 		// Generate the assistant's response message
-		const assistantGeneratedResponse = await openAIContentProvider.generateResponse(plugin.settings, {}, updatedMessages) || 'Unable to generate a response';
-		const assistantMessage = { role: 'assistant', content: assistantGeneratedResponse, timestamp };
+		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
+		let assistantResponseContent = 'Unable to generate a response';
+		
+		if (assistantGeneratedResponse) {
+			assistantResponseContent = assistantGeneratedResponse;
+		}
+
+		const assistantMessage = { role: 'assistant', content: assistantResponseContent, timestamp };
 
 		// Update the conversation with the assistant's message
 		await updateConversation(assistantMessage, (updatedMessages) => {
@@ -290,11 +301,16 @@ export const ChatView: React.FC<ChatViewProps> = ({
 			<div ref={conversationHistoryRef} className="conversation-history">
 				{
 					conversation?.messages.map((message, index) => (
-						<MessageBubble key={index} role={message.role} content={message.content} timestamp={message.timestamp} isLoading={message.isLoading}/>
+						<MessageBubble key={index} role={message.role} content={message.content} timestamp={message.timestamp} isLoading={message.isLoading} />
 					))
 				}
 			</div>
 			<div className="input-area">
+				<button
+					onClick={handleStopButtonClick}
+				>
+					STOP
+				</button>
 				<form className="input-form" onSubmit={handleSubmit}>
 					<button className="btn-clean" type="button" onClick={handleClear}>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -307,7 +323,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 								placeholder="Ask me anything..."
 								value={inputText}
 								onKeyDown={handleKeyDown}
-								onChange={(event) => { handleInputText(event)}}
+								onChange={(event) => { handleInputText(event) }}
 								disabled={isLoading}
 							/>
 							{inputText.length === 0 ? (
