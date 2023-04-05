@@ -42,7 +42,7 @@ export default class RequestFormatter {
 			};
 
 			bodyParameters.messages = conversationHistory.map((message) => {
-				return { role: message.role, content: this.generateMarkdownContent(message.content, message.role) };
+				return { role: message.role, content: message.content };
 			});
 	
 			const mergedBodyParameters = { ...bodyParameters, ...additionalParameters?.bodyParameters };

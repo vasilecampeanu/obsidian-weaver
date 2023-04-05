@@ -84,6 +84,14 @@
 				{
 					word-wrap: break-word;
 
+					.three-dots-leader
+					{
+						svg
+						{
+							fill: var(--interactive-accent) !important;
+						}
+					}
+
 					pre
 					{
 						margin: 0px !important;
@@ -129,6 +137,11 @@
 						{
 							margin-bottom: 0px;
 						}
+					}
+
+					ul
+					{
+						padding-left: 20px !important;
 					}
 				}
 

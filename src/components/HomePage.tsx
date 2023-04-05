@@ -109,7 +109,11 @@ export const HomePage: React.FC<HomePage> = ({
 			</div>
 			<div className="chat-history">
 				{conversations.length > 0 ? (
-					conversations.map((conversation, index) => (
+					conversations.slice().sort((a, b) => {
+						const dateA = new Date(a.timestamp);
+						const dateB = new Date(b.timestamp);
+						return dateB.getTime() - dateA.getTime();
+					}).map((conversation, index) => (
 						<div
 							className="history-list-item"
 							key={index}
@@ -125,7 +129,7 @@ export const HomePage: React.FC<HomePage> = ({
 									{conversation.title}
 								</span>
 								<span className="timestamp">
-									{conversation.timestamp}
+									{conversation.timestamp.substring(0, 10)}
 								</span>
 							</div>
 							<div className="item-actions">

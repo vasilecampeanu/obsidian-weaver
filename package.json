@@ -13,6 +13,8 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.18.23",
+		"@types/react-loader-spinner": "^4.0.0",
+		"@types/react-syntax-highlighter": "^15.5.6",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
@@ -29,7 +31,9 @@
 		"esbuild-sass-plugin": "^2.8.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
+		"react-loader-spinner": "^5.3.4",
 		"react-markdown": "^8.0.6",
+		"react-syntax-highlighter": "^15.5.0",
 		"safe-await": "^2.0.0"
 	}
 }

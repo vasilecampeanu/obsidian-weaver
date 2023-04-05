@@ -12,6 +12,7 @@ export interface IMessage {
 	role: string;
 	timestamp: string;
 	content: string;
+	isLoading?: boolean;
 }
 
 export interface IConversation {
@@ -45,7 +46,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const openAIContentProvider = new OpenAIContentProvider(plugin);
 	const conversationHistoryRef = useRef<HTMLDivElement>(null);
 
-	const [isPinned, setIsPinned] = useState(false);
+	const [isPinned, setIsPinned] = useState<Boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	useEffect(() => {
 		if (conversation === undefined) {
@@ -68,7 +70,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const startNewConversation = async () => {
 		const newConversation: IConversation = {
 			id: Date.now(),
-			title: `Untitled ${Date.now()}`,
+			title: `Untitled`,
 			timestamp: new Date().toISOString(),
 			messages: []
 		};
@@ -141,6 +143,10 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		}
 	};
 
+	useEffect(() => {
+		console.log(conversation);
+	}, [conversation]);
+
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
@@ -168,6 +174,26 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 		// Create a new array of messages including the user's inputText
 		const updatedMessages = [...(conversation?.messages || []), userMessage];
+		
+		const loadingAssistantMessage: IMessage = {
+			role: 'assistant', 
+			content: '', 
+			timestamp: '', 
+			isLoading: true
+		};
+		
+		setIsLoading(true);
+
+		setConversation((prevConversation) => {
+			if (prevConversation) {
+				return {
+					...prevConversation,
+					messages: [...prevConversation.messages, loadingAssistantMessage],
+				};
+			} else {
+				return prevConversation;
+			}
+		});
 
 		// Generate the assistant's response message
 		const assistantGeneratedResponse = await openAIContentProvider.generateResponse(plugin.settings, {}, updatedMessages) || 'Unable to generate a response';
@@ -186,6 +212,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				}
 			});
 		});
+
+		setIsLoading(false);
 	};
 
 	const handleClear = () => {
@@ -257,13 +285,12 @@ export const ChatView: React.FC<ChatViewProps> = ({
 							</span>
 						)}
 					</div>
-
 				</div>
 			</div>
 			<div ref={conversationHistoryRef} className="conversation-history">
 				{
 					conversation?.messages.map((message, index) => (
-						<MessageBubble key={index} role={message.role} content={message.content} timestamp={message.timestamp} />
+						<MessageBubble key={index} role={message.role} content={message.content} timestamp={message.timestamp} isLoading={message.isLoading}/>
 					))
 				}
 			</div>
@@ -272,7 +299,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 					<button className="btn-clean" type="button" onClick={handleClear}>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 					</button>
-					<div 
+					<div
 						className={`chat-box ${isPinned ? 'pinned' : ''}`}
 					>
 						<div className="input">
@@ -280,7 +307,8 @@ export const ChatView: React.FC<ChatViewProps> = ({
 								placeholder="Ask me anything..."
 								value={inputText}
 								onKeyDown={handleKeyDown}
-								onChange={(event) => { handleInputText(event) }}
+								onChange={(event) => { handleInputText(event)}}
+								disabled={isLoading}
 							/>
 							{inputText.length === 0 ? (
 								<>
@@ -293,7 +321,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 						</div>
 						<div className="info-bar">
 							<span>{inputText.length}/2000</span>
-							<button 
+							<button
 								className={`pin-chat-box ${isPinned ? 'pinned' : ''}`}
 								onClick={ahndlePinInputBox}
 							>
