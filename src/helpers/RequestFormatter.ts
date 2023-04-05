@@ -21,7 +21,8 @@ export default class RequestFormatter {
 	generateMarkdownContent = (message : string, role: string) => {
 		if (role === "user") {
 			return `
-				Task: The AGENT will provide a response in Markdown format for the following prompt: "${message}".
+				prompt: "${message}"
+				task: The ASSISTANT will format the response using markdown.
 			`;
 		} else {
 			return message;
