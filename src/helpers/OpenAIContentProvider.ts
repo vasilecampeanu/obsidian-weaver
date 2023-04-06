@@ -35,7 +35,6 @@ export default class OpenAIContentProvider {
 		}
 	}
 
-
 	async requestAssistantResponse(requestParameters: any) {
 		try {
 			this.ongoingRequest = new AbortController();

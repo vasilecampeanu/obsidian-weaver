@@ -116,6 +116,26 @@
 						}
 					}
 
+					table
+					{
+						border-collapse: collapse;
+						width: 100%;
+
+						th
+						{
+							border: 1px solid var(--prompt-border-color);
+							padding: 5px;
+							font-weight: bold;
+							text-align: left;
+						}
+						
+						td
+						{
+							padding: 5px;
+							border: 1px solid var(--prompt-border-color);
+						}	
+					}
+
 					p
 					{
 						&:first-child
