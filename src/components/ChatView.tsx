@@ -16,7 +16,7 @@ export interface IMessage {
 }
 
 export interface IConversation {
-	conversationId: number;
+	id: number;
 	title: string;
 	timestamp: string;
 	messages: IMessage[];
@@ -54,7 +54,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 	const [isPinned, setIsPinned] = useState<Boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
-	const activeProfileId = 1;
+	const activeProfileId = 0;
 
 	useEffect(() => {
 		if (conversation === undefined) {
@@ -162,7 +162,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 			return;
 		}
 
-		const timestamp: string = new Date().toLocaleTimeString();
+		const timestamp: string = new Date().toISOString();
 		const userMessage: IMessage = { role: 'user', content: inputText, timestamp };
 
 		// Update the conversation with the user's message
@@ -255,7 +255,16 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		}
 	}
 
-	const ahndlePinInputBox = () => {
+	const handlePaste = (event: any) => {
+		const pastedText = event.clipboardData.getData('text');
+		if (inputText.length + pastedText.length > 2000) {
+			event.preventDefault();
+			return;
+		}
+	}
+
+	const ahndlePinInputBox = (event: React.FormEvent) => {
+		event.preventDefault();
 		setIsPinned(!isPinned);
 	}
 
@@ -309,11 +318,22 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				}
 			</div>
 			<div className="input-area">
-				<button
-					onClick={handleStopButtonClick}
-				>
-					STOP
-				</button>
+				<div className="tool-bar">
+					{
+						isLoading === true ? (
+							<button
+								onClick={handleStopButtonClick}
+								className="btn-stop"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+								STOP
+							</button>
+						) : (
+							<>
+							</>
+						)
+					}
+				</div>
 				<form className="input-form" onSubmit={handleSubmit}>
 					<button className="btn-clean" type="button" onClick={handleClear}>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -327,6 +347,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 								value={inputText}
 								onKeyDown={handleKeyDown}
 								onChange={(event) => { handleInputText(event) }}
+								onPaste={(event) => { handlePaste(event) }}
 								disabled={isLoading}
 							/>
 							{inputText.length === 0 ? (

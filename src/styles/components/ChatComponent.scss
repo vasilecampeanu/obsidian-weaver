@@ -176,8 +176,49 @@
 
 		.input-area
 		{
-			padding: var(--padding-lg) var(--padding-lg);
+			display: grid;
+			grid-template-rows: auto 1fr;
+
+			gap: var(--grid-gap-lg);
+
+			padding: var(--padding-xs) var(--padding-lg);
 			padding-bottom: 37px;
+
+			.tool-bar
+			{
+				display: grid;
+
+				.btn-stop
+				{
+					all: unset;
+					display: grid;
+					grid-template-columns: auto 1fr;
+					gap: var(--grid-gap-sm);
+					justify-self: end;
+					cursor: pointer;
+					background-color: var(--tab-container-background);
+					border: 1px solid var(--prompt-border-color);
+					box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+					padding: var(--padding-xs);
+					border-radius: 3.5px;
+					color: var(--icon-color);
+					font-size: var(--font-size-sm);
+					opacity: .75;
+
+					svg
+					{
+						place-self: center;
+						width: var(--svg-size-xs);
+						height: var(--svg-size-xs);
+						color: var(--icon-color);
+					}
+
+					&:hover
+					{
+						opacity: 1;
+					}
+				}
+			}
 
 			.input-form
 			{
@@ -194,11 +235,16 @@
 					width: 40px;
 					border-radius: 50%;
 					background-color: var(--interactive-accent);
-					border: 1px solid var(--prompt-border-color);
 					box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
 					color: #ffffff;
-
 					cursor: pointer;
+
+					opacity: .75;
+
+					&:hover
+					{
+						opacity: 1;
+					}
 
 					svg
 					{
@@ -245,6 +291,7 @@
 						textarea
 						{
 							all: unset;
+							font-size: calc(var(--font-size-sm) + 1px);
 							width: 100%;
 							height: 100%;
 							resize: none;
@@ -296,6 +343,14 @@
 								aspect-ratio: 1/1;
 								color: var(--icon-color);
 								opacity: .5;
+							}
+
+							&:hover
+							{
+								svg
+								{
+									opacity: .65;
+								}
 							}
 
 							&.pinned

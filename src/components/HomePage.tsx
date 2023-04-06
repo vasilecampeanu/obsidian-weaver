@@ -26,7 +26,7 @@ export const HomePage: React.FC<HomePage> = ({
 	const listItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 	const [clickedTarget, setClickedTarget] = useState<HTMLElement | null>(null);
 	
-	const activeProfileId = 1;
+	const activeProfileId = 0;
 
 	useEffect(() => {
 		document.addEventListener("mousedown", handleMouseDown);

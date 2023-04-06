@@ -80,7 +80,7 @@ export class ConversationHelper {
 		if (profileIndex !== -1) {
 			data.profiles[profileIndex].conversations = conversations;
 		} else {
-			data.profiles.push({ profileId, profileName: `Profile ${profileId}`, conversations });
+			data.profiles.push({ profileId, profileName: `Default`, conversations });
 		}
 
 		await ConversationHelper.writeData(plugin, data);
