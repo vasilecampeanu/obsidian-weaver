@@ -39,7 +39,6 @@ export class ConversationHelper {
 	static async readConversations(plugin: Weaver, profileId: number): Promise<IConversation[]> {
 		try {
 			const data = await ConversationHelper.readData(plugin);
-			console.log(data);
 			const profile = data.profiles.find((p: { profileId: number; }) => p.profileId === profileId);
 			return profile ? profile.conversations : [];
 		} catch (error) {

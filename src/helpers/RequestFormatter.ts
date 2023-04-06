@@ -29,7 +29,7 @@ export default class RequestFormatter {
 		'list': 'The ASSISTANT will create a list using markdown format.',
 		'table': 'The ASSISTANT will create a table using markdown format.',
 		'quote': 'The ASSISTANT will provide a quote and format it using markdown.',
-		'program': 'The ASSISTANT will provide a code snippet in the requested programming language, formatted using markdown.',
+		'program': 'The ASSISTANT will provide a code snippet in the requested programming language and an explantion, formatted using markdown.',
 		'algorithm': 'The ASSISTANT will provide a code snippet in the requested programming language, formatted using markdown.',
 		'optimize': 'The ASSISTANT will provide a code snippet in the requested programming language, formatted using markdown.',
 		'essay': 'The ASSISTANT will provide an outline for an essay on the given topic, formatted using markdown.',
@@ -72,7 +72,7 @@ export default class RequestFormatter {
 				}
 
 				keywordScore /= keywordWords.length;
-				console.log(keywordScore)
+
 				if (keywordScore > bestScore) {
 					bestScore = keywordScore;
 					bestMatch = keyword;
@@ -89,10 +89,7 @@ export default class RequestFormatter {
 		const keyword: string | null = isMarkdownWorthy(message);
 
 		if (role === "user" && keyword !== null) {
-			return `
-				prompt: "${message}"
-				task: ${this.keywordToPrompt[keyword]}
-			`;
+			return `prompt: "${message}" \n task: ${this.keywordToPrompt[keyword]}`;
 		} else {
 			return message;
 		}

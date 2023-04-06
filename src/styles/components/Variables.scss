@@ -32,3 +32,17 @@
 	--font-size-sm: 13px;
 	--font-size-md: 16px;
 }
+
+:root
+{
+	--assistant-message-color: #F6F6F6;
+	--chat-box-color: #F6F6F6;
+	--history-list-item-color: #F6F6F6;
+}
+
+.theme-dark
+{
+	--assistant-message-color: #363636;
+	--chat-box-color: #363636;
+	--history-list-item-color: #363636;
+}

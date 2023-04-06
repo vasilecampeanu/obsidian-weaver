@@ -25,7 +25,9 @@ export const HomePage: React.FC<HomePage> = ({
 
 	const listItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 	const [clickedTarget, setClickedTarget] = useState<HTMLElement | null>(null);
-	
+
+	const [showWelcomePrompt, setShowWelcomePrompt] = useState(false);
+
 	const activeProfileId = 0;
 
 	useEffect(() => {
@@ -35,6 +37,16 @@ export const HomePage: React.FC<HomePage> = ({
 
 		return () => {
 			document.removeEventListener("mousedown", handleMouseDown);
+		};
+	}, []);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setShowWelcomePrompt(true);
+		}, 500);
+
+		return () => {
+			clearTimeout(timer);
 		};
 	}, []);
 
@@ -80,7 +92,7 @@ export const HomePage: React.FC<HomePage> = ({
 	};
 
 	const handleDeleteConversation = async (conversationId: number) => {
-		await ConversationHelper.deleteConversation(plugin, activeProfileId ,conversationId);
+		await ConversationHelper.deleteConversation(plugin, activeProfileId, conversationId);
 		fetchConversations();
 		setShowDeleteConfirmation(null);
 		setConversationToDelete(null);
@@ -91,7 +103,7 @@ export const HomePage: React.FC<HomePage> = ({
 			<div className="header">
 				<div className="tool-bar">
 					<div className="title">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="9" height="6" rx="2"></rect><rect x="6" y="4" width="16" height="6" rx="2"></rect><path d="M2 2v20"></path></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="14" width="9" height="6" rx="2"></rect><rect x="6" y="4" width="16" height="6" rx="2"></rect><path d="M2 2v20"></path></svg>
 						<span>Chats</span>
 					</div>
 					<button
@@ -100,7 +112,7 @@ export const HomePage: React.FC<HomePage> = ({
 							handleNewChat();
 						}}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 					</button>
 				</div>
 				<div className="info-bar">
@@ -124,7 +136,7 @@ export const HomePage: React.FC<HomePage> = ({
 							}}
 						>
 							<div className="icon">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
 							</div>
 							<div className="info">
 								<span className="title">
@@ -134,7 +146,7 @@ export const HomePage: React.FC<HomePage> = ({
 									{conversation.timestamp.substring(0, 10)}
 								</span>
 							</div>
-							<div className="item-actions">
+							<div className={`item-actions ${showDeleteConfirmation === conversation.id ? 'show' : ''}`}>
 								<div className="actions">
 									{showDeleteConfirmation === conversation.id ? (
 										<div className="delete-confirmation-dialog">
@@ -146,10 +158,10 @@ export const HomePage: React.FC<HomePage> = ({
 													}
 												}}
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
 											</button>
 											<button className="btn-cancel" onClick={closeDeleteConfirmation}>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
 											</button>
 										</div>
 									) : (
@@ -159,7 +171,7 @@ export const HomePage: React.FC<HomePage> = ({
 												openDeleteConfirmation(conversation.id);
 											}}
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
 										</button>
 									)}
 									<button
@@ -168,7 +180,7 @@ export const HomePage: React.FC<HomePage> = ({
 											handleConversationLoad(conversation.id);
 										}}
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
 									</button>
 								</div>
 								<span className="messaje-count">
@@ -178,9 +190,31 @@ export const HomePage: React.FC<HomePage> = ({
 						</div>
 					))
 				) : (
-					<div className="welcome-prompt">
-						No conversations available. Click the "+" button to start a new chat.
-					</div>
+					showWelcomePrompt && (
+						<div className="welcome-prompt">
+							{/* 
+							<div className="info">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3v12"></path><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M15 6a9 9 0 0 0-9 9"></path><path d="M18 15v6"></path><path d="M21 18h-6"></path></svg>
+								<div className="message">
+									Obsidian Weaver
+								</div>
+							</div>
+							<div className="version">
+								preview: v0.3.4
+							</div>
+							<button
+								onClick={() => {
+									handleNewChat();
+								}}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+								<span>
+									Create New Conversation
+								</span>
+							</button> 
+							*/}
+						</div>
+					)
 				)}
 			</div>
 		</div>

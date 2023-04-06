@@ -59,7 +59,7 @@ export default class OpenAIContentProvider {
 			return content;
 		} catch (error) {
 			if (error.name === "AbortError") {
-				console.log("Request aborted");
+				console.log("Request aborted!");
 			} else {
 				console.error("Error in requestAssistantResponse:", error);
 			}
@@ -68,9 +68,7 @@ export default class OpenAIContentProvider {
 	}
 
 	cancelRequest() {
-		console.log("Hello world!")
 		if (this.ongoingRequest) {
-			console.log("Hello world!")
 			this.ongoingRequest.abort();
 			this.ongoingRequest = null;
 		}

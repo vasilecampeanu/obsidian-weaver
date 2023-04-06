@@ -150,10 +150,9 @@ export const ChatView: React.FC<ChatViewProps> = ({
 		}
 	};
 
-
-	useEffect(() => {
-		console.log(conversation);
-	}, [conversation]);
+	// useEffect(() => {
+	// 	console.log(conversation);
+	// }, [conversation]);
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -232,7 +231,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
 	const handleClear = () => {
 		if (conversation?.messages.length as number > 1) {
-			console.log("Hello world!")
 			setConversation(undefined);
 			startNewConversation();
 		}
@@ -278,7 +276,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 							handleBackToHomePage();
 						}}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
 					</button>
 					<div className="title">
 						{isTitleEditing ? (
@@ -288,22 +286,36 @@ export const ChatView: React.FC<ChatViewProps> = ({
 								value={titleInput}
 								onBlur={() => {
 									setIsTitleEditing(false);
-									updateConversationTitle(titleInput);
+									if (titleInput.trim() === '') {
+										setTitleInput(conversation?.title || '');
+									} else {
+										updateConversationTitle(titleInput);
+									}
 								}}
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
 										e.preventDefault();
 										setIsTitleEditing(false);
-										updateConversationTitle(titleInput);
+										if (titleInput.trim() === '') {
+											setTitleInput(conversation?.title || '');
+										} else {
+											updateConversationTitle(titleInput);
+										}
+									} else if (e.key === 'Escape') {
+										e.preventDefault();
+										setIsTitleEditing(false);
+										setTitleInput(conversation?.title || '');
 									}
 								}}
 								onChange={(e) => setTitleInput(e.target.value)}
 							/>
 						) : (
-							<span onDoubleClick={() => {
-								setIsTitleEditing(true);
-								setTitleInput(conversation?.title || '');
-							}}>
+							<span
+								onDoubleClick={() => {
+									setIsTitleEditing(true);
+									setTitleInput(conversation?.title || '');
+								}}
+							>
 								{conversation?.title}
 							</span>
 						)}
@@ -325,7 +337,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 								onClick={handleStopButtonClick}
 								className="btn-stop"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
 								STOP
 							</button>
 						) : (
@@ -336,7 +348,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 				</div>
 				<form className="input-form" onSubmit={handleSubmit}>
 					<button className="btn-clean" type="button" onClick={handleClear}>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 					</button>
 					<div
 						className={`chat-box ${isPinned ? 'pinned' : ''}`}
@@ -365,7 +377,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 								className={`pin-chat-box ${isPinned ? 'pinned' : ''}`}
 								onClick={ahndlePinInputBox}
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
 							</button>
 						</div>
 					</div>
