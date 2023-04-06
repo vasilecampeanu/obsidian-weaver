@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-weaver",
-	"version": "0.0.1",
-	"description": "This is an AI assistant designed to help users efficiently navigate and manage their Obsidian notes by providing context-aware recommendations, search assistance, and note organization features.",
+	"version": "0.3.4",
+	"description": "Introducing Weaver, a useful Obsidian plugin that connects ChatGPT/GPT-3 to your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

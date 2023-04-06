@@ -1,11 +1,11 @@
 {
 	"id": "obsidian-weaver",
 	"name": "Weaver",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "This is an AI assistant designed to help users efficiently navigate and manage their Obsidian notes by providing context-aware recommendations, search assistance, and note organization features.",
+	"version": "0.3.4",
+	"minAppVersion": "1.0.0",
+	"description": "Introducing Weaver, a useful Obsidian plugin that connects ChatGPT/GPT-3 to your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.",
 	"author": "Vasile Câmpeanu",
-	"authorUrl": "https://obsidian.md",
+	"authorUrl": "https://github.com/vasilecampeanu",
 	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

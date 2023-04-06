@@ -1,3 +1,3 @@
 # Obsidian Weaver
 
-This is an AI assistant designed to help users efficiently navigate and manage their Obsidian notes by providing context-aware recommendations, search assistance, and note organization features.
+Introducing Weaver, a useful Obsidian plugin that connects ChatGPT/GPT-3 to your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.
