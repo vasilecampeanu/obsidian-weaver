@@ -1,6 +1,6 @@
 import { FileSystemAdapter, normalizePath } from 'obsidian';
 import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-import { IConversation } from 'components/ChatView';
+import { IChatSession } from 'components/chat/ConversationDialogue';
 
 import fs from 'fs';
 import Weaver from 'main';
@@ -36,7 +36,7 @@ export class ConversationHelper {
 		return deserializedData;
 	}
 
-	static async readConversations(plugin: Weaver, profileId: number): Promise<IConversation[]> {
+	static async readConversations(plugin: Weaver, profileId: number): Promise<IChatSession[]> {
 		try {
 			const data = await ConversationHelper.readData(plugin);
 			const profile = data.profiles.find((p: { profileId: number; }) => p.profileId === profileId);
@@ -72,7 +72,7 @@ export class ConversationHelper {
 		}
 	}
 
-	static async writeConversations(plugin: Weaver, profileId: number, conversations: IConversation[]): Promise<void> {
+	static async writeConversations(plugin: Weaver, profileId: number, conversations: IChatSession[]): Promise<void> {
 		const data = await ConversationHelper.readData(plugin);
 		const profileIndex = data.profiles.findIndex((p: { profileId: number; }) => p.profileId === profileId);
 

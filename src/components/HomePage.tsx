@@ -2,7 +2,7 @@ import { FileSystemAdapter, normalizePath } from 'obsidian';
 import React, { useEffect, useRef, useState } from 'react';
 import Weaver from 'main'
 
-import { IConversation } from './ChatView';
+import { IChatSession } from './chat/ConversationDialogue';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 export interface HomePage {
@@ -18,7 +18,7 @@ export const HomePage: React.FC<HomePage> = ({
 	onConversationLoad,
 	onNewConversation
 }) => {
-	const [conversations, setConversations] = useState<IConversation[]>([]);
+	const [conversations, setConversations] = useState<IChatSession[]>([]);
 
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<number | null>(null);
 	const [conversationToDelete, setConversationToDelete] = useState<number | null>(null);
