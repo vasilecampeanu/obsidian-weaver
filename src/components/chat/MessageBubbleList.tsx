@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBouble';
-import { IMessage } from './ChatView';
+import { IMessage } from '../ChatView';
 
 interface MessageBubbleListProps {
 	messages: IMessage[] | undefined;
@@ -29,7 +29,7 @@ export const MessageBubbleList: React.FC<MessageBubbleListProps> = ({ messages }
 				/>
 			);
 		});
-	};	
+	};
 
 	return (
 		<div ref={messageBubbleListRef} className="conversation-history">

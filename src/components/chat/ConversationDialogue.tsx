@@ -5,7 +5,7 @@ import Weaver from 'main';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 // React Component
-import { ChatHeader } from './ChatHeader';
+import { ChatHeader } from './Header';
 import { MessageBubbleList } from './MessageBubbleList';
 
 export interface IChatMessage {
@@ -22,7 +22,7 @@ export interface IChatSession {
 	messages: IChatMessage[];
 }
 
-export interface IChatDialogueWindow {
+export interface IConversationDialogue {
 	plugin: Weaver,
 	selectedConversationId: number | null,
 	lastActiveConversationId: number | null,
@@ -30,7 +30,7 @@ export interface IChatDialogueWindow {
 	onTabSwitch: (tabId: string) => void
 }
 
-export const ChatDialogueWindow: React.FC<IChatDialogueWindow> = ({
+export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	plugin,
 	selectedConversationId,
 	lastActiveConversationId,
@@ -38,6 +38,7 @@ export const ChatDialogueWindow: React.FC<IChatDialogueWindow> = ({
 	onTabSwitch
 }) => {
 	const [chatSession, setChatSession] = useState<IChatSession | undefined>(undefined)
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	// TODO: This needs to be stored somewhere else.
 	// The user should be able to choose from multiple profiles to load by default.

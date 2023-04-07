@@ -5,7 +5,7 @@ import Weaver from 'main';
 
 import OpenAIContentProvider from '../helpers/OpenAIContentProvider';
 import { ConversationHelper } from '../helpers/ConversationHelpers';
-import { MessageBubble } from './MessageBouble';
+import { MessageBubble } from './chat/MessageBouble';
 
 
 export interface IMessage {
