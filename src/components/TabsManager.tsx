@@ -2,7 +2,6 @@ import Weaver from 'main'
 import React, { useEffect, useState } from 'react';
 
 import { HomePage } from './HomePage';
-import { ChatView } from './ChatView';
 import { ConversationDialogue } from './chat/ConversationDialogue';
 
 export interface TabsManagerProps {

@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Weaver from 'main';
 
 // Helpers
 import { ConversationHelper } from 'helpers/ConversationHelpers';
+import OpenAIContentProvider from 'helpers/OpenAIContentProvider';
 
 // React Component
 import { ChatHeader } from './Header';
 import { MessageBubbleList } from './MessageBubbleList';
+import { InputArea } from './InputArea';
 
 export interface IChatMessage {
 	role: string;
@@ -38,11 +40,14 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	onTabSwitch
 }) => {
 	const [chatSession, setChatSession] = useState<IChatSession | undefined>(undefined)
+	const [inputText, setInputText] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	// TODO: This needs to be stored somewhere else.
 	// The user should be able to choose from multiple profiles to load by default.
 	const activeThreadId = 0;
+
+	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
 
 	const loadChatSessionById = useCallback(async (chatSessionId: number) => {
 		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
@@ -132,6 +137,92 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		}
 	};
 
+	const onNewChat = () => {
+		if (chatSession?.messages.length as number > 1) {
+			setChatSession(undefined);
+			startNewChatSession();
+		}
+	};
+
+	const onSubmit = async (event: React.FormEvent) => {
+		event.preventDefault();
+
+		if (inputText.trim() === '') {
+			return;
+		}
+
+		const timestamp: string = new Date().toISOString();
+		const userMessage: IChatMessage = { role: 'user', content: inputText, timestamp };
+
+		// Update the conversation with the user's message
+		await updateConversation(userMessage, (updatedMessages) => {
+			setInputText('');
+			setChatSession((prevState) => {
+				if (prevState) {
+					return {
+						...prevState,
+						messages: updatedMessages
+					};
+				} else {
+					return prevState;
+				}
+			});
+		});
+
+		// Create a new array of messages including the user's inputText
+		const updatedMessages = [...(chatSession?.messages || []), userMessage];
+
+		const loadingAssistantMessage: IChatMessage = {
+			role: 'assistant',
+			content: '',
+			timestamp: '',
+			isLoading: true
+		};
+
+		setIsLoading(true);
+
+		setChatSession((prevConversation) => {
+			if (prevConversation) {
+				return {
+					...prevConversation,
+					messages: [...prevConversation.messages, loadingAssistantMessage],
+				};
+			} else {
+				return prevConversation;
+			}
+		});
+
+		// Generate the assistant's response message
+		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
+		let assistantResponseContent = 'Unable to generate a response';
+
+		if (assistantGeneratedResponse) {
+			assistantResponseContent = assistantGeneratedResponse;
+		}
+
+		const assistantMessage = { role: 'assistant', content: assistantResponseContent, timestamp };
+
+		// Update the conversation with the assistant's message
+		await updateConversation(assistantMessage, (updatedMessages) => {
+			setChatSession((prevState) => {
+				if (prevState) {
+					return {
+						...prevState,
+						messages: updatedMessages
+					};
+				} else {
+					return prevState;
+				}
+			});
+		});
+
+		setIsLoading(false);
+	};
+
+	const onStopRequest = useCallback(() => {
+		openAIContentProviderRef.current.cancelRequest();
+	}, []);
+
 	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
 		if (chatSession) {
 			const data = await ConversationHelper.readConversations(plugin, activeThreadId);
@@ -154,6 +245,14 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		<div className="chat-view">
 			<ChatHeader title={chatSession?.title} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={onUpdateConversationTitle}></ChatHeader>
 			<MessageBubbleList messages={chatSession?.messages} />
+			<InputArea 
+				inputText={inputText} 
+				setInputText={setInputText}
+				onSubmit={onSubmit}
+				isLoading={isLoading}
+				onStopRequest={onStopRequest}
+				onNewChat={onNewChat}
+			/>
 		</div>
 	)
 }

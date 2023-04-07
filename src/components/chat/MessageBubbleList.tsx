@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBouble';
-import { IMessage } from '../ChatView';
+import { IChatMessage } from './ConversationDialogue';
 
 interface MessageBubbleListProps {
-	messages: IMessage[] | undefined;
+	messages: IChatMessage[] | undefined;
 }
 
 export const MessageBubbleList: React.FC<MessageBubbleListProps> = ({ messages }) => {

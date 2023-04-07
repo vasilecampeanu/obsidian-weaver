@@ -1,7 +1,7 @@
 import { App } from "obsidian";
 import Weaver from "main";
 import { WeaverSettings } from "settings";
-import { IMessage } from "components/ChatView";
+import { IChatMessage } from "components/chat/ConversationDialogue";
 import { Searcher } from 'fast-fuzzy';
 
 import jaroWinkler from 'jaro-winkler';
@@ -95,7 +95,7 @@ export default class RequestFormatter {
 		}
 	};
 
-	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversationHistory: IMessage[] = []) {
+	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversationHistory: IChatMessage[] = []) {
 		try {
 			const requestUrlBase = "https://api.openai.com/v1";
 			let requestUrl = `${requestUrlBase}/chat/completions`;
@@ -108,7 +108,6 @@ export default class RequestFormatter {
 			};
 
 			bodyParameters.messages = conversationHistory.map((message) => {
-				console.log(this.generateMarkdownContent(message.content, message.role))
 				return { role: message.role, content: this.generateMarkdownContent(message.content, message.role) };
 			});
 
