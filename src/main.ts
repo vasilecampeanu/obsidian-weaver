@@ -10,7 +10,7 @@ export default class Weaver extends Plugin {
 
 	async onload() {
 		// Display a message when loading
-		console.log('obsidian-weaver loading ...');
+		console.log('obsidian-weaver loading...');
 
 		// Load Settings
 		await this.loadSettings();
@@ -59,6 +59,9 @@ export default class Weaver extends Plugin {
 	};
 
 	async onLayoutReady(): Promise<void> {
+		// Load Wevaer when on Obsidian open
+		this.openWeaver();
+
 		// Load Settings Tab
 		this.addSettingTab(new WeaverSettingTab(this.app, this));
 
@@ -69,5 +72,14 @@ export default class Weaver extends Plugin {
 			callback: () => this.openWeaver(),
 			hotkeys: []
 		});
+
+		// Ribbon Icon
+		// This creates an icon in the left ribbon.
+		const ribbonIconEl = this.addRibbonIcon('git-branch-plus', 'Sample Plugin', (evt: MouseEvent) => {
+			this.openWeaver()
+		});
+
+		// Add a class
+		ribbonIconEl.addClass('obsidian-weaver-ribbon-icon');
 	}
 }
