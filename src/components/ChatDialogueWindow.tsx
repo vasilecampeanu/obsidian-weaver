@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Weaver from 'main';
 
 // Helpers
@@ -21,7 +21,7 @@ export interface IChatSession {
 	messages: IChatMessage[];
 }
 
-export interface ChatDialogueWindow {
+export interface IChatDialogueWindow {
 	plugin: Weaver,
 	selectedConversationId: number | null,
 	lastActiveConversationId: number | null,
@@ -29,7 +29,7 @@ export interface ChatDialogueWindow {
 	onTabSwitch: (tabId: string) => void
 }
 
-export const ChatDialogueWindow: React.FC<ChatDialogueWindow> = ({
+export const ChatDialogueWindow: React.FC<IChatDialogueWindow> = ({
 	plugin,
 	selectedConversationId,
 	lastActiveConversationId,
@@ -38,22 +38,22 @@ export const ChatDialogueWindow: React.FC<ChatDialogueWindow> = ({
 }) => {
 	const [chatSession, setChatSession] = useState<IChatSession | undefined>(undefined)
 
-	// TODO: This needs to be stored somehere else.
+	// TODO: This needs to be stored somewhere else.
 	// The user should be able to choose from multiple profiles to load by default.
-	const activeProfileId = 0;
+	const activeThreadId = 0;
 
-	const loadChatSessionById = async (chatSessionId: number) => {
-		const data = await ConversationHelper.readConversations(plugin, activeProfileId);
+	const loadChatSessionById = useCallback(async (chatSessionId: number) => {
+		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
 		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
 
 		if (selectedChatSession) {
 			setChatSession(selectedChatSession);
 		} else {
-			console.error('Unable to find selected chat session!');
+			console.error('Unable to find selected chat session.');
 		}
-	};
+	}, [activeThreadId]);
 
-	const startNewChatSession = async () => {
+	const startNewChatSession = useCallback(async () => {
 		const newChatSession: IChatSession = {
 			id: Date.now(),
 			title: `Untitled`,
@@ -65,30 +65,36 @@ export const ChatDialogueWindow: React.FC<ChatDialogueWindow> = ({
 		setLastActiveConversationId(newChatSession.id);
 
 		try {
-			const existingChatSessions = await ConversationHelper.readConversations(plugin, activeProfileId);
+			const existingChatSessions = await ConversationHelper.readConversations(plugin, activeThreadId);
 			const mergedChatSessions = [...existingChatSessions, newChatSession];
 
 			const uniqueChatSessions = mergedChatSessions.filter((chatSession, index, array) => {
 				return index === array.findIndex((c) => c.id === chatSession.id);
 			});
 
-			ConversationHelper.writeConversations(plugin, activeProfileId, uniqueChatSessions);
+			ConversationHelper.writeConversations(plugin, activeThreadId, uniqueChatSessions);
 		} catch (error) {
 			console.error('Error in chat session handling:', error);
 		}
-	};
+	}, [activeThreadId]);
 
 	useEffect(() => {
-		if (chatSession === undefined) {
-			if (selectedConversationId !== null) {
-				loadChatSessionById(selectedConversationId);
-			} else if (lastActiveConversationId !== null) {
-				loadChatSessionById(lastActiveConversationId);
-			} else {
-				startNewChatSession();
+		(async () => {
+			try {
+				if (chatSession === undefined) {
+					if (selectedConversationId !== null) {
+						loadChatSessionById(selectedConversationId);
+					} else if (lastActiveConversationId !== null) {
+						loadChatSessionById(lastActiveConversationId);
+					} else {
+						startNewChatSession();
+					}
+				}
+			} catch (error) {
+				console.error('Error in useEffect:', error);
 			}
-		}
-	}, [selectedConversationId, lastActiveConversationId, chatSession]);
+		})();
+	}, [selectedConversationId, lastActiveConversationId, chatSession, loadChatSessionById, startNewChatSession]);
 
 	const onBackToHomePage = () => {
 		onTabSwitch("home-page");
@@ -96,13 +102,13 @@ export const ChatDialogueWindow: React.FC<ChatDialogueWindow> = ({
 
 	const onUpdateConversationTitle = async (newTitle: string) => {
 		if (chatSession) {
-			const data = await ConversationHelper.readConversations(plugin, activeProfileId);
+			const data = await ConversationHelper.readConversations(plugin, activeThreadId);
 			const chatSessionIndex = data.findIndex((c: IChatSession) => c.id === chatSession.id);
 
 			if (chatSessionIndex !== -1) {
 				data[chatSessionIndex].title = newTitle;
 
-				ConversationHelper.writeConversations(plugin, activeProfileId, data);
+				ConversationHelper.writeConversations(plugin, activeThreadId, data);
 
 				setChatSession((prevState) => {
 					if (prevState) {
@@ -115,8 +121,12 @@ export const ChatDialogueWindow: React.FC<ChatDialogueWindow> = ({
 					}
 				});
 			} else {
-				console.error('Conversation not found in the existing conversations array.');
+				console.error('Chat session not found.');
+				return;
 			}
+		} else {
+			console.error('Chat session is not initialized.');
+			return;
 		}
 	};
 
