@@ -6,6 +6,7 @@ import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 // React Component
 import { ChatHeader } from './ChatHeader';
+import { MessageBubbleList } from './MessageBubbleList';
 
 export interface IChatMessage {
 	role: string;
@@ -130,9 +131,28 @@ export const ChatDialogueWindow: React.FC<IChatDialogueWindow> = ({
 		}
 	};
 
+	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
+		if (chatSession) {
+			const data = await ConversationHelper.readConversations(plugin, activeThreadId);
+			const conversationIndex = data.findIndex((c: IChatSession) => c.id === chatSession.id);
+
+			if (conversationIndex !== -1) {
+				data[conversationIndex].messages.push(newMessage);
+				ConversationHelper.writeConversations(plugin, activeThreadId, data);
+				callback(data[conversationIndex].messages);
+			} else {
+				console.error('Conversation not found in the existing conversations array.');
+			}
+		} else {
+			console.error('Chat session is not initialized.');
+			return;
+		}
+	};
+
 	return (
 		<div className="chat-view">
 			<ChatHeader title={chatSession?.title} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={onUpdateConversationTitle}></ChatHeader>
+			<MessageBubbleList messages={chatSession?.messages} />
 		</div>
 	)
 }
