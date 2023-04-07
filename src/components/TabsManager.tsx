@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { HomePage } from './HomePage';
 import { ChatView } from './ChatView';
+import { ChatDialogueWindow } from './ChatDialogueWindow';
 
 export interface TabsManagerProps {
 	plugin: Weaver
@@ -31,7 +32,7 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 			{activeTab === "home-page" ? (
 				<HomePage plugin={plugin} onNewConversation={handleNewConversation} onTabSwitch={handleTabSwitch} onConversationLoad={handleConversationSelect}/>
 			) : (
-				<ChatView
+				<ChatDialogueWindow
 					plugin={plugin}
 					onTabSwitch={handleTabSwitch}
 					selectedConversationId={selectedConversationId}
