@@ -79,7 +79,7 @@ export class ConversationHelper {
 		if (profileIndex !== -1) {
 			data.profiles[profileIndex].conversations = conversations;
 		} else {
-			data.profiles.push({ threadId, profileName: `Default`, conversations });
+			data.profiles.push({ threadId, threadName: `Base`, conversations });
 		}
 
 		await ConversationHelper.writeData(plugin, data);
