@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-weaver",
-	"version": "0.3.4",
-	"description": "Introducing Weaver, a useful Obsidian plugin that connects ChatGPT/GPT-3 to your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.",
+	"version": "0.3.0",
+	"description": "Weaver is a useful Obsidian plugin that integrates ChatGPT/GPT-3 into your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -9,7 +9,7 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
-	"author": "",
+	"author": "Vasile Câmpeanu",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/jaro-winkler": "^0.2.1",
