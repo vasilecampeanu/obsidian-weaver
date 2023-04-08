@@ -9,7 +9,8 @@ export class ConversationHelper {
 	static async storageDirExists(plugin: Weaver): Promise<boolean> {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const normalizedPath = adapter.getBasePath() + '/bins/weaver/conversations.bson';
+			const normalizedPath = adapter.getBasePath() + `/${plugin.settings.weaverFolderPath}/conversations.bson`;
+
 			return fs.existsSync(normalizedPath);
 		} catch (error) {
 			console.error('Error checking storage directory existence:', error);
@@ -19,13 +20,12 @@ export class ConversationHelper {
 
 	static async readData(plugin: Weaver) {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-		const filePath = '/bins/weaver/conversations.bson';
+		const filePath = `/${plugin.settings.weaverFolderPath}/conversations.bson`;
 
-		// Check if the file exists and create it if it doesn't
 		if (!(await ConversationHelper.storageDirExists(plugin))) {
 			await ConversationHelper.writeData(plugin, {
 				version: '1.0.0',
-				threadss: [],
+				threads: [],
 			});
 		}
 
@@ -39,21 +39,21 @@ export class ConversationHelper {
 	static async readConversations(plugin: Weaver, threadId: number): Promise<IChatSession[]> {
 		try {
 			const data = await ConversationHelper.readData(plugin);
-			const profile = data.profiles.find((p: { threadId: number; }) => p.threadId === threadId);
-			return profile ? profile.conversations : [];
+			const thread = data.threads.find((p: { threadId: number; }) => p.threadId === threadId);
+			return thread ? thread.conversations : [];
 		} catch (error) {
 			console.error('Error reading conversations:', error);
 			throw error;
 		}
 	}
-
+	
 	static async writeData(plugin: Weaver, data: object): Promise<void> {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 
 			if (!(await ConversationHelper.storageDirExists(plugin))) {
 				try {
-					await plugin.app.vault.createFolder("/bins/weaver/");
+					await plugin.app.vault.createFolder(`/${plugin.settings.weaverFolderPath}/`);
 				} catch (error) {
 					if (error.message !== 'Folder already exists.') {
 						console.error('Error creating folder:', error);
@@ -65,7 +65,7 @@ export class ConversationHelper {
 			const bsonData = BSON.serialize(data);
 			const buffer = Buffer.from(bsonData.buffer);
 
-			await adapter.writeBinary('/bins/weaver/conversations.bson', buffer);
+			await adapter.writeBinary(`/${plugin.settings.weaverFolderPath}/conversations.bson`, buffer);
 		} catch (error) {
 			console.error('Error writing data:', error);
 			throw error;
@@ -74,12 +74,12 @@ export class ConversationHelper {
 
 	static async writeConversations(plugin: Weaver, threadId: number, conversations: IChatSession[]): Promise<void> {
 		const data = await ConversationHelper.readData(plugin);
-		const profileIndex = data.profiles.findIndex((p: { threadId: number; }) => p.threadId === threadId);
+		const threadIndex = data.threads.findIndex((p: { threadId: number; }) => p.threadId === threadId);
 
-		if (profileIndex !== -1) {
-			data.profiles[profileIndex].conversations = conversations;
+		if (threadIndex !== -1) {
+			data.threads[threadIndex].conversations = conversations;
 		} else {
-			data.profiles.push({ threadId, threadName: `Base`, conversations });
+			data.threads.push({ threadId, threadName: `Base`, conversations });
 		}
 
 		await ConversationHelper.writeData(plugin, data);

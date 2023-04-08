@@ -60,7 +60,9 @@ export default class Weaver extends Plugin {
 
 	async onLayoutReady(): Promise<void> {
 		// Load Wevaer when on Obsidian open
-		this.openWeaver();
+		if(this.settings.openOnStartUp) {
+			this.openWeaver();
+		}
 
 		// Load Settings Tab
 		this.addSettingTab(new WeaverSettingTab(this.app, this));

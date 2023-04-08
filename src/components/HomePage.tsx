@@ -184,7 +184,7 @@ export const HomePage: React.FC<HomePage> = ({
 									</button>
 								</div>
 								<span className="messaje-count">
-									{conversation.messages.length}
+									{conversation.messages.length >= 1 ? conversation.messages.length - 1 : conversation.messages.length}
 								</span>
 							</div>
 						</div>

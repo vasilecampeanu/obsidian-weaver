@@ -45,7 +45,6 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	const [welcomeMessage, setWelcomeMessage] = React.useState<string>(ConversationHelper.getRandomWelcomeMessage());
 
 	// TODO: This needs to be stored somewhere else.
-	// The user should be able to choose from multiple profiles to load by default.
 	const activeThreadId = 0;
 
 	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
@@ -66,16 +65,18 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			id: Date.now(),
 			title: `Untitled`,
 			timestamp: new Date().toISOString(),
-			messages: [
-				{
+			messages: plugin.settings.showWelcomeMessage ? [{
 					role: "system",
 					timestamp: new Date().toISOString(),
-					content: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format all of your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links, bold and italic text, and code blocks. Please also provide suggestions for relevant tags or links to related notes within the user's Obsidian vault when applicable."
-				},
-				{
+					content: `${plugin.settings.systemRolePrompt}`
+				}, {
 					role: "assistant",
 					timestamp: new Date().toISOString(),
 					content: welcomeMessage
+				}] : [{
+					role: "system",
+					timestamp: new Date().toISOString(),
+					content: `${plugin.settings.systemRolePrompt}`
 				}
 			]
 		};

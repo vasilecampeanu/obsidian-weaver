@@ -14,7 +14,11 @@ export interface WeaverSettings {
 	models: any,
 	max_tokens: number,
 	temperature: number,
-	frequency_penalty: number
+	frequency_penalty: number,
+	weaverFolderPath: string,
+	systemRolePrompt: string,
+	showWelcomeMessage: boolean,
+	openOnStartUp: boolean
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -23,7 +27,11 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	models: DEFAULT_MODELS,
 	max_tokens: 512,
 	temperature: 0.7,
-	frequency_penalty: 0.5
+	frequency_penalty: 0.5,
+	weaverFolderPath: "bins/weaver",
+	systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format all of your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links, bold and italic text, and code blocks. Please also provide suggestions for relevant tags or links to related notes within the user's Obsidian vault when applicable.",
+	showWelcomeMessage: true,
+	openOnStartUp: true
 }
 
 export class WeaverSettingTab extends PluginSettingTab {
@@ -40,7 +48,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
-		containerEl.createEl('h1', { text: 'Weaver Plugin Settings' });
+		containerEl.createEl('h1', { text: 'Weaver Settings' });
 
 		containerEl.createEl('h2', {
 			text: 'OpenAI Settings'
@@ -50,7 +58,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 		let inputEl;
 		new Setting(containerEl)
 			.setName('API Key')
-			.setDesc('You need to create an OpenAI account to generate an API Key.')
+			.setDesc('In order to generate an API Key, you must first create an OpenAI account.')
 			.addText(text => text
 				.setPlaceholder('Enter your API Key')
 				.setValue(this.plugin.settings.api_key)
@@ -69,7 +77,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Model')
-			.setDesc('The model setting allows you to choose which OpenAI model the chat view should be using.')
+			.setDesc('This allows you to choose which model the chat view should utilize..')
 			.addDropdown((cb) => {
 				Object.entries(models).forEach(([key, value]) => {
 					cb.addOption(key, value);
@@ -80,16 +88,28 @@ export class WeaverSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			})
-			
+
 		// Engine Settinhgs
 		containerEl.createEl('h2', {
 			text: 'Model Configuration Settings'
 		});
 
+		new Setting(containerEl)
+			.setName('System Role Prompt')
+			.setDesc('This setting determines the behavior of the assistant.')
+			.addText(text => text
+				.setValue(this.plugin.settings.systemRolePrompt)
+				.onChange(async (value) => {
+					this.plugin.settings.systemRolePrompt = value;
+					await this.plugin.saveSettings();
+				})
+				.inputEl.setAttribute('size', '50')
+			)
+
 		// Tockens
 		new Setting(containerEl)
 			.setName('Maximum Tokens')
-			.setDesc('The maximum number of tokens that will be generated as a response (1000 tokens ~ 750 words).')
+			.setDesc('This represents the maximum number of tokens that will be generated as a response (1000 tokens ~ 750 words).')
 			.addText(text => text
 				.setValue(this.plugin.settings.max_tokens.toString())
 				.onChange(async (value) => {
@@ -119,5 +139,39 @@ export class WeaverSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 			);
+
+		containerEl.createEl('h2', { text: 'General' });
+
+		new Setting(containerEl)
+			.setName('Weaver Folder Path')
+			.setDesc('This setting specifies the directory or path where the conversations are stored and saved.')
+			.addText(text => text
+				.setValue(this.plugin.settings.weaverFolderPath)
+				.onChange(async (value) => {
+					this.plugin.settings.weaverFolderPath = value;
+					await this.plugin.saveSettings();
+				})
+				.inputEl.setAttribute('size', '50')
+			)
+
+		new Setting(containerEl)
+			.setName('Open on Startup')
+			.setDesc('This determines whether the chat view will be automatically loaded when Obsidian starts up.')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.openOnStartUp)
+				.onChange(async (value) => {
+					this.plugin.settings.openOnStartUp = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Insert Welcome Messaje')
+			.setDesc('Controls whether or not a welcome message will be automatically added when a new chat session is created.')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.showWelcomeMessage)
+				.onChange(async (value) => {
+					this.plugin.settings.showWelcomeMessage = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 }
