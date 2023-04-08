@@ -41,8 +41,8 @@ export class WeaverChatView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return 'Weaver';
-	}	
+		return 'Weaver Chat';
+	}
 
 	getViewType(): string {
 		return WEAVER_CHAT_VIEW_TYPE;

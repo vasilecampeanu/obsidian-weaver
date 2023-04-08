@@ -77,7 +77,7 @@ export default class Weaver extends Plugin {
 
 		// Ribbon Icon
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('git-branch-plus', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('git-branch-plus', 'Open weaver chat', (evt: MouseEvent) => {
 			this.openWeaver()
 		});
 
