@@ -42,6 +42,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	const [chatSession, setChatSession] = useState<IChatSession | undefined>(undefined)
 	const [inputText, setInputText] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [welcomeMessage, setWelcomeMessage] = React.useState<string>(ConversationHelper.getRandomWelcomeMessage());
 
 	// TODO: This needs to be stored somewhere else.
 	// The user should be able to choose from multiple profiles to load by default.
@@ -65,7 +66,18 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			id: Date.now(),
 			title: `Untitled`,
 			timestamp: new Date().toISOString(),
-			messages: [] // TODO: Potentially insert a welcome message by default.
+			messages: [
+				{
+					role: "system",
+					timestamp: new Date().toISOString(),
+					content: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format all of your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links, bold and italic text, and code blocks. Please also provide suggestions for relevant tags or links to related notes within the user's Obsidian vault when applicable."
+				},
+				{
+					role: "assistant",
+					timestamp: new Date().toISOString(),
+					content: welcomeMessage
+				}
+			]
 		};
 
 		setChatSession(newChatSession);
@@ -194,9 +206,14 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 
 		// Generate the assistant's response message
 		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
-		let assistantResponseContent = 'Unable to generate a response';
 
-		if (assistantGeneratedResponse) {
+		let assistantResponseContent = "";
+
+		if (openAIContentProviderRef.current.isRequestCancelled()) {
+			assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
+		} else if (!assistantGeneratedResponse) {
+			assistantResponseContent = "I'm sorry, but I am unable to generate a response at this time. This may be because your request was cancelled, GPT4 is currently in use, or an error has occurred. Please check your settings and try again later.";
+		} else {
 			assistantResponseContent = assistantGeneratedResponse;
 		}
 
@@ -219,7 +236,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		setIsLoading(false);
 	};
 
-	const onStopRequest = useCallback(() => {
+	const onCancelRequest = useCallback(() => {
 		openAIContentProviderRef.current.cancelRequest();
 	}, []);
 
@@ -245,12 +262,12 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		<div className="chat-view">
 			<ChatHeader title={chatSession?.title} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={onUpdateConversationTitle}></ChatHeader>
 			<MessageBubbleList messages={chatSession?.messages} />
-			<InputArea 
-				inputText={inputText} 
+			<InputArea
+				inputText={inputText}
 				setInputText={setInputText}
 				onSubmit={onSubmit}
 				isLoading={isLoading}
-				onStopRequest={onStopRequest}
+				onCancelRequest={onCancelRequest}
 				onNewChat={onNewChat}
 			/>
 		</div>

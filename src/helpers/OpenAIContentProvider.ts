@@ -2,19 +2,20 @@ import Weaver from "main";
 import { request } from "obsidian";
 import RequestFormatter from "./RequestFormatter";
 import safeAwait from "safe-await";
-import { IMessage } from "../components/ChatView";
+import { IChatMessage } from "../components/chat/ConversationDialogue";
 
 export default class OpenAIContentProvider {
 	private readonly plugin: Weaver;
 	private requestFormatter: RequestFormatter;
 	private ongoingRequest: AbortController | null = null;
+	private requestCancelled: boolean = false;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
 		this.requestFormatter = new RequestFormatter(this.plugin);
 	}
 
-	async generateResponse(parameters: any = this.plugin.settings, additionalParameters: any = {}, conversationHistory: IMessage[]) {
+	async generateResponse(parameters: any = this.plugin.settings, additionalParameters: any = {}, conversationHistory: IChatMessage[]) {
 		try {
 			const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationHistory);
 			const [error, result] = await safeAwait(this.requestAssistantResponse(requestParameters));
@@ -71,6 +72,13 @@ export default class OpenAIContentProvider {
 		if (this.ongoingRequest) {
 			this.ongoingRequest.abort();
 			this.ongoingRequest = null;
+			this.requestCancelled = true;
 		}
+	}
+
+	isRequestCancelled() {
+		const wasCancelled = this.requestCancelled;
+		this.requestCancelled = false;
+		return wasCancelled;
 	}
 }

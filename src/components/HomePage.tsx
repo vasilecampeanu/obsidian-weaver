@@ -28,7 +28,7 @@ export const HomePage: React.FC<HomePage> = ({
 
 	const [showWelcomePrompt, setShowWelcomePrompt] = useState(false);
 
-	const activeProfileId = 0;
+	const activeThreadId = 0;
 
 	useEffect(() => {
 		document.addEventListener("mousedown", handleMouseDown);
@@ -67,7 +67,7 @@ export const HomePage: React.FC<HomePage> = ({
 	}, [clickedTarget]);
 
 	const fetchConversations = async () => {
-		const data = await ConversationHelper.readConversations(plugin, activeProfileId);
+		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
 		setConversations(data);
 	};
 
@@ -92,7 +92,7 @@ export const HomePage: React.FC<HomePage> = ({
 	};
 
 	const handleDeleteConversation = async (conversationId: number) => {
-		await ConversationHelper.deleteConversation(plugin, activeProfileId, conversationId);
+		await ConversationHelper.deleteConversation(plugin, activeThreadId, conversationId);
 		fetchConversations();
 		setShowDeleteConfirmation(null);
 		setConversationToDelete(null);

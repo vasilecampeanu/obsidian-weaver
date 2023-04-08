@@ -19,15 +19,17 @@ export const MessageBubbleList: React.FC<MessageBubbleListProps> = ({ messages }
 
 	const renderMessageBubbles = () => {
 		return messages?.map((message, index) => {
-			return (
-				<MessageBubble
-					key={index}
-					role={message.role}
-					timestamp={message.timestamp}
-					content={message.content}
-					isLoading={message.isLoading}
-				/>
-			);
+			if (message.role !== 'system') {
+				return (
+					<MessageBubble
+						key={index}
+						role={message.role}
+						timestamp={message.timestamp}
+						content={message.content}
+						isLoading={message.isLoading}
+					/>
+				);
+			}
 		});
 	};
 

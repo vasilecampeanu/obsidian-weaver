@@ -25,7 +25,7 @@ export class ConversationHelper {
 		if (!(await ConversationHelper.storageDirExists(plugin))) {
 			await ConversationHelper.writeData(plugin, {
 				version: '1.0.0',
-				profiles: [],
+				threadss: [],
 			});
 		}
 
@@ -36,10 +36,10 @@ export class ConversationHelper {
 		return deserializedData;
 	}
 
-	static async readConversations(plugin: Weaver, profileId: number): Promise<IChatSession[]> {
+	static async readConversations(plugin: Weaver, threadId: number): Promise<IChatSession[]> {
 		try {
 			const data = await ConversationHelper.readData(plugin);
-			const profile = data.profiles.find((p: { profileId: number; }) => p.profileId === profileId);
+			const profile = data.profiles.find((p: { threadId: number; }) => p.threadId === threadId);
 			return profile ? profile.conversations : [];
 		} catch (error) {
 			console.error('Error reading conversations:', error);
@@ -72,22 +72,33 @@ export class ConversationHelper {
 		}
 	}
 
-	static async writeConversations(plugin: Weaver, profileId: number, conversations: IChatSession[]): Promise<void> {
+	static async writeConversations(plugin: Weaver, threadId: number, conversations: IChatSession[]): Promise<void> {
 		const data = await ConversationHelper.readData(plugin);
-		const profileIndex = data.profiles.findIndex((p: { profileId: number; }) => p.profileId === profileId);
+		const profileIndex = data.profiles.findIndex((p: { threadId: number; }) => p.threadId === threadId);
 
 		if (profileIndex !== -1) {
 			data.profiles[profileIndex].conversations = conversations;
 		} else {
-			data.profiles.push({ profileId, profileName: `Default`, conversations });
+			data.profiles.push({ threadId, profileName: `Default`, conversations });
 		}
 
 		await ConversationHelper.writeData(plugin, data);
 	}
 
-	static async deleteConversation(plugin: Weaver, profileId: number, conversationId: number): Promise<void> {
-		const conversations = await this.readConversations(plugin, profileId);
+	static async deleteConversation(plugin: Weaver, threadId: number, conversationId: number): Promise<void> {
+		const conversations = await this.readConversations(plugin, threadId);
 		const updatedConversations = conversations.filter((conversation) => conversation.id !== conversationId);
-		await this.writeConversations(plugin, profileId, updatedConversations);
+		await this.writeConversations(plugin, threadId, updatedConversations);
+	}
+
+	static getRandomWelcomeMessage(): string {
+		const welcomeMessages = [
+			"Welcome back! What can I assist you with today?",
+			"Hello! It's great to see you again. What would you like to chat about?",
+			"Good to see you! If you have any questions or need assistance, feel free to ask. I'm here to help you.",
+		];
+
+		const randomIndex = Math.floor(Math.random() * welcomeMessages.length);
+		return welcomeMessages[randomIndex];
 	}
 }
