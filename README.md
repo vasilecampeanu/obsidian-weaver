@@ -2,11 +2,15 @@
 
 Weaver is a useful [Obsidian](https://obsidian.md) plugin that integrates ChatGPT/GPT-3 into your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.
 
+![Assistant Role](docs/obsidian-weaver-role.png)
+
 # Note
 
 Please note that Weaver is currently in beta and there may be bugs or issues that need to be addressed. While I have thoroughly tested the plugin, it is possible that unexpected problems may arise. As with any software, it is always a good idea to backup your data before using a new plugin.
 
 # Features
+
+![Chat List Feature](docs/obsidian-weaver-chat-list.png)
 
 The current implementation of the plugin offers the following features:
 
