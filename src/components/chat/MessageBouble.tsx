@@ -1,12 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
-import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { xonokai } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import remarkGfm from 'remark-gfm';
-import ReactDOMServer from 'react-dom/server';
-
-const compatibleDarkTheme = xonokai;
+import { MarkdownRenderer } from 'obsidian';
 
 export interface MessageBubbleProps {
 	role: string;
@@ -21,21 +15,37 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 	content,
 	isLoading,
 }) => {
+	const messageContentRef = useRef<HTMLDivElement>(null);
 
-	const copyTextWithoutMarkdown = async (markdownContent: string) => {
-		const htmlContent = <ReactMarkdown children={markdownContent} remarkPlugins={[remarkGfm]} />;
-		const parser = new DOMParser();
-		const parsedHtml = parser.parseFromString(
-			ReactDOMServer.renderToStaticMarkup(htmlContent),
-			'text/html'
-		);
-		const plainText = parsedHtml.body.textContent || '';
+	useEffect(() => {
+		if (messageContentRef.current) {
+			const context = {
+				cache: {},
+				async onload(ctx: any) {
+					return ctx;
+				},
+				async onunload() {},
+			};
+
+			MarkdownRenderer.renderMarkdown(
+				content,
+				messageContentRef.current,
+				'',
+				context as any
+			);
+		}
+	}, [content]);
+
+	const copyTextWithoutMarkdown = async () => {
+		const plainText = messageContentRef.current?.textContent || '';
 		await navigator.clipboard.writeText(plainText);
 	};
 
+	const bubbleClass = `message-bubble ${role === 'user' ? 'message-user' : 'message-assistant'}`;
+
 	return (
-		<div className={`message-bubble ${role === 'user' ? 'message-user' : 'message-assistant'}`}>
-			<div className="message-content paragraph-container">
+		<div className={bubbleClass}>
+			<div className="message-content paragraph-container" ref={messageContentRef}>
 				{isLoading ? (
 					<ThreeDots
 						height="5"
@@ -45,42 +55,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 						wrapperClass="three-dots-leader"
 						visible={true}
 					/>
-				) : (
-					<ReactMarkdown
-						children={content}
-						remarkPlugins={[remarkGfm]}
-						components={{
-							code({ node, inline, className, children, ...props }) {
-								const match = /language-(\w+)/.exec(className || '');
-								const language = match ? match[1] : 'txt';
-
-								return !inline ? (
-									<div className="code-block-container">
-										<SyntaxHighlighter
-											children={String(children).replace(/\n$/, '')}
-											style={compatibleDarkTheme as any}
-											className="code-block"
-											language={language}
-											PreTag="div"
-											{...props}
-										/>
-									</div>
-								) : (
-									<code className={className} {...props}>
-										{children}
-									</code>
-								);
-							},
-						}}
-					/>
-				)}
-				<button
-					className="copy-button"
-					onClick={() => copyTextWithoutMarkdown(content)}
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-				</button>
+				) : null}
 			</div>
+			<button className="copy-button" onClick={copyTextWithoutMarkdown}>
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+			</button>
 		</div>
-	)
-}
+	);
+};
+
