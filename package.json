@@ -40,6 +40,7 @@
 		"react-syntax-highlighter": "^15.5.0",
 		"remark-gfm": "^3.0.1",
 		"safe-await": "^2.0.0",
-		"stopword": "^2.0.8"
+		"stopword": "^2.0.8",
+		"turndown": "^7.1.2"
 	}
 }
