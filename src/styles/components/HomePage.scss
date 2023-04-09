@@ -47,7 +47,7 @@
 			.btn-new-chat
 			{
 				all: unset;
-				cursor: pointer;
+				cursor: var(--cursor);
 				display: grid;
 				border-radius: 5px;
 				padding: var(--padding-xs);
@@ -150,7 +150,7 @@
 				}
 			}
 
-			.item-actions
+			.item-ow-actions
 			{
 				display: flex;
 
@@ -165,7 +165,7 @@
 
 				&.show
 				{
-					.actions
+					.ow-actions
 					{
 						display: flex !important;
 					}
@@ -176,7 +176,7 @@
 					}
 				}
 
-				.actions
+				.ow-actions
 				{
 					display: none;
 					// gap: var(--grid-gap-sm);
@@ -191,7 +191,7 @@
 						{
 							all: unset;
 							display: grid;
-							cursor: pointer;
+							cursor: var(--cursor);
 							align-self: center;
 							padding: var(--padding-xs);
 							border-radius: 3.5px;
@@ -214,7 +214,7 @@
 						{
 							all: unset;
 							display: grid;
-							cursor: pointer;
+							cursor: var(--cursor);
 							align-self: center;
 							padding: var(--padding-xs);
 							border-radius: 3.5px;
@@ -238,7 +238,7 @@
 					{
 						all: unset;
 						display: grid;
-						cursor: pointer;
+						cursor: var(--cursor);
 						align-self: center;
 						padding: var(--padding-xs);
 						border-radius: 3.5px;
@@ -261,7 +261,7 @@
 					{
 						all: unset;
 						display: grid;
-						cursor: pointer;
+						cursor: var(--cursor);
 						align-self: center;
 						padding: var(--padding-xs);
 						border-radius: 3.5px;
@@ -289,7 +289,7 @@
 					display: none;
 				}
 
-				.actions
+				.ow-actions
 				{
 					display: flex;
 				}
@@ -349,7 +349,7 @@
 		// 		display: flex;
 		// 		align-items: center;
 		// 		justify-content: center;
-		// 		cursor: pointer;
+		// 		cursor: var(--cursor);
 		// 		gap: 10px;
 		// 		border-radius: 5px;
 		// 		padding: 10px;

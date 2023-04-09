@@ -1,8 +1,8 @@
 import Weaver from 'main'
 import React, { useEffect, useState } from 'react';
 
-import { HomePage } from './HomePage';
-import { ConversationDialogue } from './chat/ConversationDialogue';
+import { HomePage } from '../HomePage';
+import { ConversationDialogue } from './ConversationDialogue';
 
 export interface TabsManagerProps {
 	plugin: Weaver

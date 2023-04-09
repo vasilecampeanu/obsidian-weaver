@@ -6,8 +6,8 @@ import { ConversationHelper } from 'helpers/ConversationHelpers';
 import OpenAIContentProvider from 'helpers/OpenAIContentProvider';
 
 // React Component
-import { ChatHeader } from './Header';
-import { MessageBubbleList } from './MessageBubbleList';
+import { ChatHeader } from './ChatHeader';
+import { DialogueTimeline } from './DialogueTimeline';
 import { InputArea } from './InputArea';
 
 export interface IChatMessage {
@@ -262,7 +262,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	return (
 		<div className="chat-view">
 			<ChatHeader title={chatSession?.title} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={onUpdateConversationTitle}></ChatHeader>
-			<MessageBubbleList messages={chatSession?.messages} />
+			<DialogueTimeline messages={chatSession?.messages} />
 			<InputArea
 				inputText={inputText}
 				setInputText={setInputText}

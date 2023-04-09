@@ -24,7 +24,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				async onload(ctx: any) {
 					return ctx;
 				},
-				async onunload() {},
+				async onunload() { },
 			};
 
 			MarkdownRenderer.renderMarkdown(
@@ -41,25 +41,29 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 		await navigator.clipboard.writeText(plainText);
 	};
 
-	const bubbleClass = `message-bubble ${role === 'user' ? 'message-user' : 'message-assistant'}`;
-
 	return (
-		<div className={bubbleClass}>
-			<div className="message-content paragraph-container" ref={messageContentRef}>
-				{isLoading ? (
-					<ThreeDots
-						height="5"
-						width="30"
-						radius="1.5"
-						ariaLabel="three-dots-loading"
-						wrapperClass="three-dots-leader"
-						visible={true}
-					/>
-				) : null}
+		<div className={`ow-message-bubble ${role === 'user' ? 'ow-user-bubble' : 'ow-assistant-bubble'}`}>
+			<div className="ow-content-wrapper">
+				<div className="message-content paragraph-container" ref={messageContentRef}>
+					{isLoading ? (
+						<ThreeDots
+							height="5"
+							width="30"
+							radius="1.5"
+							ariaLabel="three-dots-loading"
+							wrapperClass="ow-three-dots-leader"
+							visible={true}
+						/>
+					) : null}
+				</div>
 			</div>
-			<button className="copy-button" onClick={copyTextWithoutMarkdown}>
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-			</button>
+			<div className="ow-bubble-ow-actions">
+				<div className="ow-actions">
+					<button className="ow-copy-button" onClick={copyTextWithoutMarkdown}>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+					</button>
+				</div>
+			</div>
 		</div>
 	);
 };

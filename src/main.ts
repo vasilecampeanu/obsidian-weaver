@@ -3,7 +3,7 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings'
 import { WEAVER_CHAT_VIEW_TYPE } from './constants'
 
-import { WeaverChatView } from './components/WeaverChatView';
+import { WeaverChatView } from './components/chat/WeaverChatView';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;

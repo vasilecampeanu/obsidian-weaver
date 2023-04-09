@@ -2,15 +2,15 @@ import React, { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBouble';
 import { IChatMessage } from './ConversationDialogue';
 
-interface MessageBubbleListProps {
+interface DialogueTimelineProps {
 	messages: IChatMessage[] | undefined;
 }
 
-export const MessageBubbleList: React.FC<MessageBubbleListProps> = ({ messages }) => {
-	const messageBubbleListRef = useRef<HTMLDivElement>(null);
+export const DialogueTimeline: React.FC<DialogueTimelineProps> = ({ messages }) => {
+	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		const messageList = messageBubbleListRef.current;
+		const messageList = dialogueTimelineRef.current;
 
 		if (messageList) {
 			messageList.scrollTop = messageList.scrollHeight;
@@ -34,10 +34,10 @@ export const MessageBubbleList: React.FC<MessageBubbleListProps> = ({ messages }
 	};
 
 	return (
-		<div ref={messageBubbleListRef} className="conversation-history">
+		<div ref={dialogueTimelineRef} className="ow-dialogue-timeline">
 			{renderMessageBubbles()}
 		</div>
 	);
 };
 
-export default MessageBubbleList;
+export default DialogueTimeline;

@@ -146,8 +146,8 @@ export const HomePage: React.FC<HomePage> = ({
 									{conversation.timestamp.substring(0, 10)}
 								</span>
 							</div>
-							<div className={`item-actions ${showDeleteConfirmation === conversation.id ? 'show' : ''}`}>
-								<div className="actions">
+							<div className={`item-ow-actions ${showDeleteConfirmation === conversation.id ? 'show' : ''}`}>
+								<div className="ow-actions">
 									{showDeleteConfirmation === conversation.id ? (
 										<div className="delete-confirmation-dialog">
 											<button
