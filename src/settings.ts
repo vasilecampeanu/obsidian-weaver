@@ -51,7 +51,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 		containerEl.createEl('h1', { text: 'Weaver Settings' });
 
 		containerEl.createEl('h2', {
-			text: 'OpenAI Settings'
+			text: 'OpenAI'
 		});
 
 		// API Key
@@ -91,7 +91,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 
 		// Engine Settinhgs
 		containerEl.createEl('h2', {
-			text: 'Model Configuration Settings'
+			text: 'Model Configuration'
 		});
 
 		new Setting(containerEl)

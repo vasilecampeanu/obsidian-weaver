@@ -116,7 +116,7 @@
 				grid-template-columns: auto 1fr;
 				gap: var(--grid-gap-md);
 
-				.btn-clean
+				.btn-new-chat
 				{
 					all: unset;
 					display: grid;
@@ -124,16 +124,14 @@
 					height: 40px;
 					width: 40px;
 					border-radius: 50%;
-					background-color: var(--interactive-accent);
+					background-color: hsla(var(--interactive-accent-hsl), 0.55);
 					box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
 					color: #ffffff;
 					cursor: var(--cursor);
 
-					opacity: .75;
-
 					&:hover
 					{
-						opacity: 1;
+						background-color: hsla(var(--interactive-accent-hsl), .75);
 					}
 
 					svg

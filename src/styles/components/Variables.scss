@@ -35,6 +35,11 @@
 
 :root
 {
+	--test: var(--interactive-accent);
+}
+
+:root
+{
 	--assistant-message-color: #F6F6F6;
 	--chat-box-color: #F6F6F6;
 	--history-list-item-color: #F6F6F6;
