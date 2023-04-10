@@ -1,0 +1,143 @@
+.conversation-history 
+{
+	display: grid;
+	grid-auto-rows: min-content;
+	// align-content: start;
+	gap: var(--grid-gap-lg);
+	overflow-y: auto;
+	padding: var(--padding-sm) var(--padding-lg);
+	background: var(--background-secondary);
+
+	.message-bubble 
+	{
+		user-select: text;
+		font-size: var(--font-size-sm);
+		display: grid;
+		grid-template-rows: auto auto;
+		padding: var(--padding-md);
+		max-width: 90%;
+		border-radius: 10px;
+		border: 1px solid var(--prompt-border-color);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+
+		.message-content 
+		{
+			word-wrap: break-word;
+
+			.three-dots-leader
+			{
+				svg
+				{
+					fill: var(--interactive-accent) !important;
+				}
+			}
+
+			pre
+			{
+				margin: 0px !important;
+
+				.code-block-container
+				{
+					display: grid;
+					grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+
+					.code-block
+					{
+						background-color: rgba(0, 0, 0, 85) !important;
+						border: none !important;
+
+						code
+						{
+							background-color: transparent !important;
+							font-size: var(--font-size-sm) !important;
+							font-family: var(--font-monospace) !important;
+						}
+					}
+				}
+			}
+
+			table
+			{
+				border-collapse: collapse;
+				width: 100%;
+
+				th
+				{
+					border: 1px solid var(--prompt-border-color);
+					padding: 5px;
+					font-weight: bold;
+					text-align: left;
+				}
+				
+				td
+				{
+					padding: 5px;
+					border: 1px solid var(--prompt-border-color);
+				}	
+			}
+
+			p
+			{
+				&:first-child
+				{
+					margin-top: 0px;
+				}
+
+				&:only-child
+				{
+					margin: 0px;
+				}
+
+				&:not(:only-child) 
+				{
+					margin-bottom: 10px 0px;
+				}
+
+				&:last-child
+				{
+					margin-bottom: 0px;
+				}
+			}
+
+			ul
+			{
+				padding-left: 20px !important;
+			}
+		}
+
+		.timestamp 
+		{
+			display: none;
+		}
+
+		&.message-user
+		{
+			.message-content *::selection
+			{
+				background-color: rgba(246, 246, 246, 0.3) !important;
+				opacity: .5 !important;
+			}
+		}
+
+		&.message-user 
+		{
+			justify-self: end;
+			background-color: var(--interactive-accent);
+			color: #ffffff;
+
+			.code-block
+			{
+			}
+		}
+
+		&.message-assistant 
+		{
+			justify-self: start;
+			background-color: var(--assistant-message-color);
+
+			.code-block
+			{
+			}
+		}
+	}
+}

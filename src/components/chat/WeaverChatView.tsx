@@ -3,8 +3,8 @@ import { ItemView, WorkspaceLeaf, Platform } from 'obsidian';
 import { createRoot, Root } from "react-dom/client";
 import React from 'react';
 
-import { WEAVER_CHAT_VIEW_TYPE } from '../constants';
-import Weaver from '../main'
+import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';
+import Weaver from '../../main'
 
 import { TabsManager } from './TabsManager';
 

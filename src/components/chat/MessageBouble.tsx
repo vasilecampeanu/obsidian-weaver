@@ -1,86 +1,82 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
-import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { xonokai } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import remarkGfm from 'remark-gfm';
-
-const convertTheme = (theme: any): { [key: string]: React.CSSProperties } => {
-	const convertedTheme: { [key: string]: React.CSSProperties } = {};
-
-	for (const key in theme) {
-		if (Object.prototype.hasOwnProperty.call(theme, key)) {
-			const value = theme[key];
-			if (typeof value === 'object' && !Array.isArray(value)) {
-				convertedTheme[key] = value as React.CSSProperties;
-			}
-		}
-	}
-
-	return convertedTheme;
-};
-
-const compatibleDarkTheme = convertTheme(xonokai);
+import { MarkdownRenderer } from 'obsidian';
 
 export interface MessageBubbleProps {
 	role: string;
 	timestamp: string;
 	content: string;
-	isLoading?: boolean
+	isLoading?: boolean;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
 	role,
 	timestamp,
 	content,
-	isLoading
+	isLoading,
 }) => {
+	const messageContentRef = useRef<HTMLDivElement>(null);
+	const [showConfirmation, setShowConfirmation] = useState(false);
+	
+	useEffect(() => {
+		if (messageContentRef.current) {
+			const context = {
+				cache: {},
+				async onload(source: string, el: HTMLElement, ctx: any) {
+					return ctx;
+				},
+				async onunload() { },
+			};
+
+			MarkdownRenderer.renderMarkdown(
+				content,
+				messageContentRef.current,
+				'',
+				context as any
+			);
+		}
+	}, [content]);
+
+	const copyTextWithMarkdown = async () => {
+		await navigator.clipboard.writeText(content);
+
+		setShowConfirmation(true);
+
+		setTimeout(() => {
+			setShowConfirmation(false);
+		}, 1000);
+	};
+
 	return (
-		<div
-			className={`message-bubble ${role === 'user' ? 'message-user' : 'message-assistant'}`}
-		>
-			<div className="message-content paragraph-container">
-				{
-					isLoading == true ? (
+		<div className={`ow-message-bubble ${role === 'user' ? 'ow-user-bubble' : 'ow-assistant-bubble'}`}>
+			<div className="ow-content-wrapper">
+				<div className="ow-message-content paragraph-container" ref={messageContentRef}>
+					{isLoading ? (
 						<ThreeDots
 							height="5"
 							width="30"
 							radius="1.5"
 							ariaLabel="three-dots-loading"
-							wrapperClass="three-dots-leader"
+							wrapperClass="ow-three-dots-leader"
 							visible={true}
 						/>
-					) : (
-						<ReactMarkdown
-							children={content}
-							remarkPlugins={[remarkGfm]}
-							components={{
-								code({ node, inline, className, children, ...props }) {
-									const match = /language-(\w+)/.exec(className || '');
-									const language = match ? match[1] : 'txt';
-
-									return !inline ? (
-										<div className="code-block-container">
-											<SyntaxHighlighter
-												children={String(children).replace(/\n$/, '')}
-												style={compatibleDarkTheme as any}
-												className="code-block"
-												language={language}
-												PreTag="div"
-												{...props}
-											/>
-										</div>
-									) : (
-										<code className={className} {...props}>
-											{children}
-										</code>
-									);
-								},
-							}}
-						/>
-					)
-				}
+					) : null}
+				</div>
+			</div>
+			<div className="ow-bubble-ow-actions">
+				<div className="ow-bubble-ow-actions">
+					<div className="ow-actions">
+						<button className="ow-copy-button" onClick={copyTextWithMarkdown}>
+							{showConfirmation ? (
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+							) : (
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+							)}
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	);
 };
+

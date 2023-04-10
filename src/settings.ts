@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	temperature: 0.7,
 	frequency_penalty: 0.5,
 	weaverFolderPath: "bins/weaver",
-	systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format all of your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links, bold and italic text, and code blocks. Please also provide suggestions for relevant tags or links to related notes within the user's Obsidian vault when applicable.",
+	systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links and code blocks. In addition to Markdown, please utilize LaTeX formatting when necessary to render mathematical symbols and equations in a clear and concise manner. This includes, but is not limited to, using symbols such as $\alpha$, $\beta$, $\gamma$, $\delta$, and $\theta$ and equations like $f(x) = x^2 + 2x + 1$ and $\int_{0}^{\infty} e^{-x^2} dx$. For formulas that are on a single line, enclose the LaTeX code between four dollar signs ($$$$) Please ensure that you follow proper LaTeX syntax and formatting guidelines to ensure the readability and coherence of your responses.",
 	showWelcomeMessage: true,
 	openOnStartUp: true
 }
@@ -51,7 +51,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 		containerEl.createEl('h1', { text: 'Weaver Settings' });
 
 		containerEl.createEl('h2', {
-			text: 'OpenAI Settings'
+			text: 'OpenAI'
 		});
 
 		// API Key
@@ -91,7 +91,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 
 		// Engine Settinhgs
 		containerEl.createEl('h2', {
-			text: 'Model Configuration Settings'
+			text: 'Model Configuration'
 		});
 
 		new Setting(containerEl)
