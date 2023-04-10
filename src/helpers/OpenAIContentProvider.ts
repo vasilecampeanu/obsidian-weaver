@@ -26,6 +26,7 @@ export default class OpenAIContentProvider {
 				} else {
 					console.error('Error in generate:', error);
 				}
+
 				return null;
 			}
 
@@ -51,8 +52,28 @@ export default class OpenAIContentProvider {
 			this.ongoingRequest = null;
 
 			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
+				let errorMessage = "";
+
+				switch (response.status) {
+					case 401:
+						errorMessage = "Error: Invalid Authentication. Ensure the correct API key and requesting organization are being used.";
+						break;
+					case 404:
+						errorMessage = "Error: The selected model is unavailable. Check your API key, organization status, and model access permissions, then try again.";
+						break;
+					case 429:
+						errorMessage = "Error: Rate limit reached or quota exceeded. Please check your plan and billing details and try again later.";
+						break;
+					case 500:
+						errorMessage = "Error: Server error. Retry your request after a brief wait and contact us if the issue persists.";
+						break;
+					default:
+						errorMessage = `Error: HTTP error! status: ${response.status}`;
+				}
+
+				return errorMessage;
 			}
+	
 
 			const jsonResponse = await response.json();
 			const content = jsonResponse?.choices[0].message.content;

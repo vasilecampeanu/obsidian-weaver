@@ -209,13 +209,14 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
 
 		let assistantResponseContent = "";
-
+		
 		if (openAIContentProviderRef.current.isRequestCancelled()) {
 			assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
-		} else if (!assistantGeneratedResponse) {
-			assistantResponseContent = "I'm sorry, but I am unable to generate a response at this time. This may be because your request was cancelled, GPT4 is currently in use, or an error has occurred. Please check your settings and try again later.";
+		} else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
+			console.error(assistantGeneratedResponse);
+			assistantResponseContent = assistantGeneratedResponse.slice(7);
 		} else {
-			assistantResponseContent = assistantGeneratedResponse;
+			assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
 		}
 
 		const assistantMessage = { role: 'assistant', content: assistantResponseContent, timestamp };
