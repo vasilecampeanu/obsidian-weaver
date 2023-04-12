@@ -10,6 +10,7 @@ export class MigrationAssistant {
 		try {
 			await FileIOManager.ensureFolderExists(plugin, "threads/base");
 
+			// const uniqueTitle = await this.generateUniqueTitle(plugin, title);
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const conversationPath = `/${plugin.settings.weaverFolderPath}/threads/base/${title}.bson`;
 
@@ -26,9 +27,9 @@ export class MigrationAssistant {
 	static async migrateData(plugin: Weaver): Promise<void> {
 		try {
 			await FileIOManager.ensureFolderExists(plugin, "threads/base");
-
+	
 			const oldData = await FileIOManager.readLegacyData(plugin);
-
+	
 			const threadsPromises = oldData.threads.map(async (thread: any, index: any) => {
 				const existingTitles = new Set();
 
@@ -44,18 +45,21 @@ export class MigrationAssistant {
 						delete message.timestamp;
 						return message;
 					});
-
+	
 					let uniqueTitle = conversation.title;
-					let index = 1;
 
 					while (existingTitles.has(uniqueTitle)) {
-						const baseTitle = conversation.title;
-						uniqueTitle = `${baseTitle} ${index}`;
-						index++;
+						const match = uniqueTitle.match(/(.*)\s\((\d+)\)$/);
+						
+						if (match) {
+							uniqueTitle = `${match[1]} (${parseInt(match[2]) + 1})`;
+						} else {
+							uniqueTitle = `${uniqueTitle} (1)`;
+						}
 					}
-
+					
 					existingTitles.add(uniqueTitle);
-
+	
 					const updatedConversation = {
 						id: conversation.id,
 						title: uniqueTitle,
@@ -71,9 +75,9 @@ export class MigrationAssistant {
 						messagesCount: updatedMessages.length,
 						messages: updatedMessages
 					};
-
+					
 					await this.migrateConversation(plugin, uniqueTitle, updatedConversation);
-
+	
 					return {
 						id: conversation.id,
 						title: uniqueTitle,
@@ -89,29 +93,29 @@ export class MigrationAssistant {
 						messagesCount: updatedMessages.length
 					};
 				}));
-
+	
 				return {
 					id: thread.threadId,
 					title: thread.threadName,
 					conversations: conversations,
 				};
 			});
-
+	
 			const resolvedThreads = await Promise.all(threadsPromises);
-
+	
 			const descriptor = {
 				version: '2.0.0',
 				threads: resolvedThreads,
 			};
-
+	
 			// console.log("Migration: ", descriptor);
-
+	
 			// Save the descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
-
+	
 		} catch (error) {
 			console.error('Error migrating data:', error);
 			throw error;
 		}
-	}
+	}	
 }	

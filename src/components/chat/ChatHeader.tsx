@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ChatHeaderProps {
 	title: string | undefined;
 	onBackToHomePage: () => void;
-	onUpdateChatSessionTitle: (newTitle: string | undefined) => void;
+	onUpdateChatSessionTitle: (newTitle: string | undefined) => Promise<void>;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -13,17 +13,34 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 }) => {
 	const [titleInput, setTitleInput] = useState<string | undefined>('');
 	const [isTitleEditing, setIsTitleEditing] = useState<boolean>(false);
+	const [inputError, setInputError] = useState<boolean>(false);
 
-	const handleBlur = () => {
+	useEffect(() => {
+		(async () => {
+			console.log(title);
+		})();
+	}, []);
+
+	const handleBlur = async () => {
 		setIsTitleEditing(false);
-
+	
 		if (titleInput?.trim() === '') {
 			setTitleInput(title);
 		} else {
-			onUpdateChatSessionTitle(titleInput);
+			try {
+				await onUpdateChatSessionTitle(titleInput);
+				setTitleInput(titleInput); // Update the titleInput state after updating the title successfully
+			} catch (error) {
+				if (error.message === 'The provided title already exists. Please choose a different title.') {
+					setInputError(true);
+					setTimeout(() => setInputError(false), 1000);
+				} else {
+					// Handle other errors if necessary
+				}
+			}
 		}
 	};
-
+	
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
@@ -55,6 +72,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 							onBlur={handleBlur}
 							onKeyDown={handleKeyDown}
 							onChange={(e) => setTitleInput(e.target.value)}
+							style={inputError ? { borderColor: 'red' } : {}}
 						/>
 					) : (
 						<span onDoubleClick={handleDoubleClick}>{title}</span>

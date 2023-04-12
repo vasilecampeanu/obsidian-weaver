@@ -12,7 +12,7 @@ import { InputArea } from './InputArea';
 
 export interface IChatMessage {
 	role: string;
-	timestamp: string;
+	creationDate: string;
 	content: string;
 	isLoading?: boolean;
 }
@@ -20,8 +20,10 @@ export interface IChatMessage {
 export interface IChatSession {
 	id: number;
 	title: string;
-	timestamp: string;
+	creationDate: string;
 	messages: IChatMessage[];
+	messagesCount?: number | undefined
+	path?: string | undefined
 }
 
 export interface IConversationDialogue {
@@ -43,6 +45,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	const [inputText, setInputText] = useState<string>('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [welcomeMessage, setWelcomeMessage] = React.useState<string>(ConversationHelper.getRandomWelcomeMessage());
+	const [conversationTitle, setConversationTitle] = useState(chatSession?.title);
 
 	// TODO: This needs to be stored somewhere else.
 	const activeThreadId = 0;
@@ -51,48 +54,54 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 
 	const loadChatSessionById = useCallback(async (chatSessionId: number) => {
 		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
-		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
 
-		if (selectedChatSession) {
-			setChatSession(selectedChatSession);
+		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
+		const conversationToLoad = await ConversationHelper.readConversationByFilePath(plugin, selectedChatSession?.path || '');
+
+		if (conversationToLoad) {
+			setConversationTitle(conversationToLoad.title);
+			setChatSession(conversationToLoad);
 		} else {
 			console.error('Unable to find selected chat session.');
 		}
 	}, [activeThreadId]);
 
 	const startNewChatSession = useCallback(async () => {
+		const existingChatSessions = await ConversationHelper.readConversations(plugin, activeThreadId);
+
+		let newTitle = 'Untitled';
+		let index = 1;
+
+		while (existingChatSessions.some((session) => session.title === newTitle)) {
+			newTitle = `Untitled ${index}`;
+			index++;
+		}
+
 		const newChatSession: IChatSession = {
 			id: Date.now(),
-			title: `Untitled`,
-			timestamp: new Date().toISOString(),
+			title: newTitle,
+			creationDate: new Date().toISOString(),
 			messages: plugin.settings.showWelcomeMessage ? [{
-					role: "system",
-					timestamp: new Date().toISOString(),
-					content: `${plugin.settings.systemRolePrompt}`
-				}, {
-					role: "assistant",
-					timestamp: new Date().toISOString(),
-					content: welcomeMessage
-				}] : [{
-					role: "system",
-					timestamp: new Date().toISOString(),
-					content: `${plugin.settings.systemRolePrompt}`
-				}
-			]
+				role: "system",
+				creationDate: new Date().toISOString(),
+				content: `${plugin.settings.systemRolePrompt}`
+			}, {
+				role: "assistant",
+				creationDate: new Date().toISOString(),
+				content: welcomeMessage
+			}] : [{
+				role: "system",
+				creationDate: new Date().toISOString(),
+				content: `${plugin.settings.systemRolePrompt}`
+			}]
 		};
 
+		setConversationTitle(newChatSession?.title)
 		setChatSession(newChatSession);
 		setLastActiveConversationId(newChatSession.id);
 
 		try {
-			const existingChatSessions = await ConversationHelper.readConversations(plugin, activeThreadId);
-			const mergedChatSessions = [...existingChatSessions, newChatSession];
-
-			const uniqueChatSessions = mergedChatSessions.filter((chatSession, index, array) => {
-				return index === array.findIndex((c) => c.id === chatSession.id);
-			});
-
-			ConversationHelper.writeConversations(plugin, activeThreadId, uniqueChatSessions);
+			await ConversationHelper.createNewConversation(plugin, activeThreadId, newChatSession);
 		} catch (error) {
 			console.error('Error in chat session handling:', error);
 		}
@@ -120,33 +129,14 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		onTabSwitch("home-page");
 	}
 
-	const onUpdateConversationTitle = async (newTitle: string) => {
-		if (chatSession) {
-			const data = await ConversationHelper.readConversations(plugin, activeThreadId);
-			const chatSessionIndex = data.findIndex((c: IChatSession) => c.id === chatSession.id);
-
-			if (chatSessionIndex !== -1) {
-				data[chatSessionIndex].title = newTitle;
-
-				ConversationHelper.writeConversations(plugin, activeThreadId, data);
-
-				setChatSession((prevState) => {
-					if (prevState) {
-						return {
-							...prevState,
-							title: newTitle
-						};
-					} else {
-						return prevState;
-					}
-				});
-			} else {
-				console.error('Chat session not found.');
-				return;
+	const handleUpdateChatSessionTitle = async (newTitle: string) => {
+		try {
+			if((await ConversationHelper.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle)).success)
+			{
+				setConversationTitle(newTitle);
 			}
-		} else {
-			console.error('Chat session is not initialized.');
-			return;
+		} catch (error) {
+			console.error('Error updating conversation title:', error);
 		}
 	};
 
@@ -164,8 +154,8 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			return;
 		}
 
-		const timestamp: string = new Date().toISOString();
-		const userMessage: IChatMessage = { role: 'user', content: inputText, timestamp };
+		const creationDate: string = new Date().toISOString();
+		const userMessage: IChatMessage = { role: 'user', content: inputText, creationDate };
 
 		// Update the conversation with the user's message
 		await updateConversation(userMessage, (updatedMessages) => {
@@ -188,7 +178,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		const loadingAssistantMessage: IChatMessage = {
 			role: 'assistant',
 			content: '',
-			timestamp: '',
+			creationDate: '',
 			isLoading: true
 		};
 
@@ -209,7 +199,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
 
 		let assistantResponseContent = "";
-		
+
 		if (openAIContentProviderRef.current.isRequestCancelled()) {
 			assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
 		} else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
@@ -219,7 +209,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
 		}
 
-		const assistantMessage = { role: 'assistant', content: assistantResponseContent, timestamp };
+		const assistantMessage = { role: 'assistant', content: assistantResponseContent, creationDate };
 
 		// Update the conversation with the assistant's message
 		await updateConversation(assistantMessage, (updatedMessages) => {
@@ -262,7 +252,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 
 	return (
 		<div className="chat-view">
-			<ChatHeader title={chatSession?.title} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={onUpdateConversationTitle}></ChatHeader>
+			<ChatHeader title={conversationTitle} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={handleUpdateChatSessionTitle}></ChatHeader>
 			<DialogueTimeline messages={chatSession?.messages} />
 			<InputArea
 				inputText={inputText}

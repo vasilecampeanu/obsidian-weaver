@@ -4,14 +4,14 @@ import { MarkdownRenderer } from 'obsidian';
 
 export interface MessageBubbleProps {
 	role: string;
-	timestamp: string;
+	creationDate: string;
 	content: string;
 	isLoading?: boolean;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
 	role,
-	timestamp,
+	creationDate,
 	content,
 	isLoading,
 }) => {

@@ -68,6 +68,7 @@ export const HomePage: React.FC<HomePage> = ({
 
 	const fetchConversations = async () => {
 		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
+		console.log("Home: ", data)
 		setConversations(data);
 	};
 
@@ -124,8 +125,8 @@ export const HomePage: React.FC<HomePage> = ({
 			<div className="chat-history">
 				{conversations.length > 0 ? (
 					conversations.slice().sort((a, b) => {
-						const dateA = new Date(a.timestamp);
-						const dateB = new Date(b.timestamp);
+						const dateA = new Date(a.creationDate);
+						const dateB = new Date(b.creationDate);
 						return dateB.getTime() - dateA.getTime();
 					}).map((conversation, index) => (
 						<div
@@ -142,8 +143,8 @@ export const HomePage: React.FC<HomePage> = ({
 								<span className="title">
 									{conversation.title}
 								</span>
-								<span className="timestamp">
-									{conversation.timestamp.substring(0, 10)}
+								<span className="creationDate">
+									{conversation.creationDate.substring(0, 10)}
 								</span>
 							</div>
 							<div className={`item-ow-actions ${showDeleteConfirmation === conversation.id ? 'show' : ''}`}>
@@ -184,7 +185,7 @@ export const HomePage: React.FC<HomePage> = ({
 									</button>
 								</div>
 								<span className="messaje-count">
-									{conversation.messages.length >= 1 ? conversation.messages.length - 1 : conversation.messages.length}
+									{(conversation.messagesCount ?? 0) >= 1 ? (conversation.messagesCount ?? 0) - 1 : (conversation.messagesCount ?? 0)}
 								</span>
 							</div>
 						</div>
@@ -192,27 +193,6 @@ export const HomePage: React.FC<HomePage> = ({
 				) : (
 					showWelcomePrompt && (
 						<div className="welcome-prompt">
-							{/* 
-							<div className="info">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3v12"></path><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M15 6a9 9 0 0 0-9 9"></path><path d="M18 15v6"></path><path d="M21 18h-6"></path></svg>
-								<div className="message">
-									Obsidian Weaver
-								</div>
-							</div>
-							<div className="version">
-								preview: v0.3.4
-							</div>
-							<button
-								onClick={() => {
-									handleNewChat();
-								}}
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-								<span>
-									Create New Conversation
-								</span>
-							</button> 
-							*/}
 						</div>
 					)
 				)}

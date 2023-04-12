@@ -24,7 +24,7 @@ export const DialogueTimeline: React.FC<DialogueTimelineProps> = ({ messages }) 
 					<MessageBubble
 						key={index}
 						role={message.role}
-						timestamp={message.timestamp}
+						creationDate={message.creationDate}
 						content={message.content}
 						isLoading={message.isLoading}
 					/>
