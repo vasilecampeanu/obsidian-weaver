@@ -104,8 +104,6 @@ export class MigrationAssistant {
 				threads: resolvedThreads,
 			};
 
-			// console.log("Migration: ", descriptor);
-
 			// Save the descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
 

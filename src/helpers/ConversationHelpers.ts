@@ -204,14 +204,39 @@ export class ConversationHelper {
 			console.error('Error updating conversation title:', error);
 			return { success: false, errorMessage: error.message };
 		}
-	}	
+	}
 
 	// ...
 
 	static async deleteConversation(plugin: Weaver, threadId: number, conversationId: number): Promise<void> {
-		const conversations = await this.readConversations(plugin, threadId);
-		const updatedConversations = conversations.filter((conversation) => conversation.id !== conversationId);
-		await this.writeConversations(plugin, threadId, updatedConversations);
+		try {
+			const descriptor = await FileIOManager.readDescriptor(plugin);
+			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
+
+			if (threadIndex === -1) {
+				console.error('Thread not found:', threadId);
+				throw new Error('Thread not found');
+			}
+	
+			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: number; }) => conversation.id === conversationId);
+
+			if (conversationIndex === -1) {
+				console.error('Conversation not found:', conversationId);
+				throw new Error('Conversation not found');
+			}
+	
+			const conversationPath = descriptor.threads[threadIndex].conversations[conversationIndex].path;
+	
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			await adapter.remove(normalizePath(conversationPath));
+
+			descriptor.threads[threadIndex].conversations.splice(conversationIndex, 1);
+	
+			await FileIOManager.writeDescriptor(plugin, descriptor);
+		} catch (error) {
+			console.error('Error deleting conversation:', error);
+			throw error;
+		}
 	}
 
 	static getRandomWelcomeMessage(): string {
