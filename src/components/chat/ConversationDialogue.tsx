@@ -131,8 +131,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 
 	const handleUpdateChatSessionTitle = async (newTitle: string) => {
 		try {
-			if((await ConversationHelper.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle)).success)
-			{
+			if ((await ConversationHelper.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle)).success) {
 				setConversationTitle(newTitle);
 			}
 		} catch (error) {
@@ -232,18 +231,13 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		openAIContentProviderRef.current.cancelRequest();
 	}, []);
 
+	// updateConversation function
 	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
 		if (chatSession) {
-			const data = await ConversationHelper.readConversations(plugin, activeThreadId);
-			const conversationIndex = data.findIndex((c: IChatSession) => c.id === chatSession.id);
-
-			if (conversationIndex !== -1) {
-				data[conversationIndex].messages.push(newMessage);
-				ConversationHelper.writeConversations(plugin, activeThreadId, data);
-				callback(data[conversationIndex].messages);
-			} else {
-				console.error('Conversation not found in the existing conversations array.');
-			}
+			// Insert the new message into the conversation and get the updated messages array
+			const updatedMessages = await ConversationHelper.addNewMessage(plugin, activeThreadId, chatSession.id, newMessage);
+			console.log(updatedMessages);
+			callback(updatedMessages); // Update the local chat session state
 		} else {
 			console.error('Chat session is not initialized.');
 			return;

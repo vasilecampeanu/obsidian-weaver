@@ -68,7 +68,6 @@ export const HomePage: React.FC<HomePage> = ({
 
 	const fetchConversations = async () => {
 		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
-		console.log("Home: ", data)
 		setConversations(data);
 	};
 

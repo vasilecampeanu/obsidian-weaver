@@ -15,12 +15,6 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	const [isTitleEditing, setIsTitleEditing] = useState<boolean>(false);
 	const [inputError, setInputError] = useState<boolean>(false);
 
-	useEffect(() => {
-		(async () => {
-			console.log(title);
-		})();
-	}, []);
-
 	const handleBlur = async () => {
 		setIsTitleEditing(false);
 	

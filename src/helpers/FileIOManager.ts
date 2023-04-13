@@ -1,6 +1,5 @@
 import { FileSystemAdapter, normalizePath } from 'obsidian';
 import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-import { IChatSession } from 'components/chat/ConversationDialogue';
 
 import fs from 'fs';
 import Weaver from 'main';
@@ -19,6 +18,18 @@ export class FileIOManager {
 			throw error;
 		}
 	}
+
+	static async legacyStorageExists(plugin: Weaver): Promise<boolean> {
+		try {
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			const filePath = `/${plugin.settings.weaverFolderPath}/conversations.bson`;
+	
+			return await adapter.exists(filePath);
+		} catch (error) {
+			console.error('Error checking legacy storage existence:', error);
+			throw error;
+		}
+	}	
 
 	static async readLegacyData(plugin: Weaver) {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
@@ -45,9 +56,6 @@ export class FileIOManager {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const descriptorPath = `/${plugin.settings.weaverFolderPath}/descriptor.bson`;
-
-			console.log("writeDescriptor", data)
-
 			const bsonData = BSON.serialize(data);
 			const buffer = Buffer.from(bsonData.buffer);
 			await adapter.writeBinary(descriptorPath, buffer);
@@ -57,19 +65,35 @@ export class FileIOManager {
 		}
 	}
 
-	static async readDescriptor(plugin: Weaver): Promise<any> {
-		try {
-			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const descriptorPath = `/${plugin.settings.weaverFolderPath}/descriptor.bson`;
+    static async readDescriptor(plugin: Weaver): Promise<any> {
+        try {
+            const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+            const descriptorPath = `/${plugin.settings.weaverFolderPath}/descriptor.bson`;
 
-			const arrayBuffer = await adapter.readBinary(descriptorPath);
-			const bsonData = new Uint8Array(arrayBuffer);
-			const deserializedData = BSON.deserialize(bsonData);
+            if (!await adapter.exists(descriptorPath)) {
+                const emptyDescriptor = {
+                    version: '2.0.0',
+                    threads: [
+                        {
+                            id: 0,
+                            title: 'base',
+                            conversations: [],
+                        }
+                    ]
+                };
 
-			return deserializedData;
-		} catch (error) {
-			console.error('Error reading descriptor:', error);
-			throw error;
-		}
-	}
+                const bsonData = BSON.serialize(emptyDescriptor);
+                await adapter.writeBinary(descriptorPath, bsonData);
+            }
+
+            const arrayBuffer = await adapter.readBinary(descriptorPath);
+            const bsonData = new Uint8Array(arrayBuffer);
+            const deserializedData = BSON.deserialize(bsonData);
+
+            return deserializedData;
+        } catch (error) {
+            console.error('Error reading descriptor:', error);
+            throw error;
+        }
+    }
 }

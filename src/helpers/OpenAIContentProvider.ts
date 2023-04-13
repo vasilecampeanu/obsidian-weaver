@@ -73,7 +73,6 @@ export default class OpenAIContentProvider {
 
 				return errorMessage;
 			}
-	
 
 			const jsonResponse = await response.json();
 			const content = jsonResponse?.choices[0].message.content;
@@ -85,6 +84,7 @@ export default class OpenAIContentProvider {
 			} else {
 				console.error("Error in requestAssistantResponse:", error);
 			}
+
 			return Promise.reject(error);
 		}
 	}

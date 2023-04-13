@@ -1,4 +1,3 @@
-import { App } from "obsidian";
 import Weaver from "main";
 import { WeaverSettings } from "settings";
 import { IChatMessage } from "components/chat/ConversationDialogue";

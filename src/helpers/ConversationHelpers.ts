@@ -1,8 +1,7 @@
 import { FileSystemAdapter, normalizePath } from 'obsidian';
 import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-import { IChatSession } from 'components/chat/ConversationDialogue';
+import { IChatMessage, IChatSession } from 'components/chat/ConversationDialogue';
 
-import fs from 'fs';
 import Weaver from 'main';
 import { MigrationAssistant } from './MigrationAssistant';
 import { FileIOManager } from './FileIOManager';
@@ -42,15 +41,14 @@ export class ConversationHelper {
 
 	static async readConversations(plugin: Weaver, threadId: number): Promise<IChatSession[]> {
 		try {
-			const legacyData = await FileIOManager.readLegacyData(plugin);
+			if (await FileIOManager.legacyStorageExists(plugin)) {
+				const legacyData = await FileIOManager.readLegacyData(plugin);
 
-			if (!legacyData.hasOwnProperty("schemaMigrationStatus") || legacyData.schemaMigrationStatus != true) {
-				console.log(legacyData);
-
-				legacyData.schemaMigrationStatus = true;
-
-				await FileIOManager.writeToLegacyStorage(plugin, legacyData);
-				await MigrationAssistant.migrateData(plugin);
+				if (!legacyData.hasOwnProperty("schemaMigrationStatus") || legacyData.schemaMigrationStatus != true) {
+					legacyData.schemaMigrationStatus = true;
+					await FileIOManager.writeToLegacyStorage(plugin, legacyData);
+					await MigrationAssistant.migrateData(plugin);
+				}
 			}
 
 			const descriptor = await FileIOManager.readDescriptor(plugin);
@@ -69,7 +67,7 @@ export class ConversationHelper {
 			const arrayBuffer = await adapter.readBinary(filePath);
 			const bsonData = new Uint8Array(arrayBuffer);
 			const deserializedData = BSON.deserialize(bsonData);
-			
+
 			// Return the deserialized conversation data
 			return deserializedData;
 		} catch (error) {
@@ -94,8 +92,6 @@ export class ConversationHelper {
 			// Read the descriptor
 			const descriptor = await FileIOManager.readDescriptor(plugin);
 
-			console.log("createNewConversation, descriptor 01:", descriptor);
-
 			// Find the thread
 			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
 
@@ -119,10 +115,11 @@ export class ConversationHelper {
 				model: plugin.settings.engine,
 			});
 
-			console.log("createNewConversation, descriptor 02:", descriptor);
-
 			// Save the updated descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
+
+			// Ensure the folder structure exists
+			await FileIOManager.ensureFolderExists(plugin, `threads/${descriptor.threads[threadIndex].title}`);
 
 			// Save the new conversation BSON file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
@@ -148,7 +145,7 @@ export class ConversationHelper {
 			const buffer = Buffer.from(bsonData.buffer);
 
 			await adapter.writeBinary(conversationPath, buffer);
-			
+
 		} catch (error) {
 			console.error('Error creating a new conversation:', error);
 			throw error;
@@ -170,32 +167,32 @@ export class ConversationHelper {
 			if (duplicateTitle) {
 				return { success: false, errorMessage: 'The provided title already exists. Please choose a different title.' };
 			}
-	
+
 			// Update the title and path in the descriptor
 			const oldPath = descriptor.threads[threadIndex].conversations[conversationIndex].path;
 			const basePath = oldPath.substring(0, oldPath.lastIndexOf('/'));
 			const newPath = `${basePath}/${newTitle}.bson`;
-	
+
 			descriptor.threads[threadIndex].conversations[conversationIndex].title = newTitle;
 			descriptor.threads[threadIndex].conversations[conversationIndex].path = newPath;
-	
+
 			// Save the updated descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
-	
+
 			// Read the BSON file
 			const bsonData = await this.readConversationByFilePath(plugin, oldPath);
-	
+
 			// Update the title and path in the BSON file
 			bsonData.title = newTitle;
 			bsonData.path = newPath;
-	
+
 			// Serialize the BSON data
 			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
-	
+
 			// Rename the BSON file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			await adapter.rename(oldPath, newPath);
-	
+
 			// Write the updated BSON data to the renamed file
 			await adapter.writeBinary(newPath, buffer);
 
@@ -206,8 +203,6 @@ export class ConversationHelper {
 		}
 	}
 
-	// ...
-
 	static async deleteConversation(plugin: Weaver, threadId: number, conversationId: number): Promise<void> {
 		try {
 			const descriptor = await FileIOManager.readDescriptor(plugin);
@@ -217,24 +212,81 @@ export class ConversationHelper {
 				console.error('Thread not found:', threadId);
 				throw new Error('Thread not found');
 			}
-	
+
 			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: number; }) => conversation.id === conversationId);
 
 			if (conversationIndex === -1) {
 				console.error('Conversation not found:', conversationId);
 				throw new Error('Conversation not found');
 			}
-	
+
 			const conversationPath = descriptor.threads[threadIndex].conversations[conversationIndex].path;
-	
+
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			await adapter.remove(normalizePath(conversationPath));
 
 			descriptor.threads[threadIndex].conversations.splice(conversationIndex, 1);
-	
+
 			await FileIOManager.writeDescriptor(plugin, descriptor);
 		} catch (error) {
 			console.error('Error deleting conversation:', error);
+			throw error;
+		}
+	}
+
+	// Insert a new message into an existing conversation
+	static async addNewMessage(plugin: Weaver, threadId: number, conversationId: number, newMessage: IChatMessage): Promise<IChatMessage[]> {
+		try {
+			// Read the descriptor
+			const descriptor = await FileIOManager.readDescriptor(plugin);
+
+			// Find the thread and conversation
+			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
+			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: number; }) => conversation.id === conversationId);
+
+			if (threadIndex === -1 || conversationIndex === -1) {
+				console.error('Thread or conversation not found:', threadId, conversationId);
+				throw new Error('Thread or conversation not found');
+			}
+
+			// Read the conversation BSON file
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			const conversationPath = descriptor.threads[threadIndex].conversations[conversationIndex].path;
+
+			const buffer = await adapter.readBinary(conversationPath);
+			const bsonData = new Uint8Array(buffer);
+			const conversationData = BSON.deserialize(bsonData);
+
+			// Insert the new message
+			conversationData.messages.push(newMessage);
+
+			// Update the lastModified field
+			conversationData.lastModified = newMessage.creationDate;
+
+			// Serialize and save the updated conversation BSON file
+			const updatedBsonData = BSON.serialize(conversationData);
+			const updatedBuffer = Buffer.from(updatedBsonData.buffer);
+
+			await adapter.writeBinary(conversationPath, updatedBuffer);
+
+			// Update the conversation metadata in the descriptor
+			await this.syncConversationMetadata(plugin, {
+				id: conversationData.id,
+				title: conversationData.title,
+				creationDate: conversationData.creationDate,
+				lastModified: conversationData.lastModified,
+				tags: conversationData.tags,
+				tokens: conversationData.tokens,
+				icon: conversationData.icon,
+				color: conversationData.color,
+				context: conversationData.context,
+				model: conversationData.model,
+				messagesCount: conversationData.messages.length
+			}, threadId);
+
+			return conversationData.messages;
+		} catch (error) {
+			console.error('Error inserting a new message:', error);
 			throw error;
 		}
 	}
