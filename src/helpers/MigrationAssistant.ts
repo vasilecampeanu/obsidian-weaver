@@ -6,12 +6,18 @@ import fs from 'fs';
 import Weaver from 'main';
 
 export class MigrationAssistant {
+	static validateTitle(input: string): string {
+		const pattern = /[^a-zA-Z0-9\s-_.,!(){}'"+=%@&$*~`?;]/g;
+		return input.replace(pattern, '');
+	}
+
 	static async migrateConversation(plugin: Weaver, title: string, data: object): Promise<void> {
 		try {
 			await FileIOManager.ensureFolderExists(plugin, "threads/base");
 
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const conversationPath = `/${plugin.settings.weaverFolderPath}/threads/base/${title}.bson`;
+			const sanitizedTitle = this.validateTitle(title);
+			const conversationPath = `/${plugin.settings.weaverFolderPath}/threads/base/${sanitizedTitle}.bson`;
 
 			const bsonData = BSON.serialize(data);
 			const buffer = Buffer.from(bsonData.buffer);
@@ -29,23 +35,32 @@ export class MigrationAssistant {
 
 			const oldData = await FileIOManager.readLegacyData(plugin);
 
-			const threadsPromises = oldData.threads.map(async (thread: any, index: any) => {
-				const existingTitles = new Set();
+			let descriptor: any = {};
+			let descriptorExists = await FileIOManager.descriptorExists(plugin);
 
-				const conversations = await Promise.all(thread.conversations.map(async (conversation: any) => {
+			if (descriptorExists) {
+				descriptor = await FileIOManager.readDescriptor(plugin);
+
+				const firstThread = descriptor.threads[0];
+				const existingTitles = new Set(firstThread.conversations.map((conv: any) => conv.title));
+
+				const conversationsPromises = oldData.threads[0].conversations.map(async (conversation: any) => {
 					const updatedMessages = conversation.messages.map((message: any) => {
-						message.id = 0;
 						message.context = true;
-						message.tokens = 0;
 						message.creationDate = message.timestamp;
+						message.id = 0;
 						message.lastModified = message.timestamp;
 						message.model = plugin.settings.engine;
+						message.tokens = 0;
 						message.type = "message";
+
 						delete message.timestamp;
+
 						return message;
 					});
 
-					let uniqueTitle = conversation.title;
+					let sanitizedTitle = this.validateTitle(conversation.title);
+					let uniqueTitle = sanitizedTitle;
 					let index = 1;
 
 					while (existingTitles.has(uniqueTitle)) {
@@ -57,52 +72,121 @@ export class MigrationAssistant {
 					existingTitles.add(uniqueTitle);
 
 					const updatedConversation = {
-						id: conversation.id,
-						title: uniqueTitle,
-						path: `${plugin.settings.weaverFolderPath}/threads/base/${uniqueTitle}.bson`,
-						creationDate: conversation.timestamp,
-						lastModified: conversation.timestamp,
-						tags: [],
-						tokens: 0,
-						icon: "",
 						color: "",
 						context: true,
-						model: plugin.settings.engine,
+						creationDate: conversation.timestamp,
+						icon: "",
+						id: conversation.id,
+						lastModified: conversation.timestamp,
+						messages: updatedMessages,
 						messagesCount: updatedMessages.length,
-						messages: updatedMessages
+						model: plugin.settings.engine,
+						path: `${plugin.settings.weaverFolderPath}/threads/base/${uniqueTitle}.bson`,
+						tags: [],
+						title: uniqueTitle,
+						tokens: 0,
 					};
 
 					await this.migrateConversation(plugin, uniqueTitle, updatedConversation);
 
 					return {
-						id: conversation.id,
-						title: uniqueTitle,
-						path: `${plugin.settings.weaverFolderPath}/threads/base/${uniqueTitle}.bson`,
-						creationDate: conversation.timestamp,
-						lastModified: conversation.timestamp,
-						tags: [],
-						tokens: 0,
-						icon: "",
 						color: "",
 						context: true,
+						creationDate: conversation.timestamp,
+						icon: "",
+						id: conversation.id,
+						lastModified: conversation.timestamp,
+						messagesCount: updatedMessages.length,
 						model: plugin.settings.engine,
-						messagesCount: updatedMessages.length
+						path: `${plugin.settings.weaverFolderPath}/threads/base/${uniqueTitle}.bson`,
+						tags: [],
+						title: uniqueTitle,
+						tokens: 0,
 					};
-				}));
+				});
 
-				return {
-					id: thread.threadId,
-					title: thread.threadName,
-					conversations: conversations,
+				const newConversations = await Promise.all(conversationsPromises);
+				firstThread.conversations = firstThread.conversations.concat(newConversations);
+
+			} else {
+				const threadsPromises = oldData.threads.map(async (thread: any, index: any) => {
+					const existingTitles = new Set();
+
+					const conversations = await Promise.all(thread.conversations.map(async (conversation: any) => {
+						const updatedMessages = conversation.messages.map((message: any) => {
+							message.context = true;
+							message.creationDate = message.timestamp;
+							message.id = 0;
+							message.lastModified = message.timestamp;
+							message.model = plugin.settings.engine;
+							message.tokens = 0;
+							message.type = "message";
+
+							delete message.timestamp;
+
+							return message;
+						});
+
+						let sanitizedTitle = this.validateTitle(conversation.title);
+						let uniqueTitle = sanitizedTitle;
+						let index = 1;
+
+						while (existingTitles.has(uniqueTitle)) {
+							const baseTitle = conversation.title;
+							uniqueTitle = `${baseTitle} ${index}`;
+							index++;
+						}
+
+						existingTitles.add(uniqueTitle);
+
+						const updatedConversation = {
+							color: "",
+							context: true,
+							creationDate: conversation.timestamp,
+							icon: "",
+							id: conversation.id,
+							lastModified: conversation.timestamp,
+							messages: updatedMessages,
+							messagesCount: updatedMessages.length,
+							model: plugin.settings.engine,
+							path: `${plugin.settings.weaverFolderPath}/threads/base/${uniqueTitle}.bson`,
+							tags: [],
+							title: uniqueTitle,
+							tokens: 0,
+						};
+
+						await this.migrateConversation(plugin, uniqueTitle, updatedConversation);
+
+						return {
+							color: "",
+							context: true,
+							creationDate: conversation.timestamp,
+							icon: "",
+							id: conversation.id,
+							lastModified: conversation.timestamp,
+							messagesCount: updatedMessages.length,
+							model: plugin.settings.engine,
+							path: `${plugin.settings.weaverFolderPath}/threads/base/${uniqueTitle}.bson`,
+							tags: [],
+							title: uniqueTitle,
+							tokens: 0,
+						};
+					}));
+
+					return {
+						conversations: conversations,
+						id: thread.threadId,
+						title: thread.threadName,
+					};
+				});
+
+				const resolvedThreads = await Promise.all(threadsPromises);
+
+				descriptor = {
+					threads: resolvedThreads,
+					version: '2.0.0',
 				};
-			});
-
-			const resolvedThreads = await Promise.all(threadsPromises);
-
-			const descriptor = {
-				version: '2.0.0',
-				threads: resolvedThreads,
-			};
+			}
 
 			// Save the descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
@@ -112,4 +196,4 @@ export class MigrationAssistant {
 			throw error;
 		}
 	}
-}	
+}

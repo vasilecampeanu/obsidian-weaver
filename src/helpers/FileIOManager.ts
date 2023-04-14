@@ -29,7 +29,19 @@ export class FileIOManager {
 			console.error('Error checking legacy storage existence:', error);
 			throw error;
 		}
-	}	
+	}
+
+	static async descriptorExists(plugin: Weaver): Promise<boolean> {
+		try {
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			const filePath = `/${plugin.settings.weaverFolderPath}/descriptor.bson`;
+	
+			return await adapter.exists(filePath);
+		} catch (error) {
+			console.error('Error checking descriptor existence:', error);
+			throw error;
+		}
+	}
 
 	static async readLegacyData(plugin: Weaver) {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;

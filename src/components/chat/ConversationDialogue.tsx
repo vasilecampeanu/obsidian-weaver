@@ -284,6 +284,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			></ChatHeader>
 			<DialogueTimeline messages={chatSession?.messages} />
 			<InputArea
+				plugin={plugin}
 				inputText={inputText}
 				setInputText={setInputText}
 				onSubmit={onSubmit}

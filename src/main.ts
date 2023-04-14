@@ -60,7 +60,7 @@ export default class Weaver extends Plugin {
 
 	async onLayoutReady(): Promise<void> {
 		// Load Wevaer when on Obsidian open
-		if(this.settings.openOnStartUp) {
+		if (this.settings.openOnStartUp) {
 			this.openWeaver();
 		}
 
@@ -83,5 +83,20 @@ export default class Weaver extends Plugin {
 
 		// Add a class
 		ribbonIconEl.addClass('obsidian-weaver-ribbon-icon');
+
+		// Register file Events
+		// TODO: Handle file delete and rename from the file explorer
+
+		this.registerEvent(
+			this.app.vault.on('rename', (file) => {
+				console.log(`File ${file.path} was renamed.`);
+			})
+		);
+
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				console.log(`File ${file.path} was deleted.`);
+			})
+		);
 	}
 }

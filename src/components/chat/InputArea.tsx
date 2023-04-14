@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import Weaver from 'main';
 
 interface InputAreaProps {
+	plugin: Weaver;
 	inputText: string;
 	setInputText: (value: string) => void;
 	onSubmit: (event: React.FormEvent) => void;
@@ -10,6 +12,7 @@ interface InputAreaProps {
 }
 
 export const InputArea: React.FC<InputAreaProps> = ({
+	plugin,
 	inputText,
 	setInputText,
 	onSubmit,
@@ -97,6 +100,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
 					</div>
 					<div className="info-bar">
 						<span>{inputText.length}/2000</span>
+						<span></span>
 						<button
 							className={`pin-chat-box ${isPinned ? 'pinned' : ''}`}
 							onClick={onPinInputBox}

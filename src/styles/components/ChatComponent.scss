@@ -216,7 +216,8 @@
 					.info-bar
 					{
 						display: grid;
-						grid-template-columns: 1fr auto;
+						grid-template-columns: auto 1fr auto;
+						gap: 5px;
 
 						span
 						{
@@ -228,9 +229,11 @@
 						{
 							all: unset;
 							cursor: var(--cursor);
+							display: grid;
 
 							svg
 							{
+								place-self: center;
 								transform: rotate(45deg);
 								width:  var(--svg-size-sm);
 								height: var(--svg-size-sm);

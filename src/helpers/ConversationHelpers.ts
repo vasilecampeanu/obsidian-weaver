@@ -7,7 +7,7 @@ import { MigrationAssistant } from './MigrationAssistant';
 import { FileIOManager } from './FileIOManager';
 
 export class ConversationHelper {
-	static async createMetadataObject(data: any, excludeMessages: boolean): Promise<any> {
+	static async metadataObjectManager(data: any, excludeMessages: boolean): Promise<any> {
 		const metadataObject = {
 			color: data.color,
 			context: data.context,
@@ -41,7 +41,7 @@ export class ConversationHelper {
 			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: any; }) => conversation.id === updatedConversation.id);
 
 			// Update the conversation metadata in the descriptor using createMetadata function
-			const metadata = await this.createMetadataObject(updatedConversation, true);
+			const metadata = await this.metadataObjectManager(updatedConversation, true);
 			descriptor.threads[threadIndex].conversations[conversationIndex] = {
 				...descriptor.threads[threadIndex].conversations[conversationIndex],
 				...metadata
@@ -106,7 +106,7 @@ export class ConversationHelper {
 			}
 	
 			// Add the new conversation metadata to the thread in the descriptor
-			const conversationMetadata = await this.createMetadataObject(newChatSession, true);
+			const conversationMetadata = await this.metadataObjectManager(newChatSession, true);
 			descriptor.threads[threadIndex].conversations.push(conversationMetadata);
 	
 			// Save the updated descriptor
@@ -117,7 +117,7 @@ export class ConversationHelper {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const conversationPath = `${plugin.settings.weaverFolderPath}/threads/${descriptor.threads[threadIndex].title}/${newChatSession.title}.bson`;
 	
-			const conversationData = await this.createMetadataObject(newChatSession, false);
+			const conversationData = await this.metadataObjectManager(newChatSession, false);
 	
 			const bsonData = BSON.serialize(conversationData);
 			const buffer = Buffer.from(bsonData.buffer);
