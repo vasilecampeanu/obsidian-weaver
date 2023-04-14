@@ -123,11 +123,22 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		}
 	}, [activeThreadId]);
 
+	const resetFlag = useRef(false);
+
+	const onNewChat = () => {
+		resetFlag.current = true;
+		setChatSession(undefined);
+		setConversationTitle(undefined);
+	};
+
 	useEffect(() => {
 		(async () => {
 			try {
 				if (chatSession === undefined) {
-					if (selectedConversationId !== null) {
+					if (resetFlag.current) {
+						resetFlag.current = false;
+						startNewChatSession();
+					} else if (selectedConversationId !== null) {
 						loadChatSessionById(selectedConversationId);
 					} else if (lastActiveConversationId !== null) {
 						loadChatSessionById(lastActiveConversationId);
@@ -136,10 +147,16 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 					}
 				}
 			} catch (error) {
-				console.error('Error in useEffect:', error);
+				console.error("Error in useEffect:", error);
 			}
 		})();
-	}, [selectedConversationId, lastActiveConversationId, chatSession, loadChatSessionById, startNewChatSession]);
+	}, [
+		selectedConversationId,
+		lastActiveConversationId,
+		chatSession,
+		loadChatSessionById,
+		startNewChatSession,
+	]);
 
 	const onBackToHomePage = () => {
 		onTabSwitch("home-page");
@@ -147,20 +164,18 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 
 	const handleUpdateChatSessionTitle = async (newTitle: string) => {
 		try {
-			if ((await ConversationHelper.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle)).success) {
+			const result = await ConversationHelper.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle);
+
+			if (result.success) {
 				setConversationTitle(newTitle);
 			}
+
+			return result;
 		} catch (error) {
 			console.error('Error updating conversation title:', error);
+			return { success: false, errorMessage: error.message };
 		}
-	};
-
-	const onNewChat = () => {
-		if (chatSession?.messages.length as number > 1) {
-			setChatSession(undefined);
-			startNewChatSession();
-		}
-	};
+	};	
 
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -262,7 +277,11 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 
 	return (
 		<div className="chat-view">
-			<ChatHeader title={conversationTitle} onBackToHomePage={onBackToHomePage} onUpdateChatSessionTitle={handleUpdateChatSessionTitle}></ChatHeader>
+			<ChatHeader
+				title={conversationTitle}
+				onBackToHomePage={onBackToHomePage}
+				onUpdateChatSessionTitle={handleUpdateChatSessionTitle}
+			></ChatHeader>
 			<DialogueTimeline messages={chatSession?.messages} />
 			<InputArea
 				inputText={inputText}
@@ -273,5 +292,5 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 				onNewChat={onNewChat}
 			/>
 		</div>
-	)
+	);
 }

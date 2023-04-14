@@ -138,10 +138,10 @@ export class ConversationHelper {
 			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: any; }) => conversation.id === conversationId);
 
 			// Check for duplicate titles
-			const duplicateTitle = descriptor.threads[threadIndex].conversations.some((conversation: { title: string; }) => conversation.title === newTitle);
+			const duplicateTitle = descriptor.threads[threadIndex].conversations.some((conversation: { title: string; }) => conversation.title.toLowerCase() === newTitle.toLowerCase());
 
 			if (duplicateTitle) {
-				return { success: false, errorMessage: 'The provided title already exists. Please choose a different title.' };
+				return { success: false, errorMessage: 'A chat with this name already exists!' };
 			}
 
 			// Update the title and path in the descriptor
@@ -174,6 +174,7 @@ export class ConversationHelper {
 
 			return { success: true };
 		} catch (error) {
+			console.log("Hello world!");
 			console.error('Error updating conversation title:', error);
 			return { success: false, errorMessage: error.message };
 		}

@@ -56,13 +56,19 @@
 						width: 100%;
 					}
 
-					span
+					.conversation-title
 					{
 						display: grid;
 						grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 						white-space: nowrap;
 						overflow: hidden;
 						text-overflow: ellipsis;
+						// user-select: text;
+
+						&.error-messaje
+						{
+							color: var(--color-red);
+						}
 					}
 				}
 

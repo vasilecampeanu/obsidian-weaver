@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface ChatHeaderProps {
 	title: string | undefined;
 	onBackToHomePage: () => void;
-	onUpdateChatSessionTitle: (newTitle: string | undefined) => Promise<void>;
+	onUpdateChatSessionTitle: (newTitle: string | undefined) => Promise<{ success: boolean; errorMessage?: string }>;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -14,27 +14,56 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	const [titleInput, setTitleInput] = useState<string | undefined>('');
 	const [isTitleEditing, setIsTitleEditing] = useState<boolean>(false);
 	const [inputError, setInputError] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string | undefined>('');
+
+	const timeoutRef = useRef<NodeJS.Timeout>();
+
+	const validateTitle = (input: string): boolean => {
+		const pattern = /[^a-zA-Z0-9\s-_.,!()'+%@&${}~`]/;
+		return pattern.test(input) === false;
+	};
 
 	const handleBlur = async () => {
 		setIsTitleEditing(false);
-	
+
 		if (titleInput?.trim() === '') {
 			setTitleInput(title);
+		} else if (titleInput === title) {
+			return;
 		} else {
+			if (!validateTitle(titleInput || '')) {
+				setInputError(true);
+				setErrorMessage('Illegal characters in the title!');
+
+				timeoutRef.current = setTimeout(() => {
+					setInputError(false);
+					setErrorMessage('');
+				}, 1500);
+
+				return;
+			}
+
 			try {
-				await onUpdateChatSessionTitle(titleInput);
-				setTitleInput(titleInput); // Update the titleInput state after updating the title successfully
-			} catch (error) {
-				if (error.message === 'The provided title already exists. Please choose a different title.') {
+				const result = await onUpdateChatSessionTitle(titleInput);
+
+				if (!result.success) {
 					setInputError(true);
-					setTimeout(() => setInputError(false), 1000);
-				} else {
-					// Handle other errors if necessary
+					setErrorMessage(result.errorMessage);
+
+					timeoutRef.current = setTimeout(() => {
+						setInputError(false);
+						setErrorMessage('');
+					}, 1500);
 				}
+
+				setTitleInput(titleInput);
+			} catch (error) {
+				console.log(error);
 			}
 		}
 	};
-	
+
+
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
@@ -49,6 +78,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	const handleDoubleClick = () => {
 		setIsTitleEditing(true);
 		setTitleInput(title);
+
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			setInputError(false);
+			setErrorMessage('');
+		}
 	};
 
 	return (
@@ -66,10 +101,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 							onBlur={handleBlur}
 							onKeyDown={handleKeyDown}
 							onChange={(e) => setTitleInput(e.target.value)}
-							style={inputError ? { borderColor: 'red' } : {}}
 						/>
 					) : (
-						<span onDoubleClick={handleDoubleClick}>{title}</span>
+						<span onDoubleClick={handleDoubleClick} className={`conversation-title ${inputError ? 'error-messaje' : ''}`}>
+							{errorMessage ? errorMessage : title}
+						</span>
 					)}
 				</div>
 			</div>
