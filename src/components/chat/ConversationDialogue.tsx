@@ -53,7 +53,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
 
 	const loadChatSessionById = useCallback(async (chatSessionId: number) => {
-		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
+		const data = await ConversationHelper.getConversations(plugin, activeThreadId);
 
 		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
 		const conversationToLoad = await ConversationHelper.readConversationByFilePath(plugin, selectedChatSession?.path || '');
@@ -67,7 +67,7 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	}, [activeThreadId]);
 
 	const startNewChatSession = useCallback(async () => {
-		const existingChatSessions = await ConversationHelper.readConversations(plugin, activeThreadId);
+		const existingChatSessions = await ConversationHelper.getConversations(plugin, activeThreadId);
 
 		let newTitle = 'Untitled';
 		let index = 1;

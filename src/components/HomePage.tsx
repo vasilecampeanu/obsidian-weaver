@@ -67,7 +67,7 @@ export const HomePage: React.FC<HomePage> = ({
 	}, [clickedTarget]);
 
 	const fetchConversations = async () => {
-		const data = await ConversationHelper.readConversations(plugin, activeThreadId);
+		const data = await ConversationHelper.getConversations(plugin, activeThreadId);
 		setConversations(data);
 	};
 
