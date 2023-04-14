@@ -11,19 +11,26 @@ import { DialogueTimeline } from './DialogueTimeline';
 import { InputArea } from './InputArea';
 
 export interface IChatMessage {
-	role: string;
-	creationDate: string;
 	content: string;
+	creationDate: string;
 	isLoading?: boolean;
+	role: string;
 }
 
 export interface IChatSession {
-	id: number;
-	title: string;
+	color: string;
+	context: true;
 	creationDate: string;
+	icon: string;
+	id: number;
+	lastModified: string;
 	messages: IChatMessage[];
-	messagesCount?: number | undefined
-	path?: string | undefined
+	messagesCount: number;
+	model: string;
+	path: string;
+	tags: string[];
+	title: string;
+	tokens: number;
 }
 
 export interface IConversationDialogue {
@@ -78,22 +85,31 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		}
 
 		const newChatSession: IChatSession = {
-			id: Date.now(),
-			title: newTitle,
+			color: "default-color",
+			context: true,
 			creationDate: new Date().toISOString(),
+			icon: "default-icon",
+			id: Date.now(),
+			lastModified: new Date().toISOString(),
 			messages: plugin.settings.showWelcomeMessage ? [{
-				role: "system",
 				creationDate: new Date().toISOString(),
-				content: `${plugin.settings.systemRolePrompt}`
+				content: `${plugin.settings.systemRolePrompt}`,
+				role: "system",
 			}, {
+				creationDate: new Date().toISOString(),
+				content: welcomeMessage || "Welcome to the chat session!",
 				role: "assistant",
-				creationDate: new Date().toISOString(),
-				content: welcomeMessage
 			}] : [{
-				role: "system",
 				creationDate: new Date().toISOString(),
-				content: `${plugin.settings.systemRolePrompt}`
-			}]
+				content: `${plugin.settings.systemRolePrompt}`,
+				role: "system",
+			}],
+			messagesCount: 0,
+			model: plugin.settings.engine,
+			path: `${plugin.settings.weaverFolderPath}/threads/base/${newTitle}.bson`,
+			tags: [],
+			title: newTitle,
+			tokens: 0,
 		};
 
 		setConversationTitle(newChatSession?.title)

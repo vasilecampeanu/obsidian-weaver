@@ -7,6 +7,30 @@ import { MigrationAssistant } from './MigrationAssistant';
 import { FileIOManager } from './FileIOManager';
 
 export class ConversationHelper {
+	static async createMetadataObject(data: any, excludeMessages: boolean): Promise<any> {
+		const metadataObject = {
+			color: data.color,
+			context: data.context,
+			creationDate: data.creationDate,
+			icon: data.icon,
+			id: data.id,
+			lastModified: data.lastModified,
+			messages: data.messages,
+			messagesCount: data.messagesCount,
+			model: data.model,
+			path: data.path,
+			tags: data.tags,
+			title: data.title,
+			tokens: data.tokens,
+		};
+
+		if (excludeMessages) {
+			delete metadataObject.messages;
+		}
+	
+		return metadataObject;
+	}
+
 	static async syncConversationMetadata(plugin: Weaver, updatedConversation: any, threadId: number): Promise<void> {
 		try {
 			// Load the descriptor
@@ -16,19 +40,11 @@ export class ConversationHelper {
 			const threadIndex = descriptor.threads.findIndex((thread: { id: any; }) => thread.id === threadId);
 			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: any; }) => conversation.id === updatedConversation.id);
 
-			// Update the conversation metadata in the descriptor
+			// Update the conversation metadata in the descriptor using createMetadata function
+			const metadata = await this.createMetadataObject(updatedConversation, true);
 			descriptor.threads[threadIndex].conversations[conversationIndex] = {
 				...descriptor.threads[threadIndex].conversations[conversationIndex],
-				title: updatedConversation.title,
-				creationDate: updatedConversation.creationDate,
-				lastModified: updatedConversation.lastModified,
-				tags: updatedConversation.tags,
-				tokens: updatedConversation.tokens,
-				icon: updatedConversation.icon,
-				color: updatedConversation.color,
-				context: updatedConversation.context,
-				model: updatedConversation.model,
-				messagesCount: updatedConversation.messagesCount
+				...metadata
 			};
 
 			// Save the updated descriptor
@@ -43,6 +59,7 @@ export class ConversationHelper {
 		try {
 			if (await FileIOManager.legacyStorageExists(plugin)) {
 				const legacyData = await FileIOManager.readLegacyData(plugin);
+
 				if (!legacyData.hasOwnProperty("schemaMigrationStatus") || legacyData.schemaMigrationStatus != true) {
 					legacyData.schemaMigrationStatus = true;
 					await FileIOManager.writeToLegacyStorage(plugin, legacyData);
@@ -79,56 +96,32 @@ export class ConversationHelper {
 	static async createNewConversation(plugin: Weaver, threadId: number, newChatSession: IChatSession): Promise<void> {
 		try {
 			const descriptor = await FileIOManager.readDescriptor(plugin);
-
+	
 			// Find the thread
 			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
-
+	
 			if (threadIndex === -1) {
 				console.error('Thread not found:', threadId);
 				throw new Error('Thread not found');
 			}
-
+	
 			// Add the new conversation metadata to the thread in the descriptor
-			descriptor.threads[threadIndex].conversations.push({
-				id: newChatSession.id,
-				title: newChatSession.title,
-				path: `${plugin.settings.weaverFolderPath}/threads/${descriptor.threads[threadIndex].title}/${newChatSession.title}.bson`,
-				creationDate: newChatSession.creationDate,
-				lastModified: newChatSession.creationDate,
-				tags: [],
-				tokens: 0,
-				icon: "",
-				color: "",
-				context: true,
-				model: plugin.settings.engine,
-			});
-
+			const conversationMetadata = await this.createMetadataObject(newChatSession, true);
+			descriptor.threads[threadIndex].conversations.push(conversationMetadata);
+	
 			// Save the updated descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
 			await FileIOManager.ensureFolderExists(plugin, `threads/${descriptor.threads[threadIndex].title}`);
-
+	
 			// Now we are going to create the bson file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const conversationPath = `${plugin.settings.weaverFolderPath}/threads/${descriptor.threads[threadIndex].title}/${newChatSession.title}.bson`;
-
-			const conversationData = {
-				id: newChatSession.id,
-				title: newChatSession.title,
-				path: `${plugin.settings.weaverFolderPath}/threads/${descriptor.threads[threadIndex].title}/${newChatSession.title}.bson`,
-				creationDate: newChatSession.creationDate,
-				lastModified: newChatSession.creationDate,
-				tags: [],
-				tokens: 0,
-				icon: "",
-				color: "",
-				context: true,
-				model: plugin.settings.engine,
-				messages: newChatSession.messages
-			};
-
+	
+			const conversationData = await this.createMetadataObject(newChatSession, false);
+	
 			const bsonData = BSON.serialize(conversationData);
 			const buffer = Buffer.from(bsonData.buffer);
-
+	
 			await adapter.writeBinary(conversationPath, buffer);
 		} catch (error) {
 			console.error('Error creating a new conversation:', error);
@@ -226,18 +219,17 @@ export class ConversationHelper {
 			const descriptor = await FileIOManager.readDescriptor(plugin);
 
 			// Find the thread and conversation
-			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
-			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: number; }) => conversation.id === conversationId);
+			const thread = descriptor.threads.find((thread: { id: number; }) => thread.id === threadId);
+			const conversation = thread?.conversations.find((conversation: { id: number; }) => conversation.id === conversationId);
 
-			if (threadIndex === -1 || conversationIndex === -1) {
+			if (!thread || !conversation) {
 				console.error('Thread or conversation not found:', threadId, conversationId);
 				throw new Error('Thread or conversation not found');
 			}
 
 			// Read the conversation BSON file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			const conversationPath = descriptor.threads[threadIndex].conversations[conversationIndex].path;
-			const buffer = await adapter.readBinary(conversationPath);
+			const buffer = await adapter.readBinary(conversation.path);
 			const bsonData = new Uint8Array(buffer);
 			const conversationData = BSON.deserialize(bsonData);
 
@@ -251,20 +243,11 @@ export class ConversationHelper {
 			const updatedBsonData = BSON.serialize(conversationData);
 			const updatedBuffer = Buffer.from(updatedBsonData.buffer);
 
-			await adapter.writeBinary(conversationPath, updatedBuffer);
+			await adapter.writeBinary(conversation.path, updatedBuffer);
 
 			// Update the conversation metadata in the descriptor
 			await this.syncConversationMetadata(plugin, {
-				id: conversationData.id,
-				title: conversationData.title,
-				creationDate: conversationData.creationDate,
-				lastModified: conversationData.lastModified,
-				tags: conversationData.tags,
-				tokens: conversationData.tokens,
-				icon: conversationData.icon,
-				color: conversationData.color,
-				context: conversationData.context,
-				model: conversationData.model,
+				...conversationData,
 				messagesCount: conversationData.messages.length
 			}, threadId);
 
