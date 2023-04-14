@@ -200,14 +200,16 @@ export class ConversationHelper {
 				throw new Error('Conversation not found');
 			}
 
-			// Remove conversation bson
+			// Store conversation path
 			const conversationPath = descriptor.threads[threadIndex].conversations[conversationIndex].path;
-			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-			await adapter.remove(normalizePath(conversationPath));
 
 			// Remove from descriptor
 			descriptor.threads[threadIndex].conversations.splice(conversationIndex, 1);
 			await FileIOManager.writeDescriptor(plugin, descriptor);
+
+			// Remove conversation bson
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			await adapter.remove(normalizePath(conversationPath));
 		} catch (error) {
 			console.error('Error deleting conversation:', error);
 			throw error;

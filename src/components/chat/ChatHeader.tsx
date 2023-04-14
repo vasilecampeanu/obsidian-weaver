@@ -19,7 +19,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	const timeoutRef = useRef<NodeJS.Timeout>();
 
 	const validateTitle = (input: string): boolean => {
-		const pattern = /[^a-zA-Z0-9\s-_.,!()'+%@&${}~`]/;
+		const pattern = /[^a-zA-Z0-9\s-_.,!(){}'"+=%@&$*~`?;]/;
 		return pattern.test(input) === false;
 	};
 
