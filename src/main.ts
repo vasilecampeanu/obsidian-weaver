@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings'
 import { WEAVER_CHAT_VIEW_TYPE } from './constants'
 
 import { WeaverChatView } from './components/chat/WeaverChatView';
+import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
@@ -88,14 +89,20 @@ export default class Weaver extends Plugin {
 		// TODO: Handle file delete and rename from the file explorer
 
 		this.registerEvent(
-			this.app.vault.on('rename', (file) => {
-				console.log(`File ${file.path} was renamed.`);
+			this.app.vault.on('rename', async (file) => {
+				console.log(file.path)
+				if (file.path.endsWith(".bson")) {
+					await ConversationHelper.renameConversationByFilePath(this, file.path);
+				}
 			})
-		);
-
-		this.registerEvent(
-			this.app.vault.on('delete', (file) => {
-				console.log(`File ${file.path} was deleted.`);
+			);
+			
+			this.registerEvent(
+				this.app.vault.on('delete', async (file) => {
+				console.log(file.path)
+				if (file.path.endsWith(".bson")) {
+					await ConversationHelper.deleteConversationByFilePath(this, file.path);
+				}
 			})
 		);
 	}

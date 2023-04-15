@@ -27,7 +27,7 @@ export class ConversationHelper {
 		if (excludeMessages) {
 			delete metadataObject.messages;
 		}
-	
+
 		return metadataObject;
 	}
 
@@ -68,8 +68,8 @@ export class ConversationHelper {
 			}
 
 			const descriptor = await FileIOManager.readDescriptor(plugin);
+			console.log("Descriptor: ", descriptor);
 			const thread = descriptor.threads.find((p: { id: number; }) => p.id === threadId);
-
 			return thread ? thread.conversations : [];
 		} catch (error) {
 			console.error('Error reading conversations:', error);
@@ -96,32 +96,32 @@ export class ConversationHelper {
 	static async createNewConversation(plugin: Weaver, threadId: number, newChatSession: IChatSession): Promise<void> {
 		try {
 			const descriptor = await FileIOManager.readDescriptor(plugin);
-	
+
 			// Find the thread
 			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
-	
+
 			if (threadIndex === -1) {
 				console.error('Thread not found:', threadId);
 				throw new Error('Thread not found');
 			}
-	
+
 			// Add the new conversation metadata to the thread in the descriptor
 			const conversationMetadata = await this.metadataObjectManager(newChatSession, true);
 			descriptor.threads[threadIndex].conversations.push(conversationMetadata);
-	
+
 			// Save the updated descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
 			await FileIOManager.ensureFolderExists(plugin, `threads/${descriptor.threads[threadIndex].title}`);
-	
+
 			// Now we are going to create the bson file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const conversationPath = `${plugin.settings.weaverFolderPath}/threads/${descriptor.threads[threadIndex].title}/${newChatSession.title}.bson`;
-	
+
 			const conversationData = await this.metadataObjectManager(newChatSession, false);
-	
+
 			const bsonData = BSON.serialize(conversationData);
 			const buffer = Buffer.from(bsonData.buffer);
-	
+
 			await adapter.writeBinary(conversationPath, buffer);
 		} catch (error) {
 			console.error('Error creating a new conversation:', error);
@@ -132,7 +132,7 @@ export class ConversationHelper {
 	static async updateConversationTitle(plugin: Weaver, threadId: number, conversationId: number, newTitle: string): Promise<{ success: boolean; errorMessage?: string }> {
 		try {
 			const descriptor = await FileIOManager.readDescriptor(plugin);
-			
+
 			// Find the thread and the conversation to update
 			const threadIndex = descriptor.threads.findIndex((thread: { id: any; }) => thread.id === threadId);
 			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: any; }) => conversation.id === conversationId);
@@ -180,6 +180,60 @@ export class ConversationHelper {
 		}
 	}
 
+	static async renameConversationByFilePath(plugin: Weaver, newFilePath: string): Promise<{ success: boolean; errorMessage?: string }> {
+		try {
+			// Read the BSON file using the new file path
+			const bsonData = await this.readConversationByFilePath(plugin, newFilePath);
+	
+			// Get the old file path from the BSON file
+			const oldFilePath = bsonData.path;
+			
+			// Get descriptor data
+			const descriptor = await FileIOManager.readDescriptor(plugin);
+	
+			// Find the thread and conversation by old file path
+			let threadIndex, conversationIndex;
+			outerLoop: for (let i = 0; i < descriptor.threads.length; i++) {
+				for (let j = 0; j < descriptor.threads[i].conversations.length; j++) {
+					if (descriptor.threads[i].conversations[j].path === oldFilePath) {
+						threadIndex = i;
+						conversationIndex = j;
+						break outerLoop;
+					}
+				}
+			}
+	
+			if (threadIndex === undefined || conversationIndex === undefined) {
+				throw new Error("Conversation with the old file path not found.");
+			}
+	
+			// Extract the new title from the new file path
+			const newTitle = newFilePath.substring(newFilePath.lastIndexOf('/') + 1, newFilePath.lastIndexOf('.bson'));
+	
+			// Update the title and path in the descriptor
+			descriptor.threads[threadIndex].conversations[conversationIndex].title = newTitle;
+			descriptor.threads[threadIndex].conversations[conversationIndex].path = newFilePath;
+	
+			await FileIOManager.writeDescriptor(plugin, descriptor);
+	
+			// Update the title and path in the BSON file
+			bsonData.title = newTitle;
+			bsonData.path = newFilePath;
+	
+			// Serialize the BSON data
+			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
+	
+			// Write the updated BSON data to the renamed file
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			await adapter.writeBinary(newFilePath, buffer);
+	
+			return { success: true };
+		} catch (error) {
+			console.error('Error renaming conversation by file path:', error);
+			return { success: false, errorMessage: error.message };
+		}
+	}
+	
 	static async deleteConversation(plugin: Weaver, threadId: number, conversationId: number): Promise<void> {
 		try {
 			const descriptor = await FileIOManager.readDescriptor(plugin);
@@ -212,6 +266,36 @@ export class ConversationHelper {
 			await adapter.remove(normalizePath(conversationPath));
 		} catch (error) {
 			console.error('Error deleting conversation:', error);
+			throw error;
+		}
+	}
+
+	static async deleteConversationByFilePath(plugin: Weaver, filePath: string): Promise<void> {
+		try {
+			// Read the descriptor
+			const descriptor = await FileIOManager.readDescriptor(plugin);
+
+			// Find the thread and conversation index
+			let threadIndex = -1;
+			let conversationIndex = -1;
+			for (let i = 0; i < descriptor.threads.length; i++) {
+				conversationIndex = descriptor.threads[i].conversations.findIndex((conversation: { path: string; }) => conversation.path === filePath);
+				if (conversationIndex !== -1) {
+					threadIndex = i;
+					break;
+				}
+			}
+
+			if (threadIndex === -1 || conversationIndex === -1) {
+				console.error('Thread or conversation not found:', filePath);
+				throw new Error('Thread or conversation not found');
+			}
+
+			// Remove from descriptor
+			descriptor.threads[threadIndex].conversations.splice(conversationIndex, 1);
+			await FileIOManager.writeDescriptor(plugin, descriptor);
+		} catch (error) {
+			console.error('Error deleting conversation by file path:', error);
 			throw error;
 		}
 	}

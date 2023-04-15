@@ -10,10 +10,6 @@ interface BodyParameters {
 	messages?: { role: string; content: string }[];
 }
 
-interface KeywordToPrompt {
-	[keyword: string]: string;
-}
-
 export default class RequestFormatter {
 	private readonly plugin: Weaver;
 
