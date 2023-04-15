@@ -69,8 +69,6 @@ Obsidian Weaver allows you to configure the AI model to suit your specific needs
 
 # Future Features and Improvements
 
-Obsidian Weaver is constantly evolving, and we are always looking for ways to improve the plugin and add new features. Some of the features and improvements that we are currently working on or planning to implement in the future include:
-
 - Threads: similar to folders, but containing lists of messages. This will allow you to better organize your conversations and find the information you need more easily.
 - Search: The ability to search through messages in a chat session and through threads, making it easier to find the information you need.
 - Context Awareness: The ability for the plugin to be aware of the note that the user is working on, providing more relevant and context-specific responses.
