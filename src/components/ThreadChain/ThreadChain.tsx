@@ -10,14 +10,14 @@ import { ConversationHelper } from 'helpers/ConversationHelpers';
 // Interfaces
 import { IChatSession } from 'interfaces/IChats';
 
-interface HomePageProps {
+interface ThreadChainProps {
 	plugin: Weaver,
 	onTabSwitch: (tabId: string) => void,
 	onConversationLoad: (conversationId: number) => void,
 	onNewConversation: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({
+export const ThreadChain: React.FC<ThreadChainProps> = ({
 	plugin,
 	onTabSwitch,
 	onConversationLoad,

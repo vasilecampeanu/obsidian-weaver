@@ -270,7 +270,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			<ChatHeader
 				title={conversationTitle}
 				onUpdateChatSessionTitle={handleUpdateChatSessionTitle}
-				onBackToHomePage={onBackToHomePage}
+				onBackToThreadChain={onBackToHomePage}
 			></ChatHeader>
 			<DialogueTimeline messages={chatSession?.messages} />
 			<InputArea

@@ -7,7 +7,7 @@ import React from 'react';
 import { createRoot, Root } from "react-dom/client";
 
 // Componets
-import { TabsManager } from './TabsManager';
+import { TabsManager } from '../TabsManager';
 
 // Constants
 import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';

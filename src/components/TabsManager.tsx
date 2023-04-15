@@ -5,8 +5,8 @@ import Weaver from 'main'
 import React, { useEffect, useState } from 'react';
 
 // Components
-import { HomePage } from '../HomePage';
-import { ConversationDialogue } from './ConversationDialogue';
+import { ThreadChain } from './ThreadChain/ThreadChain';
+import { ConversationDialogue } from './Chat/ConversationDialogue';
 
 export interface TabsManagerProps {
 	plugin: Weaver
@@ -33,7 +33,7 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 	return (
 		<div className="tabs-manager">
 			{activeTab === "home-page" ? (
-				<HomePage plugin={plugin} onNewConversation={handleNewConversation} onTabSwitch={handleTabSwitch} onConversationLoad={handleConversationSelect}/>
+				<ThreadChain plugin={plugin} onNewConversation={handleNewConversation} onTabSwitch={handleTabSwitch} onConversationLoad={handleConversationSelect}/>
 			) : (
 				<ConversationDialogue
 					plugin={plugin}
