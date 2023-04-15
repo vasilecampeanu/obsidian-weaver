@@ -1,9 +1,12 @@
-import { FileSystemAdapter, normalizePath } from 'obsidian';
-import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-import { IChatSession } from 'components/chat/ConversationDialogue';
-import { FileIOManager } from './FileIOManager';
-import fs from 'fs';
+// Obsidian
 import Weaver from 'main';
+import { FileSystemAdapter, normalizePath } from 'obsidian';
+
+// Third-party modules
+import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
+
+// Local modules
+import { FileIOManager } from './FileIOManager';
 
 export class MigrationAssistant {
 	static validateTitle(input: string): string {

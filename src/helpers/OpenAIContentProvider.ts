@@ -1,11 +1,19 @@
+// Obsidian
 import Weaver from "main";
 import { request } from "obsidian";
-import RequestFormatter from "./RequestFormatter";
+
+// Third-party modules
 import safeAwait from "safe-await";
-import { IChatMessage } from "../components/chat/ConversationDialogue";
+
+// Interfaces
+import { IChatMessage } from "interfaces/IChats";
+
+// Local modules
+import RequestFormatter from "./RequestFormatter";
 
 export default class OpenAIContentProvider {
 	private readonly plugin: Weaver;
+
 	private requestFormatter: RequestFormatter;
 	private ongoingRequest: AbortController | null = null;
 	private requestCancelled: boolean = false;
@@ -43,10 +51,10 @@ export default class OpenAIContentProvider {
 			const { signal } = this.ongoingRequest;
 
 			const response = await fetch(requestParameters.url, {
-				method: requestParameters.method,
 				body: requestParameters.body,
 				headers: requestParameters.headers,
-				signal
+				method: requestParameters.method,
+				signal,
 			});
 
 			this.ongoingRequest = null;

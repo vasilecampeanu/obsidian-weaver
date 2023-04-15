@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+// Obsidian
 import Weaver from 'main';
+
+// Third-party modules
+import React, { useState } from 'react';
 
 interface InputAreaProps {
 	plugin: Weaver;

@@ -1,13 +1,16 @@
+// Obsidian
 import Weaver from "main";
 import { WeaverSettings } from "settings";
-import { IChatMessage } from "components/chat/ConversationDialogue";
+
+// Interfaces
+import { IChatMessage } from "interfaces/IChats";
 
 interface BodyParameters {
-	model: string;
-	max_tokens: number;
-	temperature: number;
 	frequency_penalty: number;
+	max_tokens: number;
 	messages?: { role: string; content: string }[];
+	model: string;
+	temperature: number;
 }
 
 export default class RequestFormatter {
@@ -23,10 +26,10 @@ export default class RequestFormatter {
 			let requestUrl = `${requestUrlBase}/chat/completions`;
 
 			const bodyParameters: BodyParameters = {
-				model: parameters.engine,
-				max_tokens: parameters.max_tokens,
-				temperature: parameters.temperature,
 				frequency_penalty: parameters.frequency_penalty,
+				max_tokens: parameters.max_tokens,
+				model: parameters.engine,
+				temperature: parameters.temperature,
 			};
 
 			bodyParameters.messages = conversationHistory.map((message) => {

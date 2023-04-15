@@ -1,6 +1,11 @@
+// Third-party modules
 import React, { useEffect, useRef } from 'react';
+
+// Interfaces
+import { IChatMessage } from 'interfaces/IChats';
+
+// Components
 import { MessageBubble } from './MessageBouble';
-import { IChatMessage } from './ConversationDialogue';
 
 interface DialogueTimelineProps {
 	messages: IChatMessage[] | undefined;

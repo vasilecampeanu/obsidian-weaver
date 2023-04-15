@@ -1,12 +1,16 @@
-import { ItemView, WorkspaceLeaf, Platform } from 'obsidian';
+// Obsidian
+import Weaver from 'main'
+import { ItemView, Platform, WorkspaceLeaf } from 'obsidian';
 
-import { createRoot, Root } from "react-dom/client";
+// Third-party modules
 import React from 'react';
+import { createRoot, Root } from "react-dom/client";
 
-import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';
-import Weaver from '../../main'
-
+// Componets
 import { TabsManager } from './TabsManager';
+
+// Constants
+import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';
 
 export class WeaverChatView extends ItemView {
 	private readonly plugin: Weaver;

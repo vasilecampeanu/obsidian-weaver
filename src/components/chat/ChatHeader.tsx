@@ -1,15 +1,16 @@
+// Third-party modules
 import React, { useEffect, useRef, useState } from 'react';
 
 interface ChatHeaderProps {
 	title: string | undefined;
-	onBackToHomePage: () => void;
 	onUpdateChatSessionTitle: (newTitle: string | undefined) => Promise<{ success: boolean; errorMessage?: string }>;
+	onBackToHomePage: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	title,
-	onBackToHomePage,
 	onUpdateChatSessionTitle,
+	onBackToHomePage,
 }) => {
 	const [titleInput, setTitleInput] = useState<string | undefined>('');
 	const [isTitleEditing, setIsTitleEditing] = useState<boolean>(false);
@@ -17,6 +18,14 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 	const [errorMessage, setErrorMessage] = useState<string | undefined>('');
 
 	const timeoutRef = useRef<NodeJS.Timeout>();
+
+	useEffect(() => {
+		return () => {
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
+		};
+	}, []);
 
 	const validateTitle = (input: string): boolean => {
 		const pattern = /[^a-zA-Z0-9\s-_.,!(){}'"+=%@&$*~`?;]/;
@@ -63,7 +72,6 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 		}
 	};
 
-
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
@@ -103,7 +111,10 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 							onChange={(e) => setTitleInput(e.target.value)}
 						/>
 					) : (
-						<span onDoubleClick={handleDoubleClick} className={`conversation-title ${inputError ? 'error-messaje' : ''}`}>
+						<span
+							onDoubleClick={handleDoubleClick}
+							className={`conversation-title ${inputError ? 'error-messaje' : ''}`}
+						>
 							{errorMessage ? errorMessage : title}
 						</span>
 					)}

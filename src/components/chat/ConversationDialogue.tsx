@@ -1,39 +1,22 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+// Obsidian
 import Weaver from 'main';
+
+// Third-party modules
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 // Helpers
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 import OpenAIContentProvider from 'helpers/OpenAIContentProvider';
 
-// React Component
+// Interfaces
+import { IChatSession, IChatMessage } from 'interfaces/IChats';
+
+// Components
 import { ChatHeader } from './ChatHeader';
 import { DialogueTimeline } from './DialogueTimeline';
 import { InputArea } from './InputArea';
 
-export interface IChatMessage {
-	content: string;
-	creationDate: string;
-	isLoading?: boolean;
-	role: string;
-}
-
-export interface IChatSession {
-	color: string;
-	context: true;
-	creationDate: string;
-	icon: string;
-	id: number;
-	lastModified: string;
-	messages: IChatMessage[];
-	messagesCount: number;
-	model: string;
-	path: string;
-	tags: string[];
-	title: string;
-	tokens: number;
-}
-
-export interface IConversationDialogue {
+interface ConversationDialogueProps {
 	plugin: Weaver,
 	selectedConversationId: number | null,
 	lastActiveConversationId: number | null,
@@ -41,7 +24,7 @@ export interface IConversationDialogue {
 	onTabSwitch: (tabId: string) => void
 }
 
-export const ConversationDialogue: React.FC<IConversationDialogue> = ({
+export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	plugin,
 	selectedConversationId,
 	lastActiveConversationId,
@@ -66,8 +49,8 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		const conversationToLoad = await ConversationHelper.readConversationByFilePath(plugin, selectedChatSession?.path || '');
 
 		if (conversationToLoad) {
-			setConversationTitle(conversationToLoad.title);
 			setChatSession(conversationToLoad);
+			setConversationTitle(conversationToLoad.title);
 		} else {
 			console.error('Unable to find selected chat session.');
 		}
@@ -92,16 +75,16 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			id: Date.now(),
 			lastModified: new Date().toISOString(),
 			messages: plugin.settings.showWelcomeMessage ? [{
-				creationDate: new Date().toISOString(),
 				content: `${plugin.settings.systemRolePrompt}`,
+				creationDate: new Date().toISOString(),
 				role: "system",
 			}, {
-				creationDate: new Date().toISOString(),
 				content: welcomeMessage || "Welcome to the chat session!",
+				creationDate: new Date().toISOString(),
 				role: "assistant",
 			}] : [{
-				creationDate: new Date().toISOString(),
 				content: `${plugin.settings.systemRolePrompt}`,
+				creationDate: new Date().toISOString(),
 				role: "system",
 			}],
 			messagesCount: 0,
@@ -112,8 +95,8 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			tokens: 0,
 		};
 
-		setConversationTitle(newChatSession?.title)
 		setChatSession(newChatSession);
+		setConversationTitle(newChatSession?.title)
 		setLastActiveConversationId(newChatSession.id);
 
 		try {
@@ -126,9 +109,9 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 	const resetFlag = useRef(false);
 
 	const onNewChat = () => {
-		resetFlag.current = true;
 		setChatSession(undefined);
 		setConversationTitle(undefined);
+		resetFlag.current = true;
 	};
 
 	useEffect(() => {
@@ -151,11 +134,11 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			}
 		})();
 	}, [
-		selectedConversationId,
-		lastActiveConversationId,
 		chatSession,
+		lastActiveConversationId,
 		loadChatSessionById,
-		startNewChatSession,
+		selectedConversationId,
+		startNewChatSession,		
 	]);
 
 	const onBackToHomePage = () => {
@@ -184,8 +167,11 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			return;
 		}
 
-		const creationDate: string = new Date().toISOString();
-		const userMessage: IChatMessage = { role: 'user', content: inputText, creationDate };
+		const userMessage: IChatMessage = { 
+			content: inputText, 
+			creationDate: new Date().toISOString(),
+			role: 'user', 
+		};
 
 		// Update the conversation with the user's message
 		await updateConversation(userMessage, (updatedMessages) => {
@@ -206,10 +192,10 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		const updatedMessages = [...(chatSession?.messages || []), userMessage];
 
 		const loadingAssistantMessage: IChatMessage = {
-			role: 'assistant',
 			content: '',
 			creationDate: '',
-			isLoading: true
+			isLoading: true,
+			role: 'assistant',			
 		};
 
 		setIsLoading(true);
@@ -239,7 +225,11 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 			assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
 		}
 
-		const assistantMessage = { role: 'assistant', content: assistantResponseContent, creationDate };
+		const assistantMessage = { 
+			content: assistantResponseContent, 
+			creationDate: new Date().toISOString(),
+			role: 'assistant'
+		};
 
 		// Update the conversation with the assistant's message
 		await updateConversation(assistantMessage, (updatedMessages) => {
@@ -279,8 +269,8 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		<div className="chat-view">
 			<ChatHeader
 				title={conversationTitle}
-				onBackToHomePage={onBackToHomePage}
 				onUpdateChatSessionTitle={handleUpdateChatSessionTitle}
+				onBackToHomePage={onBackToHomePage}
 			></ChatHeader>
 			<DialogueTimeline messages={chatSession?.messages} />
 			<InputArea
@@ -295,3 +285,5 @@ export const ConversationDialogue: React.FC<IConversationDialogue> = ({
 		</div>
 	);
 }
+
+

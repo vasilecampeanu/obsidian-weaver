@@ -1,6 +1,10 @@
+// Obsidian
 import Weaver from 'main'
+
+// Third-party modules
 import React, { useEffect, useState } from 'react';
 
+// Components
 import { HomePage } from '../HomePage';
 import { ConversationDialogue } from './ConversationDialogue';
 

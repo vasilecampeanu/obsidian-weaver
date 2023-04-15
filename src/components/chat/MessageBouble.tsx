@@ -1,19 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ThreeDots } from 'react-loader-spinner';
+// Obsidian
 import { MarkdownRenderer } from 'obsidian';
 
-export interface MessageBubbleProps {
-	role: string;
-	creationDate: string;
+// Third-party modules
+import React, { useEffect, useRef, useState } from 'react';
+import { ThreeDots } from 'react-loader-spinner';
+
+interface MessageBubbleProps {
 	content: string;
+	creationDate: string;
 	isLoading?: boolean;
+	role: string;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
-	role,
-	creationDate,
 	content,
+	creationDate,
 	isLoading,
+	role,
 }) => {
 	const messageContentRef = useRef<HTMLDivElement>(null);
 	const [showConfirmation, setShowConfirmation] = useState(false);
@@ -79,4 +82,3 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 		</div>
 	);
 };
-

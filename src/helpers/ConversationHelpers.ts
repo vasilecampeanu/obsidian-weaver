@@ -1,10 +1,16 @@
-import { FileSystemAdapter, normalizePath } from 'obsidian';
-import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-import { IChatMessage, IChatSession } from 'components/chat/ConversationDialogue';
-
+// Obsidian
 import Weaver from 'main';
-import { MigrationAssistant } from './MigrationAssistant';
+import { FileSystemAdapter, normalizePath } from 'obsidian';
+
+// Third-party modules
+import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
+
+// Interfaces
+import { IChatMessage, IChatSession } from 'interfaces/IChats';
+
+// Local modules
 import { FileIOManager } from './FileIOManager';
+import { MigrationAssistant } from './MigrationAssistant';
 
 export class ConversationHelper {
 	static async metadataObjectManager(data: any, excludeMessages: boolean): Promise<any> {

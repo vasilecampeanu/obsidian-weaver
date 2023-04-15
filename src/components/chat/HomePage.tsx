@@ -1,18 +1,23 @@
-import { FileSystemAdapter, normalizePath } from 'obsidian';
-import React, { useEffect, useRef, useState } from 'react';
+// Obsidian
 import Weaver from 'main'
 
-import { IChatSession } from './chat/ConversationDialogue';
+// Third-party modules
+import React, { useEffect, useRef, useState } from 'react';
+
+// Helpers
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
-export interface HomePage {
+// Interfaces
+import { IChatSession } from 'interfaces/IChats';
+
+interface HomePageProps {
 	plugin: Weaver,
 	onTabSwitch: (tabId: string) => void,
 	onConversationLoad: (conversationId: number) => void,
 	onNewConversation: () => void;
 }
 
-export const HomePage: React.FC<HomePage> = ({
+export const HomePage: React.FC<HomePageProps> = ({
 	plugin,
 	onTabSwitch,
 	onConversationLoad,

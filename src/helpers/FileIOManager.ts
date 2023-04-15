@@ -1,8 +1,10 @@
-import { FileSystemAdapter, normalizePath } from 'obsidian';
-import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-
-import fs from 'fs';
+// Obsidian
 import Weaver from 'main';
+import { FileSystemAdapter, normalizePath } from 'obsidian';
+import fs from 'fs';
+
+// Third-party modules
+import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
 
 export class FileIOManager {
 	static async ensureFolderExists(plugin: Weaver, foldername: string): Promise<void> {
