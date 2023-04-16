@@ -18,7 +18,7 @@ export const ChainHistory: React.FC<ChainHistoryProps> = ({
     fetchConversations
 }) => {
     return (
-        <div className="chat-history">
+        <div className="ow-chain-history">
             {conversations.map((conversation, index) => (
                 <HistoryItem
 					plugin={plugin}
@@ -27,6 +27,7 @@ export const ChainHistory: React.FC<ChainHistoryProps> = ({
                     onConversationLoad={onConversationLoad}
                     onTabSwitch={onTabSwitch}
                     fetchConversations={fetchConversations}
+					index={index}
                 />
             ))}
         </div>
