@@ -148,6 +148,7 @@ export class MigrationAssistant {
 							creationDate: conversation.timestamp,
 							icon: "",
 							id: conversation.id,
+							identifier: "obsidian-weaver",
 							lastModified: conversation.timestamp,
 							messages: updatedMessages,
 							messagesCount: updatedMessages.length,
@@ -166,6 +167,7 @@ export class MigrationAssistant {
 							creationDate: conversation.timestamp,
 							icon: "",
 							id: conversation.id,
+							identifier: "obsidian-weaver",
 							lastModified: conversation.timestamp,
 							messagesCount: updatedMessages.length,
 							model: plugin.settings.engine,
@@ -177,8 +179,10 @@ export class MigrationAssistant {
 					}));
 
 					return {
+						description: "",
 						conversations: conversations,
 						id: thread.threadId,
+						identifier: "obsidian-weaver",
 						title: thread.threadName,
 					};
 				});
@@ -191,9 +195,7 @@ export class MigrationAssistant {
 				};
 			}
 
-			// Save the descriptor
 			await FileIOManager.writeDescriptor(plugin, descriptor);
-
 		} catch (error) {
 			console.error('Error migrating data:', error);
 			throw error;

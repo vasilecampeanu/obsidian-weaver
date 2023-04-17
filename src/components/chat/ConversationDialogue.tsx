@@ -71,8 +71,10 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			color: "default-color",
 			context: true,
 			creationDate: new Date().toISOString(),
+			description: "",
 			icon: "default-icon",
 			id: Date.now(),
+			identifier: "obsidian-weaver",
 			lastModified: new Date().toISOString(),
 			messages: plugin.settings.showWelcomeMessage ? [{
 				content: `${plugin.settings.systemRolePrompt}`,
@@ -285,5 +287,3 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		</div>
 	);
 }
-
-

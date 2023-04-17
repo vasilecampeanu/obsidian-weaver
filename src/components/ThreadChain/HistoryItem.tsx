@@ -20,9 +20,17 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 	index
 }) => {
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+	const [clickedTarget, setClickedTarget] = useState<HTMLElement | null>(null);
+
+	const [description, setDescription] = useState<string | undefined>(conversation.description);
+	const [descriptionInput, setDescriptionInput] = useState<string | undefined>('');
+	const [isEditing, setIsEditing] = useState<boolean>(false);
+	const [inputError, setInputError] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string | undefined>('');
+
+	const timeoutRef = useRef<NodeJS.Timeout>();
 
 	const listItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
-	const [clickedTarget, setClickedTarget] = useState<HTMLElement | null>(null);
 
 	const activeThreadId = 0;
 
@@ -37,6 +45,14 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 
 		return () => {
 			document.removeEventListener("mousedown", handleMouseDown);
+		};
+	}, []);
+
+	useEffect(() => {
+		return () => {
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
 		};
 	}, []);
 
@@ -69,6 +85,64 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 		await ConversationHelper.deleteConversation(plugin, activeThreadId, conversationId);
 		fetchConversations();
 		setShowDeleteConfirmation(false);
+	};
+
+	const onUpdateDescription = async (
+		newDescription: string | undefined,
+	): Promise<{ success: boolean; errorMessage?: string }> => {
+		ConversationHelper.updateConversationDescription(plugin, activeThreadId, conversation.id, newDescription || '');
+		setDescription(newDescription);
+		return { success: true };
+	};
+
+	const handleBlur = async () => {
+		setIsEditing(false);
+
+		if (descriptionInput?.trim() === '') {
+			setDescriptionInput(description);
+		} else if (descriptionInput === description) {
+			return;
+		} else {
+			try {
+				const result = await onUpdateDescription(descriptionInput);
+
+				if (!result.success) {
+					setInputError(true);
+					setErrorMessage(result.errorMessage);
+
+					timeoutRef.current = setTimeout(() => {
+						setInputError(false);
+						setErrorMessage('');
+					}, 1500);
+				}
+
+				setDescriptionInput(descriptionInput);
+			} catch (error) {
+				console.log(error);
+			}
+		}
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			handleBlur();
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
+			setIsEditing(false);
+			setDescriptionInput(description);
+		}
+	};
+
+	const handleDoubleClick = () => {
+		setIsEditing(true);
+		setDescriptionInput(description);
+
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			setInputError(false);
+			setErrorMessage('');
+		}
 	};
 
 	return (
@@ -130,7 +204,22 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 					</div>
 				</div>
 				<div className="ow-chat-description">
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin varius sem est. Suspendisse semper dolor facilisis sapien egestas rhoncus.
+					{isEditing ? (
+						<textarea
+							autoFocus
+							value={descriptionInput}
+							onBlur={handleBlur}
+							onKeyDown={handleKeyDown}
+							onChange={(e) => setDescriptionInput(e.target.value)}
+						/>
+					) : (
+						<div
+							onDoubleClick={handleDoubleClick}
+							className={`description-content ${inputError ? 'error-message' : ''}`}
+						>
+							{errorMessage ? errorMessage : description ? description : 'No description'}
+						</div>
+					)}
 				</div>
 				<div className="item-ow-actions">
 				</div>

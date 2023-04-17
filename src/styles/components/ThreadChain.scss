@@ -127,37 +127,40 @@
 				.ow-tool-bar
 				{
 					display: grid;
-					gap: 2px;
-		
-					.sort-history
+
+					.ow-btn-change-banner
 					{
+						all: unset;
+						justify-self: start;
 						display: flex;
-						gap: 5px;
-		
+						gap: 2.5px;
+
 						svg
 						{
-							height: 14px;
-							width: 14px;
 							align-self: center;
+							width: 11px;
+							height: 11px;
+							color: var(--text-faint);
 						}
-		
-						label
+						
+						span
 						{
 							align-self: center;
-							font-size: calc(var(--svg-size-xs) + 1px);
+							font-size: 11px;
+							color: var(--text-faint);
 						}
-		
-						select
+
+						&:hover
 						{
-							all: unset;
-							font-size: calc(var(--svg-size-xs) + 1px);
-							width: auto;
-							align-self: center;
-							text-transform: lowercase;
-							color: var(--nav-item-color);
-							border-radius: 3.5px;
-							box-sizing: border-box;
-							display: inline-block;
+							svg
+							{
+								color: var(--text-normal);
+							}
+							
+							span
+							{
+								color: var(--text-normal);
+							}
 						}
 					}
 				}
@@ -186,7 +189,7 @@
 			{
 				padding: 10px 0px;
 				font-size: 13px;
-				opacity: .95;
+				opacity: .75;
 			}
 
 			&:hover
@@ -194,6 +197,11 @@
 				background-color: var(--history-list-item-color);
 				border-radius: 5px;
 				box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
+
+				.ow-thread-description
+				{
+					opacity: 1;
+				}
 			}
 		}
 	}
@@ -411,7 +419,7 @@
 				{
 					padding: 10px 0px;
 					font-size: 13px;
-					opacity: .95;
+					opacity: .75;
 				}
 
 				&:hover
@@ -419,6 +427,10 @@
 					background-color: var(--history-list-item-color);
 					border-radius: 5px;
 					box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
+					.ow-chat-description
+					{
+						opacity: 1;
+					}
 				}
 			}
 		}

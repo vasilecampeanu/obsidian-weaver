@@ -86,11 +86,13 @@ export class FileIOManager {
 
             if (!await adapter.exists(descriptorPath)) {
                 const emptyDescriptor = {
-                    version: '2.0.0',
+                    version: "2.0.0",
                     threads: [
                         {
+							description: "",
                             id: 0,
-                            title: 'base',
+							identifier: "obsidian-weaver",
+                            title: "base",
                             conversations: [],
                         }
                     ]

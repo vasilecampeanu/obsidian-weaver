@@ -5,12 +5,17 @@ export interface IChatMessage {
 	role: string;
 }
 
+export interface IThread {
+}
+
 export interface IChatSession {
 	color: string;
 	context: true;
 	creationDate: string;
+	description: string;
 	icon: string;
 	id: number;
+	identifier: string;
 	lastModified: string;
 	messages: IChatMessage[];
 	messagesCount: number;

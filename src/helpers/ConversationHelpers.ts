@@ -18,8 +18,10 @@ export class ConversationHelper {
 			color: data.color,
 			context: data.context,
 			creationDate: data.creationDate,
+			description: data.description,
 			icon: data.icon,
 			id: data.id,
+			identifier: data.identifier,
 			lastModified: data.lastModified,
 			messages: data.messages,
 			messagesCount: data.messagesCount,
@@ -180,7 +182,54 @@ export class ConversationHelper {
 
 			return { success: true };
 		} catch (error) {
-			console.log("Hello world!");
+			console.error('Error updating conversation title:', error);
+			return { success: false, errorMessage: error.message };
+		}
+	}
+
+	static async updateConversationDescription(plugin: Weaver, threadId: number, conversationId: number, newDescription: string): Promise<{ success: boolean; errorMessage?: string }> {
+		try {
+			const descriptor = await FileIOManager.readDescriptor(plugin);
+
+			// Find the thread and the conversation to update
+			const threadIndex = descriptor.threads.findIndex((thread: { id: any; }) => thread.id === threadId);
+		
+			if (threadIndex === -1) {
+			  console.error('Thread not found:', threadId);
+			  return { success: false, errorMessage: 'Thread not found' };
+			}
+		
+			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: any; }) => conversation.id === conversationId);
+		
+			if (conversationIndex === -1) {
+			  console.error('Conversation not found:', conversationId);
+			  return { success: false, errorMessage: 'Conversation not found' };
+			}
+
+			descriptor.threads[threadIndex].conversations[conversationIndex].description = newDescription;
+
+			// Update descriptor
+			await FileIOManager.writeDescriptor(plugin, descriptor);
+
+			// Conversation path
+			const path = descriptor.threads[threadIndex].conversations[conversationIndex].path;
+
+			// Now we are going to update the metadata inside the bson file
+			// Read the BSON file
+			const bsonData = await this.readConversationByFilePath(plugin, path);
+
+			// Update the title and path in the BSON file
+			bsonData.description = newDescription;
+
+			// Serialize the BSON data
+			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
+
+			// Update description in bson file
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			await adapter.writeBinary(path, buffer);
+
+			return { success: true };
+		} catch (error) {
 			console.error('Error updating conversation title:', error);
 			return { success: false, errorMessage: error.message };
 		}
