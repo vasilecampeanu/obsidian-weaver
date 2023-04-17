@@ -236,4 +236,121 @@ export class ConversationBsonManager {
 			return { success: false, errorMessage: error.message };
 		}
 	}
+
+	static async deleteConversation(plugin: Weaver, threadId: number, conversationId: number): Promise<void> {
+		try {
+			// Find the thread
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+			const threadIndex = descriptor.threads.findIndex((thread: { id: number; }) => thread.id === threadId);
+
+			if (threadIndex === -1) {
+				console.error('Thread not found:', threadId);
+				throw new Error('Thread not found');
+			}
+
+			// Find conversation index 
+			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: number; }) => conversation.id === conversationId);
+
+			if (conversationIndex === -1) {
+				console.error('Conversation not found:', conversationId);
+				throw new Error('Conversation not found');
+			}
+
+			// Store conversation path
+			const conversationPath = plugin.settings.weaverFolderPath + "/" + descriptor.threads[threadIndex].conversations[conversationIndex].path;
+
+			// Remove from descriptor
+			descriptor.threads[threadIndex].conversations.splice(conversationIndex, 1);
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+
+			// Remove conversation bson
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+
+			plugin.isRenamingFromInside = true;
+			await adapter.remove(conversationPath);
+			plugin.isRenamingFromInside = false;
+		} catch (error) {
+			console.error('Error deleting conversation:', error);
+			throw error;
+		}
+	}
+
+	static async deleteConversationByFilePath(plugin: Weaver, filePath: string): Promise<void> {
+		try {
+			// Read the descriptor
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+
+			// Find the thread and conversation index
+			let threadIndex = -1;
+			let conversationIndex = -1;
+
+			for (let i = 0; i < descriptor.threads.length; i++) {
+				conversationIndex = descriptor.threads[i].conversations.findIndex((conversation: { path: string; }) => conversation.path === filePath);
+
+				if (conversationIndex !== -1) {
+					threadIndex = i;
+					break;
+				}
+			}
+
+			if (threadIndex === -1 || conversationIndex === -1) {
+				console.error('Thread or conversation not found:', filePath);
+				throw new Error('Thread or conversation not found');
+			}
+
+			// Remove from descriptor
+			descriptor.threads[threadIndex].conversations.splice(conversationIndex, 1);
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+		} catch (error) {
+			console.error('Error deleting conversation by file path:', error);
+			throw error;
+		}
+	}
+
+	static async updateConversationDescription(plugin: Weaver, threadId: number, conversationId: number, newDescription: string): Promise<{ success: boolean; errorMessage?: string }> {
+		try {
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+
+			// Find the thread and the conversation to update
+			const threadIndex = descriptor.threads.findIndex((thread: { id: any; }) => thread.id === threadId);
+
+			if (threadIndex === -1) {
+				console.error('Thread not found:', threadId);
+				return { success: false, errorMessage: 'Thread not found' };
+			}
+
+			const conversationIndex = descriptor.threads[threadIndex].conversations.findIndex((conversation: { id: any; }) => conversation.id === conversationId);
+
+			if (conversationIndex === -1) {
+				console.error('Conversation not found:', conversationId);
+				return { success: false, errorMessage: 'Conversation not found' };
+			}
+
+			descriptor.threads[threadIndex].conversations[conversationIndex].description = newDescription;
+
+			// Update descriptor
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+
+			// Conversation path
+			const path = plugin.settings.weaverFolderPath + "/" + descriptor.threads[threadIndex].conversations[conversationIndex].path;
+
+			// Read the BSON file
+			const bsonData = await ConversationBsonManager.readConversationByFilePath(plugin, path);
+
+			// Update the title and path in the BSON file
+			bsonData.description = newDescription;
+
+			// Serialize the BSON data
+			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
+
+			// Update description in bson file
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			await adapter.writeBinary(path, buffer);
+
+			return { success: true };
+		} catch (error) {
+			console.error('Error updating conversation title:', error);
+			return { success: false, errorMessage: error.message };
+		}
+	}
 }

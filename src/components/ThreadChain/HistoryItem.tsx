@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 import Weaver from 'main';
+import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 
 interface HistoryItemProps {
 	plugin: Weaver;
@@ -82,7 +83,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 	};
 
 	const handleDeleteConfirmed = async (conversationId: number) => {
-		await ConversationHelper.deleteConversation(plugin, activeThreadId, conversationId);
+		await ConversationBsonManager.deleteConversation(plugin, activeThreadId, conversationId);
 		fetchConversations();
 		setShowDeleteConfirmation(false);
 	};
@@ -90,7 +91,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 	const onUpdateDescription = async (
 		newDescription: string | undefined,
 	): Promise<{ success: boolean; errorMessage?: string }> => {
-		ConversationHelper.updateConversationDescription(plugin, activeThreadId, conversation.id, newDescription || '');
+		ConversationBsonManager.updateConversationDescription(plugin, activeThreadId, conversation.id, newDescription || '');
 		setDescription(newDescription);
 		return { success: true };
 	};

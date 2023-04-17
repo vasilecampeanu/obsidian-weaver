@@ -93,8 +93,6 @@ export default class Weaver extends Plugin {
 		ribbonIconEl.addClass('obsidian-weaver-ribbon-icon');
 
 		// Register file Events
-		// TODO: Handle file delete and rename from the file explorer
-
 		this.registerEvent(
 			this.app.vault.on('rename', async (file) => {
 				if (file.path.endsWith(".bson") && !this.isRenamingFromInside) {
@@ -106,9 +104,9 @@ export default class Weaver extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('delete', async (file) => {
-				console.log(file.path)
-				if (file.path.endsWith(".bson")) {
-					await ConversationHelper.deleteConversationByFilePath(this, file.path);
+				if (file.path.endsWith(".bson") && !this.isRenamingFromInside) {
+					const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
+					await ConversationBsonManager.deleteConversationByFilePath(this, cleanedFilePath);
 				}
 			})
 		);
