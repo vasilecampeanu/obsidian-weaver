@@ -5,9 +5,6 @@ export interface IChatMessage {
 	role: string;
 }
 
-export interface IThread {
-}
-
 export interface IChatSession {
 	color: string;
 	context: true;
@@ -17,11 +14,24 @@ export interface IChatSession {
 	id: number;
 	identifier: string;
 	lastModified: string;
-	messages: IChatMessage[];
+	messages?: IChatMessage[];
 	messagesCount: number;
 	model: string;
 	path: string;
 	tags: string[];
 	title: string;
 	tokens: number;
+}
+
+export interface IChatThread {
+    description: string;
+    id: number;
+    title: string;
+    conversations: Array<IChatSession>;
+}
+
+export interface IDescriptor {
+	identifier: string;
+    version: string;
+    threads: Array<IChatThread>;
 }

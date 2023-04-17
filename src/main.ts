@@ -6,8 +6,12 @@ import { WEAVER_CHAT_VIEW_TYPE } from './constants'
 import { WeaverChatView } from './components/Chat/WeaverChatView';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
+import { MetadataManager } from 'utils/MetadataManager';
+import { ConversationBsonManager } from 'utils/ConversationBsonManager';
+
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
+    public isRenamingFromInside: boolean = false;
 
 	async onload() {
 		// Display a message when loading
@@ -27,6 +31,9 @@ export default class Weaver extends Plugin {
 
 		// Bind plugin components
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+
+		// Testing ground
+		await MetadataManager.syncDescriptorWithFileSystem(this);
 	}
 
 	onunload() {
@@ -90,15 +97,15 @@ export default class Weaver extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('rename', async (file) => {
-				console.log(file.path)
-				if (file.path.endsWith(".bson")) {
-					await ConversationHelper.renameConversationByFilePath(this, file.path);
+				if (file.path.endsWith(".bson") && !this.isRenamingFromInside) {
+					const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
+					await ConversationBsonManager.renameConversationByFilePath(this, cleanedFilePath);
 				}
 			})
-			);
-			
-			this.registerEvent(
-				this.app.vault.on('delete', async (file) => {
+		);		
+
+		this.registerEvent(
+			this.app.vault.on('delete', async (file) => {
 				console.log(file.path)
 				if (file.path.endsWith(".bson")) {
 					await ConversationHelper.deleteConversationByFilePath(this, file.path);

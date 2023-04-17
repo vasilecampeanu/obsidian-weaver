@@ -33,7 +33,12 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 	return (
 		<div className="tabs-manager">
 			{activeTab === "home-page" ? (
-				<ThreadChain plugin={plugin} onNewConversation={handleNewConversation} onTabSwitch={handleTabSwitch} onConversationLoad={handleConversationSelect}/>
+				<ThreadChain 
+					plugin={plugin} 
+					onNewConversation={handleNewConversation} 
+					onTabSwitch={handleTabSwitch} 
+					onConversationLoad={handleConversationSelect}
+				/>
 			) : (
 				<ConversationDialogue
 					plugin={plugin}

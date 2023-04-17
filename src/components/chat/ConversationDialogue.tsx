@@ -15,6 +15,7 @@ import { IChatSession, IChatMessage } from 'interfaces/IChats';
 import { ChatHeader } from './ChatHeader';
 import { DialogueTimeline } from './DialogueTimeline';
 import { InputArea } from './InputArea';
+import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 
 interface ConversationDialogueProps {
 	plugin: Weaver,
@@ -46,7 +47,8 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		const data = await ConversationHelper.getConversations(plugin, activeThreadId);
 
 		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
-		const conversationToLoad = await ConversationHelper.readConversationByFilePath(plugin, selectedChatSession?.path || '');
+		console.log(selectedChatSession?.path)
+		const conversationToLoad = await ConversationBsonManager.readConversationByFilePath(plugin, selectedChatSession?.path || '');
 
 		if (conversationToLoad) {
 			setChatSession(conversationToLoad);
@@ -91,7 +93,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			}],
 			messagesCount: 0,
 			model: plugin.settings.engine,
-			path: `${plugin.settings.weaverFolderPath}/threads/base/${newTitle}.bson`,
+			path: `threads/base/${newTitle}.bson`,
 			tags: [],
 			title: newTitle,
 			tokens: 0,
@@ -102,7 +104,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		setLastActiveConversationId(newChatSession.id);
 
 		try {
-			await ConversationHelper.createNewConversation(plugin, activeThreadId, newChatSession);
+			await ConversationBsonManager.createNewConversation(plugin, activeThreadId, newChatSession);
 		} catch (error) {
 			console.error('Error in chat session handling:', error);
 		}
@@ -149,7 +151,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 
 	const handleUpdateChatSessionTitle = async (newTitle: string) => {
 		try {
-			const result = await ConversationHelper.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle);
+			const result = await ConversationBsonManager.updateConversationTitle(plugin, activeThreadId, chatSession?.id ?? -1, newTitle);
 
 			if (result.success) {
 				setConversationTitle(newTitle);
@@ -206,7 +208,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			if (prevConversation) {
 				return {
 					...prevConversation,
-					messages: [...prevConversation.messages, loadingAssistantMessage],
+					messages: [...(prevConversation.messages ?? []), loadingAssistantMessage],
 				};
 			} else {
 				return prevConversation;
@@ -258,8 +260,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
 		if (chatSession) {
 			// Insert the new message into the conversation and get the updated messages array
-			const updatedMessages = await ConversationHelper.addNewMessage(plugin, activeThreadId, chatSession.id, newMessage);
-			console.log(updatedMessages);
+			const updatedMessages = await ConversationBsonManager.addNewMessage(plugin, activeThreadId, chatSession.id, newMessage);
 			callback(updatedMessages); // Update the local chat session state
 		} else {
 			console.error('Chat session is not initialized.');

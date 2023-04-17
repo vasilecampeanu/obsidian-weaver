@@ -7,6 +7,7 @@ import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
 
 // Local modules
 import { FileIOManager } from './FileIOManager';
+import { DescriptorManager } from 'utils/DescriptorManager';
 
 export class MigrationAssistant {
 	static validateTitle(input: string): string {
@@ -39,10 +40,10 @@ export class MigrationAssistant {
 			const oldData = await FileIOManager.readLegacyData(plugin);
 
 			let descriptor: any = {};
-			let descriptorExists = await FileIOManager.descriptorExists(plugin);
+			let descriptorExists = await DescriptorManager.descriptorExists(plugin);
 
 			if (descriptorExists) {
-				descriptor = await FileIOManager.readDescriptor(plugin);
+				descriptor = await DescriptorManager.readDescriptor(plugin);
 
 				const firstThread = descriptor.threads[0];
 				const existingTitles = new Set(firstThread.conversations.map((conv: any) => conv.title));
@@ -195,7 +196,7 @@ export class MigrationAssistant {
 				};
 			}
 
-			await FileIOManager.writeDescriptor(plugin, descriptor);
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
 		} catch (error) {
 			console.error('Error migrating data:', error);
 			throw error;

@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
 					/>
 				</div>
 				<div className="ow-thread-description">
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin varius sem est. Suspendisse semper dolor facilisis sapien egestas rhoncus. Vestibulum sed semper diam, ut finibus sapien. Donec a purus eu nulla volutpat consectetur. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sem massa, tristique eu posuere sit amet, dictum non diam.
+					No description
 				</div>
 			</div>
 		</div>
