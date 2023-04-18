@@ -33,11 +33,11 @@ export class MetadataManager {
 				title: data.title,
 				tokens: data.tokens,
 			};
-	
+
 			if (excludeMessages) {
 				delete metadataObject.messages;
 			}
-	
+
 			return metadataObject;
 		} catch (error) {
 			console.error('Error in metadataObjectManager:', error);
@@ -71,6 +71,51 @@ export class MetadataManager {
 		}
 	}
 
+	static async handleAddedBsonFile(plugin: Weaver, file: any, threadTitle: string) {
+		// Perform the operation for added BSON files
+		console.log("Added BSON file: ", file);
+	}
+
+	static async handleDeletedBsonFile(plugin: Weaver, descriptorFile: any) {
+		// Perform the operation for deleted BSON files
+		console.log("Deleted BSON file: ", descriptorFile);
+	}
+
+	static async handleRenamedBsonFile(plugin: Weaver, oldDescriptorFile: any, newBsonFile: any) {
+		// Perform the operation for renamed BSON files
+		console.log("Renamed BSON file: ", oldDescriptorFile, newBsonFile);
+	}
+
+	static async compareAndSyncBsonFiles(plugin: Weaver, bsonFilesList: any, descriptorBsonFiles: any, threadTitle: string) {
+		const bsonFileMap = new Map(bsonFilesList.map((file: { name: any; }) => [file.name, file]));
+		const descriptorFileMap = new Map(descriptorBsonFiles.map((file: { title: any; }) => [file.title + ".bson", file]));
+
+		// Handle added BSON files
+		for (const [name, file] of bsonFileMap.entries()) {
+			const fileName = name as string;
+
+			if (!descriptorFileMap.has(fileName)) {
+				if (fileName.endsWith('.bson')) {
+					await this.handleAddedBsonFile(plugin, file as {name: string, path: string}, threadTitle);
+				}
+			} else {
+				const oldDescriptorFile = descriptorFileMap.get(fileName) as {title: string, path: string};
+				const oldPath = plugin.settings.weaverFolderPath + "/" + oldDescriptorFile.path;
+
+				if (oldPath !== (file as {name: string, path: string}).path) {
+					await this.handleRenamedBsonFile(plugin, oldDescriptorFile, file as {name: string, path: string});
+				}
+			}
+		}		
+
+		// Handle deleted BSON files
+		for (const [title, descriptorFile] of descriptorFileMap.entries()) {
+			if (!bsonFileMap.has(title)) {
+				await this.handleDeletedBsonFile(plugin, descriptorFile);
+			}
+		}
+	}
+
 	// TODO: https://chat.openai.com/c/a8cb5c7c-9508-449a-b526-bfc241e1f3f1
 	static async syncDescriptorWithFileSystem(plugin: Weaver): Promise<void> {
 		try {
@@ -79,10 +124,15 @@ export class MetadataManager {
 
 			for (const thread of descriptor.threads) {
 				const threadFolderPath = `${plugin.settings.weaverFolderPath}/threads/${thread.title}`;
-				const bsonFiles = await FileWizard.getAllFilesInFolder(plugin, threadFolderPath);
+				const bsonFilesList = await FileWizard.getAllFilesInFolder(plugin, threadFolderPath);
 
-				for (const bsonFile of bsonFiles) {
-				}
+				const descriptorCurrentThread = descriptor.threads.find((p: { id: number; }) => p.id === thread.id);
+				const descriptorBsonFiles = descriptorCurrentThread ? descriptorCurrentThread.conversations : [];
+
+				console.log("Bson files: ", bsonFilesList);
+				console.log("Descriptor: ", descriptorBsonFiles);
+
+				await this.compareAndSyncBsonFiles(plugin, bsonFilesList, descriptorBsonFiles, thread.title);
 			}
 
 		} catch (error) {
