@@ -8,6 +8,7 @@ import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 import { MetadataManager } from 'utils/MetadataManager';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
+import { DescriptorManager } from 'utils/DescriptorManager';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
@@ -32,8 +33,9 @@ export default class Weaver extends Plugin {
 		// Bind plugin components
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
-		// Testing ground
-		await MetadataManager.syncDescriptorWithFileSystem(this);
+		if ((await DescriptorManager.descriptorExists(this))) {
+			await MetadataManager.syncDescriptorWithFileSystem(this);
+		}
 	}
 
 	onunload() {
@@ -110,5 +112,9 @@ export default class Weaver extends Plugin {
 				}
 			})
 		);
+
+		// this.registerEvent(this.app.vault.on('modify', () => {
+		// 	this.app.workspace.trigger('layout-change');
+		// }));		
 	}
 }
