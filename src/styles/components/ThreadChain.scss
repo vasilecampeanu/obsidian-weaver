@@ -25,7 +25,7 @@
 				align-self: start;
 				display: grid;
 				background-color: var(--background-modifier-hover);
-				padding: var(--padding-sm);
+				padding: calc(var(--padding-sm) - 3px);
 				border-radius: 3.5px;
 				box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
 	
@@ -33,32 +33,33 @@
 				{
 					align-self: center;
 					place-self: center;
-					width: var(--svg-size-md);
-					height: var(--svg-size-md);
+					width: var(--svg-size-sm);
+					height: var(--svg-size-sm);
 					color: var(--tab-text-color-active);
 					z-index: 1;
-				}					
+				}
 			}
 
-			.ow-verical-line
+			.ow-vertical-line
 			{
 				justify-self: center;
 				border-left: 2px solid var(--icon-color);
 				height: 100%;
+				display: none;
 			}
 
 			.ow-icon-dots
 			{
 				place-self: center;
 				display: grid;
-				padding: calc(var(--padding-sm) - 2px);
+				padding: calc(var(--padding-sm) - 3px);
 
 				svg
 				{
 					align-self: center;
 					place-self: center;
-					width: var(--svg-size-md);
-					height: var(--svg-size-md);
+					width: var(--svg-size-sm);
+					height: var(--svg-size-sm);
 					color: var(--icon-color);
 					z-index: 1;
 				}
@@ -88,14 +89,6 @@
 						display: grid;
 						grid-template-columns: auto 1fr;
 						gap: 5px;
-
-						.ow-chat-count
-						{
-							align-self: start;
-							font-size: calc(var(--font-size-sm) - 1px);
-							color: var(--nav-item-color);
-							text-transform: lowercase;
-						}
 					}
 
 					.ow-actions
@@ -225,7 +218,7 @@
 				align-self: start;
 				display: grid;
 				background-color: var(--background-modifier-hover);
-				padding: var(--padding-sm);
+				padding: calc(var(--padding-sm) - 3px);
 				border-radius: 3.5px;
 				box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
 	
@@ -233,11 +226,11 @@
 				{
 					align-self: center;
 					place-self: center;
-					width: var(--svg-size-md);
-					height: var(--svg-size-md);
+					width: var(--svg-size-sm);
+					height: var(--svg-size-sm);
 					color: var(--tab-text-color-active);
 					z-index: 1;
-				}					
+				}	
 			}
 
 			.ow-chat-icon
@@ -248,7 +241,7 @@
 				align-self: stretch;
 				gap: 5px;
 
-				.ow-verical-line
+				.ow-vertical-line
 				{
 					justify-self: center;
 					border-left: 2px solid var(--icon-color);
@@ -420,6 +413,20 @@
 					padding: 10px 0px;
 					font-size: 13px;
 					opacity: .75;
+
+					textarea
+					{
+						all: unset;
+						width: 100%;
+						height: 100%;
+						resize: none;
+						white-space: pre-wrap; /* CSS3 */
+						white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+						white-space: -pre-wrap; /* Opera 4-6 */
+						white-space: -o-pre-wrap; /* Opera 7 */
+						overflow-wrap: break-word; /* Apply line breaks at word boundaries */
+						word-wrap: break-word; /* For older browsers */
+					}
 				}
 
 				&:hover
@@ -427,6 +434,7 @@
 					background-color: var(--history-list-item-color);
 					border-radius: 5px;
 					box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
+
 					.ow-chat-description
 					{
 						opacity: 1;

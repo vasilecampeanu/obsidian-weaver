@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 import Weaver from 'main';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
+import { MarkdownRenderer } from 'obsidian';
 
 interface HistoryItemProps {
 	plugin: Weaver;
@@ -27,11 +28,14 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 	const [descriptionInput, setDescriptionInput] = useState<string | undefined>('');
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const [inputError, setInputError] = useState<boolean>(false);
+
 	const [errorMessage, setErrorMessage] = useState<string | undefined>('');
+	const [descriptionContent, setDescriptionContent] = useState<string | null>(null);
 
 	const timeoutRef = useRef<NodeJS.Timeout>();
-
 	const listItemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+	const conversationDescriptionContentRef = useRef<HTMLDivElement>(null);
+
 
 	const activeThreadId = 0;
 
@@ -68,6 +72,30 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 			}
 		}
 	}, [clickedTarget]);
+
+	useEffect(() => {
+		if (errorMessage) {
+			setDescriptionContent(errorMessage);
+		} else if (!description) {
+			setDescriptionContent('No description');
+		} else if (conversationDescriptionContentRef.current) {
+			const context = {
+				cache: {},
+				async onload(source: string, el: HTMLElement, ctx: any) {
+					return ctx;
+				},
+				async onunload() { },
+			};
+
+			MarkdownRenderer.renderMarkdown(
+				description,
+				conversationDescriptionContentRef.current,
+				'',
+				context as any
+			);
+			setDescriptionContent(null);
+		}
+	}, [description, errorMessage]);
 
 	const handleConversationLoad = (conversationId: number) => {
 		onConversationLoad(conversationId);
@@ -159,7 +187,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
 					</svg>
 				</div>
-				<div className="ow-verical-line"></div>
+				<div className="ow-vertical-line"></div>
 			</div>
 			<div className="ow-list-item">
 				<div className="ow-info">
@@ -217,8 +245,9 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 						<div
 							onDoubleClick={handleDoubleClick}
 							className={`description-content ${inputError ? 'error-message' : ''}`}
+							ref={conversationDescriptionContentRef}
 						>
-							{errorMessage ? errorMessage : description ? description : 'No description'}
+							{descriptionContent}
 						</div>
 					)}
 				</div>

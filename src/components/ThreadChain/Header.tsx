@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
 				<div className="ow-icon">
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-spline"><path d="M21 6V4c0-.6-.4-1-1-1h-2a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h2c.6 0 1-.4 1-1Z"></path><path d="M7 20v-2c0-.6-.4-1-1-1H4a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h2c.6 0 1-.4 1-1Z"></path><path d="M5 17A12 12 0 0 1 17 5"></path></svg>
 				</div>
-				<div className="ow-verical-line"></div>
+				<div className="ow-vertical-line"></div>
 				<div className="ow-icon-dots">
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
 				</div>
@@ -35,9 +35,6 @@ export const Header: React.FC<HeaderProps> = ({
 					<div className="ow-title-bar">
 						<div className="ow-title">
 							<span>Thread Chain</span>
-							<span className='ow-chat-count'>
-								{conversations.length}
-							</span>
 						</div>
 						<div className="ow-actions">
 							<button className="ow-btn-new-chat" onClick={handleNewChatClick}>
@@ -46,14 +43,17 @@ export const Header: React.FC<HeaderProps> = ({
 						</div>
 					</div>
 					<div className="ow-tool-bar">
+						{/* 
 						<button className="ow-btn-change-banner">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
 							<span>
 								Change Banner
 							</span>
-						</button>
+						</button> 
+						*/}
 					</div>
 				</div>
+				{/* 
 				<div className="ow-thread-banner">
 					<img
 						className="banner-image full-width draggable"
@@ -63,7 +63,8 @@ export const Header: React.FC<HeaderProps> = ({
 				</div>
 				<div className="ow-thread-description">
 					No description
-				</div>
+				</div> 
+				*/}
 			</div>
 		</div>
 	);
