@@ -16,6 +16,7 @@ import { ChatHeader } from './ChatHeader';
 import { DialogueTimeline } from './DialogueTimeline';
 import { InputArea } from './InputArea';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
+import { ThreadsManager } from 'utils/ThreadsManager';
 
 interface ConversationDialogueProps {
 	plugin: Weaver,
@@ -39,12 +40,12 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [conversationTitle, setConversationTitle] = useState(chatSession?.title);
 
 	// TODO: This needs to be stored somewhere else.
-	const activeThreadId = 0;
+	const activeThreadId = plugin.settings.activeThread;
 
 	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
 
 	const loadChatSessionById = useCallback(async (chatSessionId: number) => {
-		const data = await ConversationHelper.getConversations(plugin, activeThreadId);
+		const data = await ThreadsManager.getConversations(plugin, activeThreadId);
 
 		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
 		console.log(selectedChatSession?.path)
@@ -59,7 +60,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	}, [activeThreadId]);
 
 	const startNewChatSession = useCallback(async () => {
-		const existingChatSessions = await ConversationHelper.getConversations(plugin, activeThreadId);
+		const existingChatSessions = await ThreadsManager.getConversations(plugin, activeThreadId);
 
 		let newTitle = 'Untitled';
 		let index = 1;

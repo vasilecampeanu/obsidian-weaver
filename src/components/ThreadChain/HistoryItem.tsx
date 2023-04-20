@@ -37,7 +37,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 	const conversationDescriptionContentRef = useRef<HTMLDivElement>(null);
 
 
-	const activeThreadId = 0;
+	const activeThreadId = plugin.settings.activeThread;
 
 	const handleMouseDown = (event: MouseEvent) => {
 		setClickedTarget(event.target as HTMLElement);

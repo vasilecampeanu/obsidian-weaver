@@ -1,14 +1,17 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings'
-import { WEAVER_CHAT_VIEW_TYPE } from './constants'
+import { WEAVER_CHAT_VIEW_TYPE, WEAVER_THREADS_VIEW_TYPE } from './constants'
 
 import { WeaverChatView } from './components/Chat/WeaverChatView';
+import { WeaverThreadsView } from 'components/Threads/WeaverThreadsView';
+
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 import { MetadataManager } from 'utils/MetadataManager';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 import { DescriptorManager } from 'utils/DescriptorManager';
+import { ThreadsManager } from 'utils/ThreadsManager';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
@@ -29,10 +32,12 @@ export default class Weaver extends Plugin {
 
 		// Register Views
 		this.registerView(WEAVER_CHAT_VIEW_TYPE, (leaf) => new WeaverChatView(leaf, this));
+		this.registerView(WEAVER_THREADS_VIEW_TYPE, (leaf) => new WeaverThreadsView(leaf, this));
 
 		// Bind plugin components
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
+		// Sync external changes
 		if ((await DescriptorManager.descriptorExists(this))) {
 			await MetadataManager.syncDescriptorWithFileSystem(this);
 		}
@@ -51,12 +56,14 @@ export default class Weaver extends Plugin {
 	}
 
 	private async initStates() {
+		const threads = await ThreadsManager.getThreads(this);
+		this.settings.activeThread = threads[0].id;
 	}
 
 	private async initListeners() {
 	}
 
-	openWeaver = async () => {
+	openWeaverChat = async () => {
 		let leafs = this.app.workspace.getLeavesOfType(WEAVER_CHAT_VIEW_TYPE);
 
 		if (leafs.length == 0) {
@@ -68,10 +75,27 @@ export default class Weaver extends Plugin {
 		}
 	};
 
+	openWeaverThreads = async () => {
+		let leafs = this.app.workspace.getLeavesOfType(WEAVER_THREADS_VIEW_TYPE);
+
+		if (leafs.length == 0) {
+			let leaf = this.app.workspace.getLeftLeaf(false);
+			await leaf.setViewState({ type: WEAVER_THREADS_VIEW_TYPE });
+			this.app.workspace.revealLeaf(leaf);
+		} else {
+			leafs.forEach((leaf) => this.app.workspace.revealLeaf(leaf));
+		}
+	};
+
 	async onLayoutReady(): Promise<void> {
 		// Load Wevaer when on Obsidian open
 		if (this.settings.openOnStartUp) {
-			this.openWeaver();
+			this.openWeaverThreads();
+		}
+
+		// Load Wevaer when on Obsidian open
+		if (this.settings.openOnStartUp) {
+			this.openWeaverChat();
 		}
 
 		// Load Settings Tab
@@ -81,14 +105,22 @@ export default class Weaver extends Plugin {
 		this.addCommand({
 			id: "open-weaver-chat-view",
 			name: "Open Chat View",
-			callback: () => this.openWeaver(),
+			callback: () => this.openWeaverChat(),
+			hotkeys: []
+		});
+
+		this.addCommand({
+			id: "open-weaver-threads-view",
+			name: "Open Threads View",
+			callback: () => this.openWeaverThreads(),
 			hotkeys: []
 		});
 
 		// Ribbon Icon
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('git-branch-plus', 'Open weaver chat', (evt: MouseEvent) => {
-			this.openWeaver()
+			this.openWeaverChat();
+			this.openWeaverThreads();
 		});
 
 		// Add a class
@@ -112,9 +144,5 @@ export default class Weaver extends Plugin {
 				}
 			})
 		);
-
-		// this.registerEvent(this.app.vault.on('modify', () => {
-		// 	this.app.workspace.trigger('layout-change');
-		// }));		
 	}
 }

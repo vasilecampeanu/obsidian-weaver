@@ -6,7 +6,7 @@ import { FileSystemAdapter, normalizePath } from 'obsidian';
 import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
 
 // Interfaces
-import { IChatMessage, IChatSession } from 'interfaces/IChats';
+import { IChatMessage, IChatSession, IChatThread } from 'interfaces/IChats';
 
 // Local modules
 import { FileIOManager } from './FileIOManager';
@@ -14,31 +14,9 @@ import { MigrationAssistant } from './MigrationAssistant';
 import { DescriptorManager } from 'utils/DescriptorManager';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 import { MetadataManager } from 'utils/MetadataManager';
+import { FileWizard } from 'utils/FileWizard';
 
 export class ConversationHelper {
-	static async getConversations(plugin: Weaver, threadId: number): Promise<IChatSession[]> {
-		try {
-			if (await FileIOManager.legacyStorageExists(plugin)) {
-				const legacyData = await FileIOManager.readLegacyData(plugin);
-
-				if (!legacyData.hasOwnProperty("schemaMigrationStatus") || legacyData.schemaMigrationStatus != true) {
-					legacyData.schemaMigrationStatus = true;
-					await FileIOManager.writeToLegacyStorage(plugin, legacyData);
-					await MigrationAssistant.migrateData(plugin);
-				}
-			}
-
-			const descriptor = await DescriptorManager.readDescriptor(plugin);
-			console.log("Descriptor: ", descriptor);
-			const thread = descriptor.threads.find((p: { id: number; }) => p.id === threadId);
-
-			return thread ? thread.conversations : [];
-		} catch (error) {
-			console.error('Error reading conversations:', error);
-			throw error;
-		}
-	}
-
 	static getRandomWelcomeMessage(): string {
 		const welcomeMessages = [
 			"Welcome back! What can I assist you with today?",

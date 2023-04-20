@@ -24,10 +24,10 @@ export interface IChatSession {
 }
 
 export interface IChatThread {
+    conversations: Array<IChatSession>;
     description: string;
     id: number;
     title: string;
-    conversations: Array<IChatSession>;
 }
 
 export interface IDescriptor {

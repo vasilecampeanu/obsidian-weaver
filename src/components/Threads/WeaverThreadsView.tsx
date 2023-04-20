@@ -7,12 +7,12 @@ import React from 'react';
 import { createRoot, Root } from "react-dom/client";
 
 // Componets
-import { TabsManager } from '../TabsManager';
+import { Threads } from "./Threads";
 
 // Constants
-import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';
+import { WEAVER_THREADS_VIEW_TYPE } from '../../constants';
 
-export class WeaverChatView extends ItemView {
+export class WeaverThreadsView extends ItemView {
 	private readonly plugin: Weaver;
 	private root: Root;
 
@@ -41,7 +41,7 @@ export class WeaverChatView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'message-square';
+		return 'git-branch-plus';
 	}
 
 	getDisplayText(): string {
@@ -49,7 +49,7 @@ export class WeaverChatView extends ItemView {
 	}
 
 	getViewType(): string {
-		return WEAVER_CHAT_VIEW_TYPE;
+		return WEAVER_THREADS_VIEW_TYPE;
 	}
 
 	constructWeaverChatView() {
@@ -70,7 +70,7 @@ export class WeaverChatView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<TabsManager plugin={ this.plugin } />
+			<Threads plugin={this.plugin} />
  		);
 	}
 }

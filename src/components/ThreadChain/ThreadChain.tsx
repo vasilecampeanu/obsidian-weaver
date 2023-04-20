@@ -1,35 +1,38 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header } from './Header';
 import { ChainHistory } from './ChainHistory';
 import { IChatSession } from 'interfaces/IChats';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
 import Weaver from 'main';
+import { ThreadsManager } from 'utils/ThreadsManager';
+import { eventEmitter } from 'utils/EventEmitter';
 
 interface ThreadChainProps {
-    plugin: Weaver,
-    onTabSwitch: (tabId: string) => void,
-    onConversationLoad: (conversationId: number) => void,
-    onNewConversation: () => void;
+	plugin: Weaver,
+	onTabSwitch: (tabId: string) => void,
+	onConversationLoad: (conversationId: number) => void,
+	onNewConversation: () => void;
 }
 
 export const ThreadChain: React.FC<ThreadChainProps> = ({
-    plugin,
-    onTabSwitch,
-    onConversationLoad,
-    onNewConversation
+	plugin,
+	onTabSwitch,
+	onConversationLoad,
+	onNewConversation
 }) => {
-    const [conversations, setConversations] = React.useState<IChatSession[]>([]);
-	const activeThreadId = 0;
+	const [conversations, setConversations] = React.useState<IChatSession[]>([]);
+	const activeThreadId = plugin.settings.activeThread;
 
-    useEffect(() => {
-        fetchConversations();
-    }, []);
+	const fetchConversations = async () => {
+		console.log(plugin.settings.activeThread);
+		const conversations = await ThreadsManager.getConversations(plugin, activeThreadId);
+		setConversations(conversations);
+	};
 
-    const fetchConversations = async () => {
-		const data = await ConversationHelper.getConversations(plugin, activeThreadId);
-		setConversations(data);
-    };
+	useEffect(() => {
+		fetchConversations();
+	}, []);
 
 	const handleSort = (sortOrder: 'asc' | 'desc') => {
 		const sortedConversations = [...conversations].sort((a, b) => {
@@ -44,21 +47,21 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 		setConversations(sortedConversations);
 	};
 
-    return (
-        <div className="home-page">
-            <Header
+	return (
+		<div className="home-page">
+			<Header
 				onSort={handleSort}
-                conversations={conversations}
-                handleNewChat={onNewConversation}
-                onTabSwitch={onTabSwitch}
-            />
-            <ChainHistory
+				conversations={conversations}
+				handleNewChat={onNewConversation}
+				onTabSwitch={onTabSwitch}
+			/>
+			<ChainHistory
 				plugin={plugin}
-                conversations={conversations}
-                onConversationLoad={onConversationLoad}
-                onTabSwitch={onTabSwitch}
-                fetchConversations={fetchConversations}
-            />
-        </div>
-    );
+				conversations={conversations}
+				onConversationLoad={onConversationLoad}
+				onTabSwitch={onTabSwitch}
+				fetchConversations={fetchConversations}
+			/>
+		</div>
+	);
 };
