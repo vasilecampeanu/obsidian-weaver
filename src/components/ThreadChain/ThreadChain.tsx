@@ -22,10 +22,10 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 	onNewConversation
 }) => {
 	const [conversations, setConversations] = React.useState<IChatSession[]>([]);
-	const activeThreadId = plugin.settings.activeThread;
+	const activeThreadId = plugin.settings.activeThreadId;
 
 	const fetchConversations = async () => {
-		console.log(plugin.settings.activeThread);
+		console.log(plugin.settings.activeThreadId);
 		const conversations = await ThreadsManager.getConversations(plugin, activeThreadId);
 		setConversations(conversations);
 	};
@@ -50,6 +50,7 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 	return (
 		<div className="home-page">
 			<Header
+				plugin={plugin}
 				onSort={handleSort}
 				conversations={conversations}
 				handleNewChat={onNewConversation}

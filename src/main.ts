@@ -56,8 +56,12 @@ export default class Weaver extends Plugin {
 	}
 
 	private async initStates() {
-		const threads = await ThreadsManager.getThreads(this);
-		this.settings.activeThread = threads[0].id;
+		if (this.settings.activeThreadId === -1 && this.settings.activeThreadTitle === "") {
+			const threads = await ThreadsManager.getThreads(this);
+			this.settings.activeThreadId = threads[0].id;
+			this.settings.activeThreadTitle = threads[0].title;
+			this.saveSettings();
+		}
 	}
 
 	private async initListeners() {

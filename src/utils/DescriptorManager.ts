@@ -103,7 +103,7 @@ export class DescriptorManager {
 					{
 						description: "",
 						id: 0,
-						title: "base",
+						title: "Untitled",
 						conversations: [],
 					}
 				]

@@ -1,7 +1,9 @@
 import React from 'react';
 import { SortHistory } from './SortHistory';
+import Weaver from 'main';
 
 interface HeaderProps {
+	plugin: Weaver;
 	conversations: any[];
 	handleNewChat: () => void;
 	onTabSwitch: (tabId: string) => void;
@@ -9,10 +11,11 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-	onSort,
+	plugin,
 	conversations,
 	handleNewChat,
-	onTabSwitch
+	onTabSwitch,
+	onSort,
 }) => {
 	const handleNewChatClick = () => {
 		handleNewChat();
@@ -34,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
 				<div className="ow-header">
 					<div className="ow-title-bar">
 						<div className="ow-title">
-							<span>Base</span>
+							<span>{plugin.settings.activeThreadTitle}</span>
 						</div>
 						<div className="ow-actions">
 							<button className="ow-btn-new-chat" onClick={handleNewChatClick}>

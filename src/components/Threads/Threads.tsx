@@ -47,10 +47,15 @@ export const Threads: React.FC<ThreadsProps> = ({
 		fetchThreads();
 	}
 
-	const handleChnageActiveThread = (id: number) => {
-		plugin.settings.activeThread = id;
+	const handleChnageActiveThread = (id: number, title: string) => {
 		eventEmitter.emit('reloadEvent');
-		console.log(plugin.settings.activeThread);
+
+		plugin.settings.activeThreadId = id;
+		plugin.settings.activeThreadTitle = title;
+		plugin.saveSettings();
+
+		console.log(plugin.settings.activeThreadId);
+		console.log(plugin.settings.activeThreadTitle);
 	}
 
 	return (
@@ -72,7 +77,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 				threads.map((thread, index) => (
 					<div 
 						className="ow-thread-item"
-						onClick={() => handleChnageActiveThread(thread.id)}
+						onClick={() => handleChnageActiveThread(thread.id, thread.title)}
 					>
 						{thread.title}
 					</div>

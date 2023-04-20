@@ -40,7 +40,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [conversationTitle, setConversationTitle] = useState(chatSession?.title);
 
 	// TODO: This needs to be stored somewhere else.
-	const activeThreadId = plugin.settings.activeThread;
+	const activeThreadId = plugin.settings.activeThreadId;
 
 	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
 
@@ -94,7 +94,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			}],
 			messagesCount: 0,
 			model: plugin.settings.engine,
-			path: `threads/base/${newTitle}.bson`,
+			path: `threads/${plugin.settings.activeThreadTitle}/${newTitle}.bson`,
 			tags: [],
 			title: newTitle,
 			tokens: 0,
