@@ -18,6 +18,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 	const [editingThreadId, setEditingThreadId] = useState<number | null>(null);
 	const [editedTitle, setEditedTitle] = useState<string>('');
 
+	const threadItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const editTitleInputRef = useRef<HTMLInputElement>(null);
 
 	const fetchThreads = async () => {
@@ -34,7 +35,31 @@ export const Threads: React.FC<ThreadsProps> = ({
 		if (editingThreadId !== null && editTitleInputRef.current) {
 			editTitleInputRef.current.focus();
 		}
-	}, [editingThreadId]);	
+	}, [editingThreadId]);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (selectedThreadId !== null) {
+				const clickedElement = event.target as HTMLElement;
+				const isThreadItem = clickedElement.closest('.ow-thread-item');
+				const differentThreadId = isThreadItem && isThreadItem.getAttribute('data-thread-id') !== selectedThreadId.toString();
+
+				const clickedOutside = threadItemRefs.current.every(
+					(threadItem) => !threadItem?.contains(event.target as Node)
+				);
+
+				if (clickedOutside || differentThreadId) {
+					setSelectedThreadId(null);
+				}
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, [selectedThreadId]);
 
 	const handleEditTitle = (threadId: number, title: string) => {
 		setEditingThreadId(threadId);
@@ -139,9 +164,11 @@ export const Threads: React.FC<ThreadsProps> = ({
 				{
 					threads.map((thread, index) => (
 						<div
+							ref={(el) => (threadItemRefs.current[index] = el)}
 							className="ow-thread-item"
 							onClick={() => handleChnageActiveThread(thread.id, thread.title)}
 							key={index}
+							data-thread-id={thread.id}
 						>
 							<div className="ow-title">
 								<div className="content">
