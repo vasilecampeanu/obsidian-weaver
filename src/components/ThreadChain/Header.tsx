@@ -37,7 +37,8 @@ export const Header: React.FC<HeaderProps> = ({
 				<div className="ow-header">
 					<div className="ow-title-bar">
 						<div className="ow-title">
-							<span>{plugin.settings.activeThreadTitle}</span>
+							<span className="title-wrapper">{plugin.settings.activeThreadTitle}</span>
+							<span className="count-conversations">Conversations number: {conversations.length}</span>
 						</div>
 						<div className="ow-actions">
 							<button className="ow-btn-new-chat" onClick={handleNewChatClick}>

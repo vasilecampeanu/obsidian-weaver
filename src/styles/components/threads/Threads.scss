@@ -2,7 +2,7 @@
 {
 	display: grid;
 	gap: 10px;
-	padding: var(--padding-sm) var(--padding-lg);
+	padding: var(--padding-sm) var(--padding-sm);
 	
 	.header
 	{
@@ -60,8 +60,8 @@
 		.ow-thread-item
 		{
 			display: grid;
-			padding-left: var(--padding-md);
-			padding-right: var(--padding-xs);
+			padding-left: 5px;
+			padding-right: 5px;
 			border-radius: 5px;
 
 			&:hover
@@ -87,11 +87,10 @@
 			{
 				display: grid;
 				grid-template-columns: 1fr auto;
-	
+
 				.content
 				{
 					display: flex;
-					gap: 5px;
 
 					.icon
 					{
@@ -118,6 +117,7 @@
 
 					.title-wrapper
 					{
+						align-self: center;
 						display: grid;
 						grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 						white-space: nowrap;
@@ -126,6 +126,24 @@
 						font-size: 13px;
 						padding: var(--padding-xs);
 						color: var(--nav-item-color);
+						width: 100%;
+
+						input
+						{
+							all: unset;
+							padding: 0px 5px;
+							border-radius: 5px !important;
+							width: calc(100% - 10px);
+							background-color: var(--background-modifier-form-field);
+							align-self: center;
+							display: grid;
+							grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							font-size: 13px;
+							color: var(--nav-item-color);
+						}
 					}
 				}
 	
@@ -137,7 +155,30 @@
 					{
 						display: flex;
 					}
+					
+					.btn-edit-title
+					{
+						all: unset;
+						display: grid;
+						cursor: var(--cursor);
+						align-self: center;
+						padding: var(--padding-xs);
+						border-radius: 3.5px;
 
+						&:hover
+						{
+							background-color: var(--background-modifier-hover);
+						}
+	
+						svg
+						{
+							place-items: center;
+							width: var(--svg-size-xs) !important;
+							height: var(--svg-size-xs) !important;
+							color: var(--icon-color);
+						}
+					}
+					
 					.btn-delete-conversation
 					{
 						all: unset;

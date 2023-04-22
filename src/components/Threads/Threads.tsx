@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { IChatSession, IChatThread } from 'interfaces/IChats';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 
@@ -15,6 +15,10 @@ export const Threads: React.FC<ThreadsProps> = ({
 }) => {
 	const [threads, setThreads] = useState<IChatThread[]>([]);
 	const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
+	const [editingThreadId, setEditingThreadId] = useState<number | null>(null);
+	const [editedTitle, setEditedTitle] = useState<string>('');
+
+	const editTitleInputRef = useRef<HTMLInputElement>(null);
 
 	const fetchThreads = async () => {
 		const threads = await ThreadsManager.getThreads(plugin);
@@ -25,6 +29,43 @@ export const Threads: React.FC<ThreadsProps> = ({
 	useEffect(() => {
 		fetchThreads();
 	}, []);
+
+	useEffect(() => {
+		if (editingThreadId !== null && editTitleInputRef.current) {
+			editTitleInputRef.current.focus();
+		}
+	}, [editingThreadId]);	
+
+	const handleEditTitle = (threadId: number, title: string) => {
+		setEditingThreadId(threadId);
+		setEditedTitle(title);
+	};
+
+	const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setEditedTitle(event.target.value);
+	};
+
+	const handleTitleSave = async (threadId: number) => {
+		if (editedTitle.trim() !== '') {
+			const response = await ThreadsManager.updateThreadTitle(plugin, threadId, editedTitle);
+			if (response.success) {
+				fetchThreads();
+			} else {
+				// Handle error, e.g., show a notification with the error message
+			}
+		}
+		setEditingThreadId(null);
+	};
+
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, threadId: number) => {
+		if (event.key === 'Enter') {
+			handleTitleSave(threadId);
+		}
+	};
+
+	const handleBlur = (threadId: number) => {
+		handleTitleSave(threadId);
+	};
 
 	const handleCreateNewThread = async () => {
 		const existingChatSessions = await ThreadsManager.getThreads(plugin);
@@ -71,7 +112,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 
 	const handleDeleteConfirmed = async (threadId: number, event: React.MouseEvent) => {
 		event.stopPropagation();
-		// Delete logic here
+		await ThreadsManager.deleteThreadById(plugin, threadId);
 		fetchThreads();
 		setSelectedThreadId(null);
 	};
@@ -81,7 +122,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 			<div className="header">
 				<div className="title">
 					<span className="wrapper">Threads</span>
-					<span className="threads-count">Nomber of threads: {threads.length}</span>
+					<span className="threads-count">Number of threads: {threads.length}</span>
 				</div>
 				<div className="actions">
 					<button
@@ -108,7 +149,20 @@ export const Threads: React.FC<ThreadsProps> = ({
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-git-merge"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M6 21V9a9 9 0 0 0 9 9"></path></svg>
 									</span>
 									<span className="title-wrapper">
-										{thread.title}
+										{editingThreadId === thread.id ? (
+											<input
+												ref={editTitleInputRef}
+												type="text"
+												value={editedTitle}
+												onChange={handleTitleChange}
+												onKeyDown={(event) => handleKeyDown(event, thread.id)}
+												onBlur={() => handleBlur(thread.id)}
+											/>
+										) : (
+											<>
+												{thread.title}
+											</>
+										)}
 									</span>
 								</div>
 								<div className={`ow-actions ${selectedThreadId === thread.id ? 'show' : ''}`}>
@@ -126,12 +180,27 @@ export const Threads: React.FC<ThreadsProps> = ({
 											</button>
 										</div>
 									) : (
-										<button
-											className="btn-delete-conversation"
-											onClick={(event) => handleDelete(thread.id, event)}
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-										</button>
+										<>
+											{editingThreadId === thread.id ? (
+												<></>
+											) : (
+												<button
+													className="btn-edit-title"
+													onClick={(event) => {
+														event.stopPropagation();
+														handleEditTitle(thread.id, thread.title);
+													}}
+												>
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+												</button>
+											)}
+											<button
+												className="btn-delete-conversation"
+												onClick={(event) => handleDelete(thread.id, event)}
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+											</button>
+										</>
 									)}
 									<button
 										className="btn-open-chat"

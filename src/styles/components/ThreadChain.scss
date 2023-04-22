@@ -35,7 +35,7 @@
 					place-self: center;
 					width: var(--svg-size-sm);
 					height: var(--svg-size-sm);
-					color: var(--tab-text-color-active);
+					color: var(--icon-color);
 					z-index: 1;
 				}
 			}
@@ -87,8 +87,25 @@
 					.ow-title
 					{
 						display: grid;
-						grid-template-columns: auto 1fr;
-						gap: 5px;
+						grid-template-columns: 1fr;
+
+						.title-wrapper
+						{
+							align-self: center;
+							display: grid;
+							grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							color: var(--nav-item-color);
+							width: 100%;	
+						}
+
+						.count-conversations
+						{
+							font-size: 13px;
+							color: var(--text-faint);
+						}
 					}
 
 					.ow-actions
@@ -228,7 +245,7 @@
 					place-self: center;
 					width: var(--svg-size-sm);
 					height: var(--svg-size-sm);
-					color: var(--tab-text-color-active);
+					color: var(--icon-color);
 					z-index: 1;
 				}	
 			}
@@ -277,11 +294,14 @@
 
 						span
 						{
+							align-self: center;
 							display: grid;
 							grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 							white-space: nowrap;
 							overflow: hidden;
 							text-overflow: ellipsis;
+							color: var(--nav-item-color);
+							width: 100%;
 						}
 
 						.ow-actions
