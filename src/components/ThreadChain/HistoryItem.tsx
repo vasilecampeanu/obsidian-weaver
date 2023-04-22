@@ -29,6 +29,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const [inputError, setInputError] = useState<boolean>(false);
 
+	const [htmlDescriptionContent, setHtmlDescriptionContent] = useState<{ __html: string } | null>(null);
+
 	const [errorMessage, setErrorMessage] = useState<string | undefined>('');
 	const [descriptionContent, setDescriptionContent] = useState<string | null>(null);
 
@@ -60,40 +62,29 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 		};
 	}, []);
 
+	// Combine useEffect hooks that listen for description and errorMessage changes
 	useEffect(() => {
-		if (showDeleteConfirmation !== null && clickedTarget) {
-			const isClickedOutside = !Object.values(listItemRefs.current).some((ref) =>
-				ref?.contains(clickedTarget)
-			);
+		const renderDescription = async () => {
+			if (errorMessage) {
+				setHtmlDescriptionContent({ __html: errorMessage });
+			} else if (!description) {
+				setHtmlDescriptionContent({ __html: 'No description' });
+			} else {
+				const context = {
+					cache: {},
+					async onload(source: string, el: HTMLElement, ctx: any) {
+						return ctx;
+					},
+					async onunload() { },
+				};
 
-			if (isClickedOutside) {
-				handleCloseDeleteConfirmation();
+				const tempEl = document.createElement('div');
+				await MarkdownRenderer.renderMarkdown(description || '', tempEl, '', context as any);
+				setHtmlDescriptionContent({ __html: tempEl.innerHTML });
 			}
-		}
-	}, [clickedTarget]);
+		};
 
-	useEffect(() => {
-		if (errorMessage) {
-			setDescriptionContent(errorMessage);
-		} else if (!description) {
-			setDescriptionContent('No description');
-		} else if (conversationDescriptionContentRef.current) {
-			const context = {
-				cache: {},
-				async onload(source: string, el: HTMLElement, ctx: any) {
-					return ctx;
-				},
-				async onunload() { },
-			};
-
-			MarkdownRenderer.renderMarkdown(
-				description,
-				conversationDescriptionContentRef.current,
-				'',
-				context as any
-			);
-			setDescriptionContent(null);
-		}
+		renderDescription();
 	}, [description, errorMessage]);
 
 	const handleConversationLoad = (conversationId: number) => {
@@ -125,6 +116,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 
 	const handleBlur = async () => {
 		setIsEditing(false);
+		console.log('handleBlur called'); // Add this line to check if the function is being called
 
 		if (descriptionInput?.trim() === '') {
 			setDescriptionInput(description);
@@ -144,15 +136,17 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 					}, 1500);
 				}
 
-				setDescriptionInput(descriptionInput);
+				setDescription(descriptionInput); // Corrected this line
 			} catch (error) {
 				console.log(error);
 			}
 		}
 	};
 
+	// ...
+
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === 'Enter') {
+		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault();
 			handleBlur();
 		} else if (e.key === 'Escape') {
@@ -160,6 +154,17 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 			setIsEditing(false);
 			setDescriptionInput(description);
 		}
+	};
+
+	// ...
+
+	const adjustTextAreaHeight = (target: HTMLTextAreaElement) => {
+		target.style.height = 'auto';
+		target.style.height = `${target.scrollHeight}px`;
+	};
+
+	const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+		adjustTextAreaHeight(e.target as HTMLTextAreaElement);
 	};
 
 	const handleDoubleClick = () => {
@@ -172,6 +177,17 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 			setErrorMessage('');
 		}
 	};
+
+	useEffect(() => {
+		if (isEditing) {
+			const textareaElement = document.querySelector('.ow-chat-description textarea');
+			if (textareaElement) {
+				setTimeout(() => {
+					adjustTextAreaHeight(textareaElement as HTMLTextAreaElement);
+				}, 0);
+			}
+		}
+	}, [isEditing]);
 
 	return (
 		<div
@@ -237,6 +253,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 							autoFocus
 							value={descriptionInput}
 							onBlur={handleBlur}
+							onInput={handleInput}
 							onKeyDown={handleKeyDown}
 							onChange={(e) => setDescriptionInput(e.target.value)}
 						/>
@@ -244,10 +261,9 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 						<div
 							onDoubleClick={handleDoubleClick}
 							className={`description-content ${inputError ? 'error-message' : ''}`}
-							ref={conversationDescriptionContentRef}
-						>
-							{descriptionContent}
-						</div>
+							dangerouslySetInnerHTML={htmlDescriptionContent || { __html: '' }}
+						/>
+
 					)}
 				</div>
 				<div className="item-ow-actions">
