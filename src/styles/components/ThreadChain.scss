@@ -434,6 +434,21 @@
 					font-size: 13px;
 					opacity: .75;
 
+					.description-content
+					{		
+						img
+						{
+							position: relative;
+							object-fit: cover;
+							max-width: none;
+							max-height: 300px;
+							height: 100%;
+							width: 100%;
+							border-radius: 2.5px;
+							cursor: var(--cursor);
+						}
+					}
+
 					textarea
 					{
 						all: unset;

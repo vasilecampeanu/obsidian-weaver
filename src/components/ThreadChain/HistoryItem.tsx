@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ConversationHelper } from 'helpers/ConversationHelpers';
 import Weaver from 'main';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
-import { MarkdownRenderer } from 'obsidian';
+import { MarkdownRenderer, TFile } from 'obsidian';
 
 interface HistoryItemProps {
 	plugin: Weaver;
@@ -78,8 +78,21 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 					async onunload() { },
 				};
 
+				// Replace internal image links with <img> tags
+				const descriptionWithImages = description.replace(
+					/!\[\[(.+?)\]\]/g,
+					(_, internalLink) => {
+						const file = plugin.app.vault.getAbstractFileByPath(internalLink);
+						if (file && file instanceof TFile) {
+							return `<img src="${plugin.app.vault.getResourcePath(file)}" alt="${internalLink}" />`;
+						}
+						return `![[${internalLink}]]`;
+					}
+				);
+
 				const tempEl = document.createElement('div');
-				await MarkdownRenderer.renderMarkdown(description || '', tempEl, '', context as any);
+				await MarkdownRenderer.renderMarkdown(descriptionWithImages, tempEl, '', context as any);
+
 				setHtmlDescriptionContent({ __html: tempEl.innerHTML });
 			}
 		};
@@ -263,7 +276,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 							className={`description-content ${inputError ? 'error-message' : ''}`}
 							dangerouslySetInnerHTML={htmlDescriptionContent || { __html: '' }}
 						/>
-
 					)}
 				</div>
 				<div className="item-ow-actions">
