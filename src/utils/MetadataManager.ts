@@ -73,17 +73,17 @@ export class MetadataManager {
 
 	static async handleAddedBsonFile(plugin: Weaver, file: any, threadTitle: string) {
 		// Perform the operation for added BSON files
-		console.log("Added BSON file: ", file);
+		console.log("syncDescriptorWithFileSystem: Added BSON file: ", file);
 	}
 
 	static async handleDeletedBsonFile(plugin: Weaver, descriptorFile: any) {
 		// Perform the operation for deleted BSON files
-		console.log("Deleted BSON file: ", descriptorFile);
+		console.log("syncDescriptorWithFileSystem: Deleted BSON file: ", descriptorFile);
 	}
 
 	static async handleRenamedBsonFile(plugin: Weaver, oldDescriptorFile: any, newBsonFile: any) {
 		// Perform the operation for renamed BSON files
-		console.log("Renamed BSON file: ", oldDescriptorFile, newBsonFile);
+		console.log("syncDescriptorWithFileSystem: Renamed BSON file: ", oldDescriptorFile, newBsonFile);
 	}
 
 	static async compareAndSyncBsonFiles(plugin: Weaver, bsonFilesList: any, descriptorBsonFiles: any, threadTitle: string) {
@@ -128,9 +128,6 @@ export class MetadataManager {
 
 				const descriptorCurrentThread = descriptor.threads.find((p: { id: number; }) => p.id === thread.id);
 				const descriptorBsonFiles = descriptorCurrentThread ? descriptorCurrentThread.conversations : [];
-
-				console.log("Bson files: ", bsonFilesList);
-				console.log("Descriptor: ", descriptorBsonFiles);
 
 				await this.compareAndSyncBsonFiles(plugin, bsonFilesList, descriptorBsonFiles, thread.title);
 			}

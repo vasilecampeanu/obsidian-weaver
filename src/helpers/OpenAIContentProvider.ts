@@ -88,7 +88,7 @@ export default class OpenAIContentProvider {
 			return content;
 		} catch (error) {
 			if (error.name === "AbortError") {
-				console.log("Request aborted!");
+				console.error("Request aborted!");
 			} else {
 				console.error("Error in requestAssistantResponse:", error);
 			}

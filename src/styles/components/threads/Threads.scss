@@ -11,12 +11,11 @@
 
 		.title
 		{
+			display: grid;
 			padding-left: 10px;
 
 			.wrapper
 			{
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 				color: var(--nav-item-color);
 			}
 

@@ -48,7 +48,6 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		const data = await ThreadsManager.getConversations(plugin, activeThreadId);
 
 		const selectedChatSession = data.find((c: IChatSession) => c.id === chatSessionId);
-		console.log(selectedChatSession?.path)
 		const conversationToLoad = await ConversationBsonManager.readConversationByFilePath(plugin, selectedChatSession?.path || '');
 
 		if (conversationToLoad) {

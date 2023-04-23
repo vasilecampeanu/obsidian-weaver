@@ -67,7 +67,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
 
 				setTitleInput(titleInput);
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		}
 	};

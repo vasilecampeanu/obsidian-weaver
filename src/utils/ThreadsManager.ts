@@ -101,17 +101,14 @@ export class ThreadsManager {
             // Remove the thread from the descriptor
             descriptor.threads.splice(threadIndex, 1);
 
-			console.log(descriptor)
-
             // Save the updated descriptor
             await DescriptorManager.writeDescriptor(plugin, descriptor);
 
             // Remove the thread folder
             const adapter = plugin.app.vault.adapter as FileSystemAdapter;
             const threadFolderPath = `${plugin.settings.weaverFolderPath}/threads/${threadTitle}`;
-			console.log(threadFolderPath)
+
 			adapter.rmdir(threadFolderPath, true);
-			// await this.deleteFolderRecursive(plugin, threadFolderPath);
 
         } catch (error) {
             console.error('Error deleting thread by ID:', error);
@@ -148,6 +145,15 @@ export class ThreadsManager {
             const newFolderPath = `${plugin.settings.weaverFolderPath}/threads/${newTitle}`;
 
             await adapter.rename(oldFolderPath, newFolderPath);
+			
+			const conversations: any = await FileWizard.getAllFilesInFolder(plugin, newFolderPath);
+
+			conversations.map(async (conversationsPath: { path: string; }) => {
+				const strippedPath = conversationsPath.path.replace("bins/weaver/", "");
+				const conversation = await ConversationBsonManager.readConversationByFilePath(plugin, strippedPath);
+				const conversationId = conversation.id;
+				await ConversationBsonManager.updateConversationPath(plugin, threadId, conversationId, strippedPath);
+			});
 
             return { success: true };
         } catch (error) {

@@ -25,7 +25,6 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 	const activeThreadId = plugin.settings.activeThreadId;
 
 	const fetchConversations = async () => {
-		console.log(plugin.settings.activeThreadId);
 		const conversations = await ThreadsManager.getConversations(plugin, activeThreadId);
 		setConversations(conversations);
 	};

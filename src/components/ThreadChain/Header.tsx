@@ -38,23 +38,15 @@ export const Header: React.FC<HeaderProps> = ({
 					<div className="ow-title-bar">
 						<div className="ow-title">
 							<span className="title-wrapper">{plugin.settings.activeThreadTitle}</span>
-							<span className="count-conversations">Conversations number: {conversations.length}</span>
+							<span className="count-conversations">Conversations count: {conversations.length}</span>
 						</div>
 						<div className="ow-actions">
-							<button className="ow-btn-new-chat" onClick={handleNewChatClick}>
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-							</button>
 						</div>
 					</div>
 					<div className="ow-tool-bar">
-						{/* 
-						<button className="ow-btn-change-banner">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
-							<span>
-								Change Banner
-							</span>
-						</button> 
-						*/}
+						<button className="ow-btn-new-chat" onClick={handleNewChatClick}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Create new conversation
+						</button>
 					</div>
 				</div>
 				{/* 

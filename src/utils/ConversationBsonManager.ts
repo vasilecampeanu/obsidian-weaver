@@ -75,10 +75,10 @@ export class ConversationBsonManager {
 		}
 	}
 
-	static async addNewMessage (
-		plugin: Weaver, 
-		threadId: number, 
-		conversationId: number, 
+	static async addNewMessage(
+		plugin: Weaver,
+		threadId: number,
+		conversationId: number,
 		newMessage: IChatMessage
 	): Promise<IChatMessage[]> {
 		try {
@@ -135,47 +135,47 @@ export class ConversationBsonManager {
 			const descriptor = await DescriptorManager.readDescriptor(plugin);
 			const thread = descriptor.threads.find((thread: { id: any; }) => thread.id === threadId);
 			const conversation = thread.conversations.find((conversation: { id: any; }) => conversation.id === conversationId);
-	
+
 			// Check for duplicate titles
 			const duplicateTitle = thread.conversations.some((conversation: { title: string; }) => conversation.title.toLowerCase() === newTitle.toLowerCase());
-	
+
 			if (duplicateTitle) {
 				return { success: false, errorMessage: 'A chat with this name already exists!' };
 			}
-	
+
 			// Update the title and path in the descriptor
 			const oldPath = conversation.path;
 			const basePath = oldPath.substring(0, oldPath.lastIndexOf('/'));
 			const newPath = `${basePath}/${newTitle}.bson`;
-	
+
 			conversation.title = newTitle;
 			conversation.path = newPath;
-	
+
 			await DescriptorManager.writeDescriptor(plugin, descriptor);
-	
+
 			// Now we are going to update the metadata inside the bson file
 			// Read the BSON file
 			const bsonData = await this.readConversationByFilePath(plugin, oldPath);
-	
+
 			// Update the title and path in the BSON file
 			bsonData.title = newTitle;
 			bsonData.path = newPath;
-	
+
 			// Serialize the BSON data
 			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
-	
+
 			// Rename the BSON file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 
 			plugin.isRenamingFromInside = true;
-			
+
 			await adapter.rename(plugin.settings.weaverFolderPath + "/" + oldPath, plugin.settings.weaverFolderPath + "/" + newPath);
-			
+
 			plugin.isRenamingFromInside = false;
-	
+
 			// Write the updated BSON data to the renamed file
 			await adapter.writeBinary(plugin.settings.weaverFolderPath + "/" + newPath, buffer);
-	
+
 			return { success: true };
 		} catch (error) {
 			console.error('Error updating conversation title:', error);
@@ -187,16 +187,16 @@ export class ConversationBsonManager {
 		try {
 			// Read the BSON file using the new file path
 			const bsonData = await ConversationBsonManager.readConversationByFilePath(plugin, newFilePath);
-	
+
 			// Get the old file path from the BSON file
 			const oldFilePath = bsonData.path;
-	
+
 			// Get descriptor data
 			const descriptor = await DescriptorManager.readDescriptor(plugin);
-	
+
 			// Extract the new title from the new file path
 			const newTitle = newFilePath.substring(newFilePath.lastIndexOf('/') + 1, newFilePath.lastIndexOf('.bson'));
-	
+
 			// Find the thread and conversation by old file path
 			let threadIndex, conversationIndex;
 			outerLoop: for (let i = 0; i < descriptor.threads.length; i++) {
@@ -208,28 +208,28 @@ export class ConversationBsonManager {
 					}
 				}
 			}
-	
+
 			if (threadIndex === undefined || conversationIndex === undefined) {
 				throw new Error("Conversation with the old file path not found.");
 			}
-	
+
 			// Update the title and path in the descriptor
 			descriptor.threads[threadIndex].conversations[conversationIndex].title = newTitle;
 			descriptor.threads[threadIndex].conversations[conversationIndex].path = newFilePath;
-	
+
 			await DescriptorManager.writeDescriptor(plugin, descriptor);
-	
+
 			// Update the title and path in the BSON file
 			bsonData.title = newTitle;
 			bsonData.path = newFilePath;
-	
+
 			// Serialize the BSON data
 			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
-	
+
 			// Write the updated BSON data to the renamed file
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			await adapter.writeBinary(plugin.settings.weaverFolderPath + "/" + newFilePath, buffer);
-	
+
 			return { success: true };
 		} catch (error) {
 			console.error('Error renaming conversation by file path:', error);
@@ -350,6 +350,44 @@ export class ConversationBsonManager {
 			return { success: true };
 		} catch (error) {
 			console.error('Error updating conversation title:', error);
+			return { success: false, errorMessage: error.message };
+		}
+	}
+
+	static async updateConversationPath(
+		plugin: Weaver,
+		threadId: number,
+		conversationId: number,
+		newPath: string
+	): Promise<{ success: boolean; errorMessage?: string }> {
+		try {
+			// Find the thread and the conversation to update
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+			const thread = descriptor.threads.find((thread: { id: any; }) => thread.id === threadId);
+			const conversation = thread.conversations.find((conversation: { id: any; }) => conversation.id === conversationId);
+
+			// Update the path in the descriptor
+			conversation.path = newPath;
+
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+
+			// Now we are going to update the metadata inside the bson file
+			// Read the BSON file
+			const bsonData = await this.readConversationByFilePath(plugin, newPath);
+
+			// Update the path in the BSON file
+			bsonData.path = newPath;
+
+			// Serialize the BSON data
+			const buffer = Buffer.from(BSON.serialize(bsonData).buffer);
+
+			// Write the updated BSON data back to the same file
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			await adapter.writeBinary(plugin.settings.weaverFolderPath + "/" + newPath, buffer);
+
+			return { success: true };
+		} catch (error) {
+			console.error('Error updating conversation path:', error);
 			return { success: false, errorMessage: error.message };
 		}
 	}

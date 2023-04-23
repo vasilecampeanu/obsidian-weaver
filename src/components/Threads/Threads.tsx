@@ -23,7 +23,6 @@ export const Threads: React.FC<ThreadsProps> = ({
 
 	const fetchThreads = async () => {
 		const threads = await ThreadsManager.getThreads(plugin);
-		console.log(threads);
 		setThreads(threads);
 	};
 
@@ -116,13 +115,9 @@ export const Threads: React.FC<ThreadsProps> = ({
 
 	const handleChnageActiveThread = (id: number, title: string) => {
 		eventEmitter.emit('reloadEvent');
-
 		plugin.settings.activeThreadId = id;
 		plugin.settings.activeThreadTitle = title;
 		plugin.saveSettings();
-
-		console.log(plugin.settings.activeThreadId);
-		console.log(plugin.settings.activeThreadTitle);
 	}
 
 	const handleDelete = (threadId: number, event: React.MouseEvent) => {

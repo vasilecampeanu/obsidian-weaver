@@ -129,7 +129,6 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 
 	const handleBlur = async () => {
 		setIsEditing(false);
-		console.log('handleBlur called'); // Add this line to check if the function is being called
 
 		if (descriptionInput?.trim() === '') {
 			setDescriptionInput(description);
@@ -151,7 +150,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 
 				setDescription(descriptionInput); // Corrected this line
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		}
 	};

@@ -45,7 +45,7 @@
 				justify-self: center;
 				border-left: 2px solid var(--icon-color);
 				height: 100%;
-				display: none;
+				// display: none;
 			}
 
 			.ow-icon-dots
@@ -110,67 +110,42 @@
 
 					.ow-actions
 					{
-						.ow-btn-new-chat
-						{
-							all: unset;
-							cursor: var(--cursor);
-							display: grid;
-							border-radius: 5px;
-							padding: var(--padding-xs);
-			
-							&:hover
-							{
-								background-color: var(--background-modifier-hover);
-							}
-			
-							svg
-							{
-								place-self: center;
-								width: var(--svg-size-sm);
-								height: var(--svg-size-sm);
-								color: var(--icon-color);
-							}
-						}
 					}
 				}
 		
 				.ow-tool-bar
 				{
 					display: grid;
+					padding-top: 5px;
 
-					.ow-btn-change-banner
+					.ow-btn-new-chat
 					{
 						all: unset;
 						justify-self: start;
 						display: flex;
-						gap: 2.5px;
-
-						svg
-						{
-							align-self: center;
-							width: 11px;
-							height: 11px;
-							color: var(--text-faint);
-						}
-						
-						span
-						{
-							align-self: center;
-							font-size: 11px;
-							color: var(--text-faint);
-						}
+						gap: 5px;
+						cursor: var(--cursor);
+						border-radius: 5px;
+						font-size: 13px;
+						color: var(--text-faint);
 
 						&:hover
 						{
+							// background-color: var(--background-modifier-hover);
+							color: var(--text-normal);
+							
 							svg
 							{
 								color: var(--text-normal);
 							}
-							
-							span
-							{
-								color: var(--text-normal);
-							}
+						}
+		
+						svg
+						{
+							place-self: center;
+							width: 14px;
+							height: 14px;
+							color: var(--text-faint);
 						}
 					}
 				}
@@ -436,6 +411,8 @@
 
 					.description-content
 					{		
+						user-select: text;
+
 						img
 						{
 							position: relative;
@@ -446,6 +423,106 @@
 							width: 100%;
 							border-radius: 2.5px;
 							cursor: var(--cursor);
+						}
+
+						p
+						{
+							&:only-child
+							{
+								margin: 0px;
+							}
+
+							&:first-child
+							{
+								margin-top: 0px;
+							}
+
+							&:last-child
+							{
+								margin-bottom: 0px;
+							}
+						}
+
+						table
+						{
+							border-collapse: collapse;
+							width: 100%;
+
+							th
+							{
+								border: 1px solid var(--prompt-border-color);
+								padding: 5px;
+								font-weight: bold;
+								text-align: left;
+							}
+							
+							td
+							{
+								padding: 5px;
+								border: 1px solid var(--prompt-border-color);
+							}
+						}
+
+						// Problem with codeblocks excedding the limit of the message boubble.
+						pre
+						{
+							margin: 0px;
+							border-radius: 5px;
+							position: relative;
+
+							.copy-code-button
+							{
+								margin: 6px;
+								padding: 6px 8px;
+								height: auto;
+								background-color: transparent;
+								box-shadow: none;
+								color: var(--text-muted);
+								font-size: var(--font-ui-smaller);
+								font-family: var(--font-interface);
+								position: absolute;
+								top: 0;
+								right: 0;
+								display: none;
+
+								&:hover
+								{
+									background-color: var(--interactive-normal);
+								}
+							}
+
+							// &:hover .copy-code-button
+							// {
+							// 	display: block;
+							// }
+						}
+
+						code:not([class]):not([lang]) 
+						{
+							color: var(--code-normal);
+							font-family: var(--font-monospace);
+							background-color: var(--code-background);
+							border-radius: var(--radius-s);
+							font-size: var(--code-size);
+							padding: 0.1em 0.25em;
+						}
+
+						blockquote
+						{
+							color: var(--blockquote-color);
+							margin: 0px !important;
+							padding: 0px 10px !important;
+							border-left: var(--blockquote-border-thickness) solid var(--blockquote-border-color);
+						}
+
+						ul
+						{
+							padding-left: 20px !important;
+						}
+
+						ol
+						{
+							padding-left: 20px !important;
 						}
 					}
 
