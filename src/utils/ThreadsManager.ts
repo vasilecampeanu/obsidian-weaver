@@ -11,7 +11,6 @@ import { IChatMessage, IChatSession, IChatThread } from 'interfaces/IChats';
 // Local modules
 import { DescriptorManager } from 'utils/DescriptorManager';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
-import { MetadataManager } from 'utils/MetadataManager';
 import { FileWizard } from 'utils/FileWizard';
 import { FileIOManager } from 'helpers/FileIOManager';
 import { MigrationAssistant } from 'helpers/MigrationAssistant';
@@ -168,5 +167,17 @@ export class ThreadsManager {
 			console.error('Error updating thread title:', error);
 			return { success: false, errorMessage: error.message };
 		}
-	}	
+	}
+
+	static async getThreadById(plugin: Weaver, threadId: number): Promise<IChatThread | null> {
+		try {
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+			const thread = descriptor.threads.find((thread: { id: number; }) => thread.id === threadId);
+	
+			return thread ? thread : null;
+		} catch (error) {
+			console.error('Error getting thread by ID:', error);
+			throw error;
+		}
+	}
 }

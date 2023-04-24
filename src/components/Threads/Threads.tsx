@@ -72,7 +72,9 @@ export const Threads: React.FC<ThreadsProps> = ({
 	const handleTitleSave = async (threadId: number) => {
 		if (editedTitle.trim() !== '') {
 			const response = await ThreadsManager.updateThreadTitle(plugin, threadId, editedTitle);
+
 			if (response.success) {
+				eventEmitter.emit('reloadEvent');
 				fetchThreads();
 			} else {
 				// Handle error, e.g., show a notification with the error message

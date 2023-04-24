@@ -21,7 +21,9 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 	onConversationLoad,
 	onNewConversation
 }) => {
-	const [conversations, setConversations] = React.useState<IChatSession[]>([]);
+	const [conversations, setConversations] = useState<IChatSession[]>([]);
+	const [threadTitle, setThreadTitle] = useState<string>("");
+
 	const activeThreadId = plugin.settings.activeThreadId;
 
 	const fetchConversations = async () => {
@@ -30,7 +32,15 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 	};
 
 	useEffect(() => {
-		fetchConversations();
+		(async () => {
+			try {
+				const thread = await ThreadsManager.getThreadById(plugin, plugin.settings.activeThreadId);
+				setThreadTitle(thread?.title || "");
+				fetchConversations();
+			} catch (error) {
+				console.error(error);
+			}
+		})();
 	}, []);
 
 	const handleSort = (sortOrder: 'asc' | 'desc') => {
@@ -51,6 +61,7 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 			<Header
 				plugin={plugin}
 				onSort={handleSort}
+				threadTitle={threadTitle}
 				conversations={conversations}
 				handleNewChat={onNewConversation}
 				onTabSwitch={onTabSwitch}

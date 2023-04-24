@@ -1,9 +1,11 @@
 import React from 'react';
 import { SortHistory } from './SortHistory';
 import Weaver from 'main';
+import { eventEmitter } from 'utils/EventEmitter';
 
 interface HeaderProps {
 	plugin: Weaver;
+	threadTitle: string;
 	conversations: any[];
 	handleNewChat: () => void;
 	onTabSwitch: (tabId: string) => void;
@@ -12,6 +14,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
 	plugin,
+	threadTitle,
 	conversations,
 	handleNewChat,
 	onTabSwitch,
@@ -37,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
 				<div className="ow-header">
 					<div className="ow-title-bar">
 						<div className="ow-title">
-							<span className="title-wrapper">{plugin.settings.activeThreadTitle}</span>
+							<span className="title-wrapper">{threadTitle}</span>
 							<span className="count-conversations">Conversations count: {conversations.length}</span>
 						</div>
 						<div className="ow-actions">
