@@ -116,49 +116,57 @@ export class ThreadsManager {
         }
     }
 
-    static async updateThreadTitle(
-        plugin: Weaver,
-        threadId: number,
-        newTitle: string
-    ): Promise<{ success: boolean; errorMessage?: string }> {
-        try {
-            // Find the thread to update
-            const descriptor = await DescriptorManager.readDescriptor(plugin);
-            const thread = descriptor.threads.find((thread: { id: any; }) => thread.id === threadId);
-
-            // Check for duplicate titles
-            const duplicateTitle = descriptor.threads.some((thread: { title: string; }) => thread.title.toLowerCase() === newTitle.toLowerCase());
-
-            if (duplicateTitle) {
-                return { success: false, errorMessage: 'A thread with this name already exists!' };
-            }
-
-            // Update the title in the descriptor
-            const oldTitle = thread.title;
-            thread.title = newTitle;
-
-            await DescriptorManager.writeDescriptor(plugin, descriptor);
-
-            // Rename the thread folder
-            const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-            const oldFolderPath = `${plugin.settings.weaverFolderPath}/threads/${oldTitle}`;
-            const newFolderPath = `${plugin.settings.weaverFolderPath}/threads/${newTitle}`;
-
-            await adapter.rename(oldFolderPath, newFolderPath);
-			
+	static async updateThreadTitle(
+		plugin: Weaver,
+		threadId: number,
+		newTitle: string
+	): Promise<{ success: boolean; errorMessage?: string }> {
+		try {
+			// Find the thread to update
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+			const thread = descriptor.threads.find((thread: { id: any; }) => thread.id === threadId);
+	
+			// Check for duplicate titles
+			const duplicateTitle = descriptor.threads.some((thread: { title: string; }) => thread.title.toLowerCase() === newTitle.toLowerCase());
+	
+			if (duplicateTitle) {
+				return { success: false, errorMessage: 'A thread with this name already exists!' };
+			}
+	
+			// Update the title in the descriptor
+			const oldTitle = thread.title;
+			thread.title = newTitle;
+	
+			// Update conversation paths
+			thread.conversations.forEach(async (conversation: any) => {
+				conversation.path = conversation.path.replace(`threads/${oldTitle}`, `threads/${newTitle}`);
+			});
+	
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+	
+			// Rename the thread folder
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			const oldFolderPath = `${plugin.settings.weaverFolderPath}/threads/${oldTitle}`;
+			const newFolderPath = `${plugin.settings.weaverFolderPath}/threads/${newTitle}`;
+	
+			await adapter.rename(oldFolderPath, newFolderPath);
+	
+			// Update conversation paths in storage
 			const conversations: any = await FileWizard.getAllFilesInFolder(plugin, newFolderPath);
-
-			conversations.map(async (conversationsPath: { path: string; }) => {
+	
+			conversations.forEach(async (conversationsPath: { path: string; }) => {
 				const strippedPath = conversationsPath.path.replace("bins/weaver/", "");
 				const conversation = await ConversationBsonManager.readConversationByFilePath(plugin, strippedPath);
 				const conversationId = conversation.id;
 				await ConversationBsonManager.updateConversationPath(plugin, threadId, conversationId, strippedPath);
 			});
+			
+			console.log(thread);
 
-            return { success: true };
-        } catch (error) {
-            console.error('Error updating thread title:', error);
-            return { success: false, errorMessage: error.message };
-        }
-    }
+			return { success: true };
+		} catch (error) {
+			console.error('Error updating thread title:', error);
+			return { success: false, errorMessage: error.message };
+		}
+	}	
 }

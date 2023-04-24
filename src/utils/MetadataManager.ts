@@ -12,6 +12,7 @@ import { IChatMessage, IChatSession } from 'interfaces/IChats';
 import { FileIOManager } from 'helpers/FileIOManager';
 import { FileWizard } from './FileWizard';
 import { DescriptorManager } from './DescriptorManager';
+import { ConversationBsonManager } from './ConversationBsonManager';
 
 export class MetadataManager {
 	static async metadataObjectManager(data: any, excludeMessages: boolean): Promise<any> {
@@ -83,6 +84,7 @@ export class MetadataManager {
 
 	static async handleRenamedBsonFile(plugin: Weaver, oldDescriptorFile: any, newBsonFile: any) {
 		// Perform the operation for renamed BSON files
+		console.log(await ConversationBsonManager.readConversationByFilePath(plugin, newBsonFile.path.replace("bins/weaver/", "")));
 		console.log("syncDescriptorWithFileSystem: Renamed BSON file: ", oldDescriptorFile, newBsonFile);
 	}
 

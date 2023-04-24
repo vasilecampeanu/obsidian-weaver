@@ -135,7 +135,7 @@ export default class Weaver extends Plugin {
 			this.app.vault.on('rename', async (file) => {
 				if (file.path.endsWith(".bson") && !this.isRenamingFromInside) {
 					const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
-					await ConversationBsonManager.renameConversationByFilePath(this, cleanedFilePath);
+					// await ConversationBsonManager.renameConversationByFilePath(this, cleanedFilePath);
 				}
 			})
 		);		

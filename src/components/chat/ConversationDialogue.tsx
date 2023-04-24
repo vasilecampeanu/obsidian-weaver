@@ -39,6 +39,10 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [welcomeMessage, setWelcomeMessage] = React.useState<string>(ConversationHelper.getRandomWelcomeMessage());
 	const [conversationTitle, setConversationTitle] = useState(chatSession?.title);
 
+	useEffect(() => {
+
+	}, [])
+
 	// TODO: This needs to be stored somewhere else.
 	const activeThreadId = plugin.settings.activeThreadId;
 
@@ -51,6 +55,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		const conversationToLoad = await ConversationBsonManager.readConversationByFilePath(plugin, selectedChatSession?.path || '');
 
 		if (conversationToLoad) {
+			console.log(conversationToLoad);
 			setChatSession(conversationToLoad);
 			setConversationTitle(conversationToLoad.title);
 		} else {
