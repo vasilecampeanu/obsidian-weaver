@@ -21,7 +21,7 @@ export interface WeaverSettings {
 	showWelcomeMessage: boolean,
 	openOnStartUp: boolean,
 	activeThreadId: number,
-	activeThreadTitle: string
+	activeThreadTitle: string | null
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	showWelcomeMessage: true,
 	openOnStartUp: true,
 	activeThreadId: -1,
-	activeThreadTitle: ""
+	activeThreadTitle: null
 }
 
 export class WeaverSettingTab extends PluginSettingTab {

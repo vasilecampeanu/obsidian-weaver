@@ -58,21 +58,35 @@ export const ThreadChain: React.FC<ThreadChainProps> = ({
 
 	return (
 		<div className="home-page">
-			<Header
-				plugin={plugin}
-				onSort={handleSort}
-				threadTitle={threadTitle}
-				conversations={conversations}
-				handleNewChat={onNewConversation}
-				onTabSwitch={onTabSwitch}
-			/>
-			<ChainHistory
-				plugin={plugin}
-				conversations={conversations}
-				onConversationLoad={onConversationLoad}
-				onTabSwitch={onTabSwitch}
-				fetchConversations={fetchConversations}
-			/>
+			{
+				plugin.settings.activeThreadId != -1 ? (
+					<>
+						<Header
+							plugin={plugin}
+							onSort={handleSort}
+							threadTitle={threadTitle}
+							conversations={conversations}
+							handleNewChat={onNewConversation}
+							onTabSwitch={onTabSwitch}
+						/>
+						<ChainHistory
+							plugin={plugin}
+							conversations={conversations}
+							onConversationLoad={onConversationLoad}
+							onTabSwitch={onTabSwitch}
+							fetchConversations={fetchConversations}
+						/>
+					</>
+				) : (
+					<>
+						<div className="info-box">
+							<div className="pane-empty">
+								No thread selected.
+							</div>
+						</div>
+					</>
+				)
+			}
 		</div>
 	);
 };

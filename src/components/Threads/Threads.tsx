@@ -135,9 +135,19 @@ export const Threads: React.FC<ThreadsProps> = ({
 
 	const handleDeleteConfirmed = async (threadId: number, event: React.MouseEvent) => {
 		event.stopPropagation();
+
+		if (threadId === plugin.settings.activeThreadId) {
+			plugin.settings.activeThreadId = -1;
+			plugin.settings.activeThreadTitle = null;
+			plugin.saveSettings();
+		}
+
 		await ThreadsManager.deleteThreadById(plugin, threadId);
+
 		fetchThreads();
 		setSelectedThreadId(null);
+
+		eventEmitter.emit('reloadEvent');
 	};
 
 	return (
