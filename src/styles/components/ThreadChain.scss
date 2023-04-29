@@ -285,6 +285,11 @@
 						{
 							display: none;
 
+							&.show
+							{
+								display: flex;
+							}		
+
 							.btn-delete-conversation
 							{
 								all: unset;
@@ -391,7 +396,11 @@
 							font-size: var(--font-size-xs);
 							opacity: var(--text-opacity) !important;
 							font-weight: var(--font-medium);
-							// padding: var(--padding-xs);
+
+							&.show
+							{
+								display: none;
+							}	
 						}
 					}
 

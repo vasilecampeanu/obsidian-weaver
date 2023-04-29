@@ -182,6 +182,11 @@
 					display: none;
 					// gap: var(--grid-gap-sm);
 
+					&.show
+					{
+						display: flex !important;
+					}
+
 					.delete-confirmation-dialog
 					{
 						display: flex;

@@ -30,6 +30,9 @@ export class DescriptorManager {
 		try {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const descriptorPath = `/${plugin.settings.weaverFolderPath}/descriptor.bson`;
+			
+			console.log("Write descriptor:", data);
+			
 			const bsonData = BSON.serialize(data);
 			const buffer = Buffer.from(bsonData.buffer);
 			await adapter.writeBinary(descriptorPath, buffer);
@@ -55,6 +58,8 @@ export class DescriptorManager {
 			if (FileWizard.isSupportedFile(deserializedData)) {
 				throw `Unsupported file: descriptor.bson. The file must have the "obsidian-weaver" identifier.`;
 			}
+
+			console.log("Descriptor readed:", deserializedData);
 
 			return deserializedData;
 		} catch (error) {
