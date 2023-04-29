@@ -80,40 +80,66 @@ export class ThreadsManager {
 		}
 	}
 
-    static async deleteThreadById(plugin: Weaver, threadId: number): Promise<void> {
-        try {
-            // Read the descriptor
-            const descriptor = await DescriptorManager.readDescriptor(plugin);
+	static async deleteThreadById(plugin: Weaver, threadId: number): Promise<void> {
+		try {
+			// Read the descriptor
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
 
-            // Find the index of the thread with the given ID
-            const threadIndex = descriptor.threads.findIndex((thread: IChatThread) => thread.id === threadId);
+			// Find the index of the thread with the given ID
+			const threadIndex = descriptor.threads.findIndex((thread: IChatThread) => thread.id === threadId);
 
-            // Throw an error if the thread does not exist
-            if (threadIndex === -1) {
-                console.error('Thread not found:', threadId);
-                throw new Error(`Thread with ID: ${threadId} not found!`);
-            }
+			// Throw an error if the thread does not exist
+			if (threadIndex === -1) {
+				console.error('Thread not found:', threadId);
+				throw new Error(`Thread with ID: ${threadId} not found!`);
+			}
 
-            // Get the thread title to remove its folder later
-            const threadTitle = descriptor.threads[threadIndex].title;
+			// Get the thread title to remove its folder later
+			const threadTitle = descriptor.threads[threadIndex].title;
 
-            // Remove the thread from the descriptor
-            descriptor.threads.splice(threadIndex, 1);
+			// Remove the thread from the descriptor
+			descriptor.threads.splice(threadIndex, 1);
 
-            // Save the updated descriptor
-            await DescriptorManager.writeDescriptor(plugin, descriptor);
+			// Save the updated descriptor
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
 
-            // Remove the thread folder
-            const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-            const threadFolderPath = `${plugin.settings.weaverFolderPath}/threads/${threadTitle}`;
+			// Remove the thread folder
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+			const threadFolderPath = `${plugin.settings.weaverFolderPath}/threads/${threadTitle}`;
 
-			adapter.rmdir(threadFolderPath, true);
+			plugin.isRenamingFromInside = true;
+			await adapter.rmdir(threadFolderPath, true);
+			plugin.isRenamingFromInside = false;
+		} catch (error) {
+			console.error('Error deleting thread by ID:', error);
+			throw error;
+		}
+	}
 
-        } catch (error) {
-            console.error('Error deleting thread by ID:', error);
-            throw error;
-        }
-    }
+	static async deleteThreadByFolderPath(plugin: Weaver, folderPath: string): Promise<void> {
+		try {
+			// Read the descriptor
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+
+			// Extract the thread title from the folder path
+			const threadTitle = folderPath.split('/').pop();
+
+			// Find the thread index
+			const threadIndex = descriptor.threads.findIndex((thread: { title: string; }) => thread.title === threadTitle);
+
+			if (threadIndex === -1) {
+				console.error('Thread not found:', folderPath);
+				throw new Error('Thread not found');
+			}
+
+			// Remove from descriptor
+			descriptor.threads.splice(threadIndex, 1);
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+		} catch (error) {
+			console.error('Error deleting thread by folder path:', error);
+			throw error;
+		}
+	}
 
 	static async updateThreadTitle(
 		plugin: Weaver,
@@ -124,42 +150,42 @@ export class ThreadsManager {
 			// Find the thread to update
 			const descriptor = await DescriptorManager.readDescriptor(plugin);
 			const thread = descriptor.threads.find((thread: { id: any; }) => thread.id === threadId);
-	
+
 			// Check for duplicate titles
 			const duplicateTitle = descriptor.threads.some((thread: { title: string; }) => thread.title.toLowerCase() === newTitle.toLowerCase());
-	
+
 			if (duplicateTitle) {
 				return { success: false, errorMessage: 'A thread with this name already exists!' };
 			}
-	
+
 			// Update the title in the descriptor
 			const oldTitle = thread.title;
 			thread.title = newTitle;
-	
+
 			// Update conversation paths
 			thread.conversations.forEach(async (conversation: any) => {
 				conversation.path = conversation.path.replace(`threads/${oldTitle}`, `threads/${newTitle}`);
 			});
-	
+
 			await DescriptorManager.writeDescriptor(plugin, descriptor);
-	
+
 			// Rename the thread folder
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const oldFolderPath = `${plugin.settings.weaverFolderPath}/threads/${oldTitle}`;
 			const newFolderPath = `${plugin.settings.weaverFolderPath}/threads/${newTitle}`;
-	
+
 			await adapter.rename(oldFolderPath, newFolderPath);
-	
+
 			// Update conversation paths in storage
 			const conversations: any = await FileWizard.getAllFilesInFolder(plugin, newFolderPath);
-	
+
 			conversations.forEach(async (conversationsPath: { path: string; }) => {
 				const strippedPath = conversationsPath.path.replace("bins/weaver/", "");
 				const conversation = await ConversationBsonManager.readConversationByFilePath(plugin, strippedPath);
 				const conversationId = conversation.id;
 				await ConversationBsonManager.updateConversationPath(plugin, threadId, conversationId, strippedPath);
 			});
-			
+
 			console.log(thread);
 
 			return { success: true };
@@ -173,7 +199,7 @@ export class ThreadsManager {
 		try {
 			const descriptor = await DescriptorManager.readDescriptor(plugin);
 			const thread = descriptor.threads.find((thread: { id: number; }) => thread.id === threadId);
-	
+
 			return thread ? thread : null;
 		} catch (error) {
 			console.error('Error getting thread by ID:', error);

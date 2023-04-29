@@ -12,10 +12,11 @@ import { MetadataManager } from 'utils/MetadataManager';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 import { DescriptorManager } from 'utils/DescriptorManager';
 import { ThreadsManager } from 'utils/ThreadsManager';
+import { eventEmitter } from 'utils/EventEmitter';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
-    public isRenamingFromInside: boolean = false;
+	public isRenamingFromInside: boolean = false;
 
 	async onload() {
 		// Display a message when loading
@@ -132,19 +133,45 @@ export default class Weaver extends Plugin {
 
 		// Register file Events
 		this.registerEvent(
-			this.app.vault.on('rename', async (file) => {
-				if (file.path.endsWith(".bson") && !this.isRenamingFromInside) {
-					const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
-					// await ConversationBsonManager.renameConversationByFilePath(this, cleanedFilePath);
+			this.app.vault.on('rename', async (file, oldPath) => {
+				// Check if the path has an extension
+				const hasExtension = /\.[^/.]+$/;
+
+				// Check if the path contains "bins/weaver"
+				if (file.path.includes("bins/weaver") && !this.isRenamingFromInside) {
+					if (file.path.endsWith(".bson")) {
+						const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
+						await ConversationBsonManager.renameConversationByFilePath(this, cleanedFilePath);
+					} else if (!hasExtension.test(file.path)) {
+						// Handle folder rename here
+						console.log("Folder renamed from", oldPath, "to", file.path);
+					}
+
+					eventEmitter.emit('reloadThreadsEvent');
+					eventEmitter.emit('reloadThreadChainEvent');
 				}
 			})
-		);		
+		);
 
 		this.registerEvent(
-			this.app.vault.on('delete', async (file) => {
-				if (file.path.endsWith(".bson") && !this.isRenamingFromInside) {
-					const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
-					await ConversationBsonManager.deleteConversationByFilePath(this, cleanedFilePath);
+			this.app.vault.on('delete', async (item) => {
+				// Check if the path has an extension
+				const hasExtension = /\.[^/.]+$/;
+
+				// Check if the path contains "bins/weaver"
+				if (item.path.includes(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
+					if (item.path.endsWith(".bson")) {
+						const cleanedFilePath = item.path.replace(/^bins\/weaver\//, '');
+						await ConversationBsonManager.deleteConversationByFilePath(this, cleanedFilePath);
+					} else if (!hasExtension.test(item.path)) {
+						// Handle folder deletion here
+						console.log("Folder deleted:", item.path);
+						const cleanedFolderPath = item.path.replace(/^bins\/weaver\/threads\//, '');
+						await ThreadsManager.deleteThreadByFolderPath(this, cleanedFolderPath);
+					}
+
+					eventEmitter.emit('reloadThreadsEvent');
+					eventEmitter.emit('reloadThreadChainEvent');
 				}
 			})
 		);
