@@ -11,6 +11,7 @@ import { Threads } from "./Threads";
 
 // Constants
 import { WEAVER_THREADS_VIEW_TYPE } from '../../constants';
+import { ThreadsManager } from 'components/ThreadsManager';
 
 export class WeaverThreadsView extends ItemView {
 	private readonly plugin: Weaver;
@@ -70,7 +71,7 @@ export class WeaverThreadsView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<Threads plugin={this.plugin} />
+			<ThreadsManager plugin={this.plugin} />
  		);
 	}
 }

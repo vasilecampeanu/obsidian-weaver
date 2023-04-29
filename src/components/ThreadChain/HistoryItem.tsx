@@ -3,6 +3,7 @@ import { ConversationHelper } from 'helpers/ConversationHelpers';
 import Weaver from 'main';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 import { MarkdownRenderer, TFile } from 'obsidian';
+import { eventEmitter } from 'utils/EventEmitter';
 
 interface HistoryItemProps {
 	plugin: Weaver;
@@ -132,6 +133,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
 
 	const handleDeleteConfirmed = async (conversationId: number) => {
 		await ConversationBsonManager.deleteConversation(plugin, activeThreadId, conversationId);
+		eventEmitter.emit('reloadThreadsEvent');
 		fetchConversations();
 		setShowDeleteConfirmation(false);
 	};

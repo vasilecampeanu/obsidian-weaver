@@ -7,7 +7,7 @@ import React from 'react';
 import { createRoot, Root } from "react-dom/client";
 
 // Componets
-import { TabsManager } from '../TabsManager';
+import { ThreadChainManager } from '../ThreadChainManager';
 
 // Constants
 import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';
@@ -70,7 +70,7 @@ export class WeaverChatView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<TabsManager plugin={ this.plugin } />
+			<ThreadChainManager plugin={ this.plugin } />
  		);
 	}
 }

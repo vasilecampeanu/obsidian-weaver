@@ -17,6 +17,7 @@ import { DialogueTimeline } from './DialogueTimeline';
 import { InputArea } from './InputArea';
 import { ConversationBsonManager } from 'utils/ConversationBsonManager';
 import { ThreadsManager } from 'utils/ThreadsManager';
+import { eventEmitter } from 'utils/EventEmitter';
 
 interface ConversationDialogueProps {
 	plugin: Weaver,
@@ -110,6 +111,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 
 		try {
 			await ConversationBsonManager.createNewConversation(plugin, activeThreadId, newChatSession);
+			eventEmitter.emit('reloadThreadsEvent');
 		} catch (error) {
 			console.error('Error in chat session handling:', error);
 		}

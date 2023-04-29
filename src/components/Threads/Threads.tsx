@@ -74,7 +74,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 			const response = await ThreadsManager.updateThreadTitle(plugin, threadId, editedTitle);
 
 			if (response.success) {
-				eventEmitter.emit('reloadEvent');
+				eventEmitter.emit('reloadThreadChainEvent');
 				fetchThreads();
 			} else {
 				// Handle error, e.g., show a notification with the error message
@@ -117,7 +117,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 	}
 
 	const handleChnageActiveThread = (id: number, title: string) => {
-		eventEmitter.emit('reloadEvent');
+		eventEmitter.emit('reloadThreadChainEvent');
 		plugin.settings.activeThreadId = id;
 		plugin.settings.activeThreadTitle = title;
 		plugin.saveSettings();
@@ -147,7 +147,7 @@ export const Threads: React.FC<ThreadsProps> = ({
 		fetchThreads();
 		setSelectedThreadId(null);
 
-		eventEmitter.emit('reloadEvent');
+		eventEmitter.emit('reloadThreadChainEvent');
 	};
 
 	return (

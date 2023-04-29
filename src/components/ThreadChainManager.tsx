@@ -9,11 +9,11 @@ import { ThreadChain } from './ThreadChain/ThreadChain';
 import { ConversationDialogue } from './Chat/ConversationDialogue';
 import { eventEmitter } from 'utils/EventEmitter';
 
-export interface TabsManagerProps {
+export interface ThreadChainManagerProps {
 	plugin: Weaver
 }
 
-export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
+export const ThreadChainManager: React.FC<ThreadChainManagerProps> = ({ plugin }) => {
 	const [activeTab, setActiveTab] = useState("home-page");
 	const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
 	const [lastActiveConversationId, setLastActiveConversationId] = useState<number | null>(null);
@@ -25,10 +25,10 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 			setReloadTrigger((prevTrigger) => prevTrigger + 1);
 		};
 
-		eventEmitter.on('reloadEvent', handleReload);
+		eventEmitter.on('reloadThreadChainEvent', handleReload);
 
 		return () => {
-			eventEmitter.off('reloadEvent', handleReload);
+			eventEmitter.off('reloadThreadChainEvent', handleReload);
 		};
 	}, []);
 
