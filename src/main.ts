@@ -139,7 +139,7 @@ export default class Weaver extends Plugin {
 				const hasExtension = /\.[^/.]+$/;
 
 				// Check if the path contains "bins/weaver"
-				if (file.path.includes("bins/weaver") && !this.isRenamingFromInside) {
+				if (file.path.startsWith("bins/weaver") && !this.isRenamingFromInside) {
 					const oldDir = oldPath.substring(0, oldPath.lastIndexOf('/'));
 					const newDir = file.path.substring(0, file.path.lastIndexOf('/'));
 
@@ -166,7 +166,7 @@ export default class Weaver extends Plugin {
 				const hasExtension = /\.[^/.]+$/;
 
 				// Check if the path contains "bins/weaver"
-				if (item.path.includes(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
+				if (item.path.startsWith(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
 					if (item.path.endsWith(".bson")) {
 						const cleanedFilePath = item.path.replace(/^bins\/weaver\//, '');
 						await ConversationBsonManager.deleteConversationByFilePath(this, cleanedFilePath);
