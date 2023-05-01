@@ -132,6 +132,7 @@ export default class Weaver extends Plugin {
 		ribbonIconEl.addClass('obsidian-weaver-ribbon-icon');
 
 		// Register file Events
+		// Register file Events
 		this.registerEvent(
 			this.app.vault.on('rename', async (file, oldPath) => {
 				// Check if the path has an extension
@@ -139,12 +140,18 @@ export default class Weaver extends Plugin {
 
 				// Check if the path contains "bins/weaver"
 				if (file.path.includes("bins/weaver") && !this.isRenamingFromInside) {
-					if (file.path.endsWith(".bson")) {
+					const oldDir = oldPath.substring(0, oldPath.lastIndexOf('/'));
+					const newDir = file.path.substring(0, file.path.lastIndexOf('/'));
+
+					if (file.path.endsWith(".bson") && oldDir === newDir) {
 						const cleanedFilePath = file.path.replace(/^bins\/weaver\//, '');
 						await ConversationBsonManager.renameConversationByFilePath(this, cleanedFilePath);
 					} else if (!hasExtension.test(file.path)) {
-						// Handle folder rename here
-						console.log("Folder renamed from", oldPath, "to", file.path);
+						const result = await ThreadsManager.updateThreadByPath(this, oldPath, file.path);
+
+						if (!result.success) {
+							console.error('Error updating thread by path:', result.errorMessage);
+						}
 					}
 
 					eventEmitter.emit('reloadThreadsEvent');

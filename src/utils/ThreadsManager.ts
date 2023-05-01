@@ -108,7 +108,9 @@ export class ThreadsManager {
 			const threadFolderPath = `${plugin.settings.weaverFolderPath}/threads/${threadTitle}`;
 
 			plugin.isRenamingFromInside = true;
+
 			await adapter.rmdir(threadFolderPath, true);
+
 			plugin.isRenamingFromInside = false;
 		} catch (error) {
 			console.error('Error deleting thread by ID:', error);
@@ -174,7 +176,11 @@ export class ThreadsManager {
 			const oldFolderPath = `${plugin.settings.weaverFolderPath}/threads/${oldTitle}`;
 			const newFolderPath = `${plugin.settings.weaverFolderPath}/threads/${newTitle}`;
 
+			plugin.isRenamingFromInside = true;
+
 			await adapter.rename(oldFolderPath, newFolderPath);
+			
+			plugin.isRenamingFromInside = false;
 
 			// Update conversation paths in storage
 			const conversations: any = await FileWizard.getAllFilesInFolder(plugin, newFolderPath);
@@ -186,11 +192,57 @@ export class ThreadsManager {
 				await ConversationBsonManager.updateConversationPath(plugin, threadId, conversationId, strippedPath);
 			});
 
-			console.log(thread);
-
 			return { success: true };
 		} catch (error) {
 			console.error('Error updating thread title:', error);
+			return { success: false, errorMessage: error.message };
+		}
+	}
+
+	static async updateThreadByPath(
+		plugin: Weaver,
+		oldPath: string,
+		newPath: string
+	): Promise<{ success: boolean; errorMessage?: string }> {
+		try {
+			// Extract thread titles from paths
+			const oldTitle = oldPath.split('/').pop();
+			const newTitle = newPath.split('/').pop();
+
+			// Find the thread to update
+			const descriptor = await DescriptorManager.readDescriptor(plugin);
+			const thread = descriptor.threads.find((thread: { title: string; }) => thread.title === oldTitle);
+
+			// Check for duplicate titles
+			const duplicateTitle = descriptor.threads.some((thread: { title: string; }) => thread.title.toLowerCase() === newTitle?.toLowerCase());
+
+			if (duplicateTitle) {
+				return { success: false, errorMessage: 'A thread with this name already exists!' };
+			}
+
+			// Update the title in the descriptor
+			thread.title = newTitle;
+
+			// Update conversation paths
+			thread.conversations.forEach(async (conversation: any) => {
+				conversation.path = conversation.path.replace(`threads/${oldTitle}`, `threads/${newTitle}`);
+			});
+
+			await DescriptorManager.writeDescriptor(plugin, descriptor);
+
+			// Update conversation paths in storage
+			const conversations: any = await FileWizard.getAllFilesInFolder(plugin, newPath);
+
+			conversations.forEach(async (conversationsPath: { path: string; }) => {
+				const strippedPath = conversationsPath.path.replace("bins/weaver/", "");
+				const conversation = await ConversationBsonManager.readConversationByFilePath(plugin, strippedPath);
+				const conversationId = conversation.id;
+				await ConversationBsonManager.updateConversationPath(plugin, thread.id, conversationId, strippedPath);
+			});
+
+			return { success: true };
+		} catch (error) {
+			console.error('Error updating thread by path:', error);
 			return { success: false, errorMessage: error.message };
 		}
 	}
