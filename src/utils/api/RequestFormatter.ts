@@ -1,18 +1,16 @@
-import { App } from "obsidian";
+// Obsidian
 import Weaver from "main";
 import { WeaverSettings } from "settings";
-import { IChatMessage } from "components/chat/ConversationDialogue";
+
+// Interfaces
+import { IChatMessage } from "interfaces/IThread";
 
 interface BodyParameters {
-	model: string;
-	max_tokens: number;
-	temperature: number;
 	frequency_penalty: number;
+	max_tokens: number;
 	messages?: { role: string; content: string }[];
-}
-
-interface KeywordToPrompt {
-	[keyword: string]: string;
+	model: string;
+	temperature: number;
 }
 
 export default class RequestFormatter {
@@ -28,10 +26,10 @@ export default class RequestFormatter {
 			let requestUrl = `${requestUrlBase}/chat/completions`;
 
 			const bodyParameters: BodyParameters = {
+				frequency_penalty: parameters.frequencyPenalty,
+				max_tokens: parameters.maxTokens,
 				model: parameters.engine,
-				max_tokens: parameters.max_tokens,
 				temperature: parameters.temperature,
-				frequency_penalty: parameters.frequency_penalty,
 			};
 
 			bodyParameters.messages = conversationHistory.map((message) => {
@@ -46,7 +44,7 @@ export default class RequestFormatter {
 				body: JSON.stringify(mergedBodyParameters),
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${parameters.api_key}`,
+					Authorization: `Bearer ${parameters.apiKey}`,
 				}
 			};
 

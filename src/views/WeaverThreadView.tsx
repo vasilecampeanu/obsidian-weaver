@@ -1,14 +1,16 @@
-import { ItemView, WorkspaceLeaf, Platform } from 'obsidian';
+// Obsidian
+import Weaver from 'main'
+import { ItemView, Platform, WorkspaceLeaf } from 'obsidian';
 
-import { createRoot, Root } from "react-dom/client";
+// Third-party modules
 import React from 'react';
+import { createRoot, Root } from "react-dom/client";
 
-import { WEAVER_CHAT_VIEW_TYPE } from '../../constants';
-import Weaver from '../../main'
+// Constants
+import { WEAVER_THREAD_VIEW } from '../constants';
+import { ThreadTabsManager } from 'components/Thread/ThreadTabsManager';
 
-import { TabsManager } from './TabsManager';
-
-export class WeaverChatView extends ItemView {
+export class WeaverThreadView extends ItemView {
 	private readonly plugin: Weaver;
 	private root: Root;
 
@@ -19,7 +21,7 @@ export class WeaverChatView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		this.destroy();
-		this.constructWeaverChatView();
+		this.constructWeaverThreadView();
 	}
 
 	async onClose(): Promise<void> {
@@ -37,18 +39,18 @@ export class WeaverChatView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'git-branch-plus';
+		return 'git-pull-request-draft';
 	}
 
 	getDisplayText(): string {
-		return 'Weaver Chat';
+		return 'Weaver';
 	}
 
 	getViewType(): string {
-		return WEAVER_CHAT_VIEW_TYPE;
+		return WEAVER_THREAD_VIEW;
 	}
 
-	constructWeaverChatView() {
+	constructWeaverThreadView() {
 		this.destroy();
 
 		const viewContent = this.containerEl.querySelector(
@@ -56,7 +58,7 @@ export class WeaverChatView extends ItemView {
 		) as HTMLElement;
 
 		if (viewContent) {
-			viewContent.classList.add("weaver-view");
+			viewContent.classList.add("ow-view");
 			this.appendWeaver(viewContent);
 		} else {
 			console.error("Could not find view content!");
@@ -66,7 +68,7 @@ export class WeaverChatView extends ItemView {
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
 		this.root.render (
-			<TabsManager plugin={ this.plugin } />
+			<ThreadTabsManager plugin={this.plugin} />
  		);
 	}
 }

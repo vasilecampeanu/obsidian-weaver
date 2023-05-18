@@ -1,0 +1,163 @@
+.view-content.ow-view
+{
+	display: grid;
+	height: 100%;
+	
+	.ow-thread-tabs-manager
+	{
+		align-self: stretch;
+		display: grid;
+		height: 100%;
+
+		.ow-thread
+		{
+			align-self: stretch;
+			display: grid;
+			grid-template-rows: auto 1fr;
+	
+			.ow-thread-header
+			{
+				display: grid;
+				grid-template-columns: 1fr;
+				gap: 5px;
+				padding-bottom: 15px;
+
+				.ow-thread-title
+				{
+					display: grid;
+					grid-template-columns: 1fr auto;
+
+					.ow-title
+					{
+						align-self: center;
+						color: var(--text-muted);
+						text-transform: uppercase;
+						font-size: 13px;
+						letter-spacing: .05em;
+					}
+
+					.ow-actions
+					{
+						align-self: center;
+
+						button
+						{
+							all: unset;
+							display: grid;
+							cursor: var(--cursor);
+							align-self: center;
+							padding: 5px;
+							border-radius: 5px;
+
+							&:hover
+							{
+								background-color: var(--background-modifier-hover);
+							}
+
+							svg
+							{
+								place-self: center;
+								width: 16px;
+								height: 16px;
+								color: var(--icon-color);
+							}
+						}
+					}
+				}
+
+				.search-row
+				{
+					display: grid;
+					margin: 0px !important;
+
+					.search-input-container
+					{
+						margin: 5px 0px;
+
+						input
+						{
+							width: 100% !important;
+						}
+					}
+
+					.ow-messages-count
+					{
+						font-size: 11px;
+						color: var(--text-muted);
+						margin: 2.5px 0px;
+					}
+
+					hr
+					{
+						border-top: 1px solid var(--background-modifier-border);
+						margin: 5px 0px 0px 0px;
+					}
+				}
+			}
+	
+			.ow-thread-list
+			{
+				div
+				{
+					&::-webkit-scrollbar 
+					{
+						display: none;
+					}
+					
+					.ow-list-section
+					{
+						display: grid;
+	
+						.ow-list-section-title
+						{
+							display: flex;
+							gap: 5px;
+							align-self: center;
+							color: var(--text-muted);
+							text-transform: uppercase;
+							font-size: 11px;
+							letter-spacing: .05em;
+
+							button
+							{
+								all: unset;
+								display: grid;
+								cursor: var(--cursor);
+								align-self: center;
+								padding: 2.5px;
+								border-radius: 3.5px;
+								// background-color: var(--background-modifier-hover);
+	
+								&:hover
+								{
+									background-color: var(--background-modifier-hover);
+								}
+	
+								svg
+								{
+									place-self: center;
+									width: 11px;
+									height: 11px;
+									strokeWidth: 3;
+									color: var(--icon-color);
+								}
+							}
+
+							span
+							{
+								align-self: center;
+								font-weight: bold;
+							}
+						}
+					}
+				}
+
+				.ow-info
+				{
+					font-size: 13px;
+					color: var(--text-faint);
+				}
+			}
+		}	
+	}	
+}
