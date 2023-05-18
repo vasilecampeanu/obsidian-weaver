@@ -39,7 +39,7 @@ export class WeaverThreadView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'git-pull-request-draft';
+		return 'git-branch-plus';
 	}
 
 	getDisplayText(): string {
