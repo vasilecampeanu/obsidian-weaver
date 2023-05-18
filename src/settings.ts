@@ -160,7 +160,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Insert Welcome Messaje')
+			.setName('Insert Welcome Message')
 			.setDesc('Controls whether or not a welcome message will be automatically added when a new chat session is created.')
 			.addToggle(v => v
 				.setValue(this.plugin.settings.showWelcomeMessage)
