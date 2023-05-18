@@ -1,0 +1,154 @@
+.ow-message-bubble
+{
+	display: flex;
+	gap: 5px;
+
+	.ow-message-bubble-content
+	{
+		display: grid;
+		font-size: 13px;
+		grid-template-rows: auto auto;
+		padding: 10px;
+		max-width: 85%;
+		border-radius: 10px;
+		border: 1px solid var(--prompt-border-color);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+
+		.ow-message-bubble-top-bar
+		{
+			width: 100%;
+			display: grid;
+			border-bottom: 1px solid gray;
+
+			&.show
+			{
+				display: none;
+			}
+
+			.ow-branch-selector
+			{
+				display: flex;
+				align-items: center;
+
+				button
+				{
+					all: unset;
+					display: grid;
+	
+					svg
+					{
+						place-self: center;
+						width: 11px;				
+						height: 11px;					
+					}
+				}
+
+				span
+				{
+					font-size: 9px;
+					user-select: none;
+				}
+			}
+		}
+	}
+
+	.ow-message-actions
+	{
+		opacity: 0;
+
+		.ow-copy-button
+		{
+			all: unset;
+			cursor: var(--cursor);
+
+			svg
+			{
+				width: 13px;
+				height: 13px;
+				color: var(--icon-color);
+				opacity: .5;
+			}
+
+			&:hover
+			{
+				svg
+				{
+					opacity: .75;
+				}
+			}
+		}
+	}
+
+	&:hover .ow-message-actions
+	{
+		opacity: 1;
+	}
+
+	&.ow-message-bubble-has-top-bar
+	{
+		.ow-message-bubble-content
+		{
+			// padding-top: 0px;
+			
+			.ow-message-bubble-top-bar
+			{
+				padding-bottom: 5px;
+				margin-bottom: 10px;
+			}
+		}
+	}
+
+	&.ow-user-bubble
+	{
+		justify-content: end;
+
+		*::selection
+		{
+			background-color: rgba(246, 246, 246, 0.3) !important;
+			opacity: .5 !important;
+		}
+
+		.ow-message-bubble-content
+		{
+			order: 2;
+			background-color: hsla(var(--interactive-accent-hsl), 0.55);
+			
+			.ow-message-bubble-top-bar
+			{
+				.ow-branch-selector
+				{
+					justify-self: end;
+				}
+			}
+		}
+
+		.ow-message-actions
+		{
+			order: 1;
+		}
+	}
+
+	&.ow-assistant-bubble
+	{
+		justify-content: start;
+
+		.ow-message-bubble-content
+		{
+			order: 1;
+			background-color: var(--interactive-normal);
+
+			.ow-message-bubble-top-bar
+			{
+				.ow-branch-selector
+				{
+					justify-self: start;
+				}
+			}
+		}
+
+		.ow-message-actions
+		{
+			order: 2;
+		}
+	}
+}

@@ -1,4 +1,3 @@
-// EventEmitter.ts
 interface EventListener {
 	(...args: any[]): void;
 }
@@ -14,6 +13,7 @@ class EventEmitter {
 		if (!this.events[eventName]) {
 			this.events[eventName] = [];
 		}
+
 		this.events[eventName].push(listener);
 	}
 

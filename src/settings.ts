@@ -1,52 +1,50 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import Weaver from "main";
-import { text } from "stream/consumers";
-import { ThreadsManager } from "utils/ThreadsManager";
 
 export const DEFAULT_MODELS: Record<string, string> = {
 	"gpt-3.5-turbo": "gpt-3.5-turbo",
-	"gpt-3.5-turbo-0301": "gpt-3.5-turbo-0301",
 	"gpt-4": "gpt-4"
 };
 
 export interface WeaverSettings {
-	api_key: string,
-	engine: string,
-	models: any,
-	max_tokens: number,
-	temperature: number,
-	frequency_penalty: number,
-	weaverFolderPath: string,
-	systemRolePrompt: string,
-	showWelcomeMessage: boolean,
-	openOnStartUp: boolean,
-	activeThreadId: number,
-	activeThreadTitle: string | null
+    activeThreadId: number,
+    activeThreadTitle: string | null,
+    apiKey: string,
+    engine: string,
+    frequencyPenalty: number,
+    maxTokens: number,
+    models: any,
+    openOnStartUp: boolean,
+    showWelcomeMessage: boolean,
+    systemRolePrompt: string,
+    temperature: number,
+    weaverFolderPath: string,
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
-	api_key: "",
-	engine: "gpt-3.5-turbo",
-	models: DEFAULT_MODELS,
-	max_tokens: 512,
-	temperature: 0.7,
-	frequency_penalty: 0.5,
-	weaverFolderPath: "bins/weaver",
-	systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links and code blocks. In addition to Markdown, please utilize LaTeX formatting when necessary to render mathematical symbols and equations in a clear and concise manner. This includes, but is not limited to, using symbols such as $\alpha$, $\beta$, $\gamma$, $\delta$, and $\theta$ and equations like $f(x) = x^2 + 2x + 1$ and $\int_{0}^{\infty} e^{-x^2} dx$. For formulas that are on a single line, enclose the LaTeX code between four dollar signs ($$$$) Please ensure that you follow proper LaTeX syntax and formatting guidelines to ensure the readability and coherence of your responses.",
-	showWelcomeMessage: true,
-	openOnStartUp: true,
-	activeThreadId: -1,
-	activeThreadTitle: null
-}
+    activeThreadId: -1,
+    activeThreadTitle: null,
+    apiKey: "",
+    engine: "gpt-3.5-turbo",
+    frequencyPenalty: 0.5,
+    maxTokens: 512,
+    models: DEFAULT_MODELS,
+    openOnStartUp: true,
+    showWelcomeMessage: true,
+    systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links and code blocks. In addition to Markdown, please utilize LaTeX formatting when necessary to render mathematical symbols and equations in a clear and concise manner. This includes, but is not limited to, using symbols such as $\alpha$, $\beta$, $\gamma$, $\delta$, and $\theta$ and equations like $f(x) = x^2 + 2x + 1$ and $\int_{0}^{\infty} e^{-x^2} dx$. For formulas that are on a single line, enclose the LaTeX code between four dollar signs ($$$$) Please ensure that you follow proper LaTeX syntax and formatting guidelines to ensure the readability and coherence of your responses.",
+    temperature: 0.7,
+    weaverFolderPath: "bins/weaver",
+};
 
 export class WeaverSettingTab extends PluginSettingTab {
-	private readonly plugin: Weaver;
 	public app: App;
+	private readonly plugin: Weaver;
 
 	constructor(app: App, plugin: Weaver) {
 		super(app, plugin);
-		this.plugin = plugin;
+
 		this.app = app;
+		this.plugin = plugin;
 	}
 
 	display(): void {
@@ -59,16 +57,15 @@ export class WeaverSettingTab extends PluginSettingTab {
 			text: 'OpenAI'
 		});
 
-		// API Key
 		let inputEl;
 		new Setting(containerEl)
 			.setName('API Key')
 			.setDesc('In order to generate an API Key, you must first create an OpenAI account.')
 			.addText(text => text
 				.setPlaceholder('Enter your API Key')
-				.setValue(this.plugin.settings.api_key)
+				.setValue(this.plugin.settings.apiKey)
 				.onChange(async (value) => {
-					this.plugin.settings.api_key = value;
+					this.plugin.settings.apiKey = value;
 					await this.plugin.saveSettings();
 				})
 				.then((textEl) => {
@@ -77,7 +74,6 @@ export class WeaverSettingTab extends PluginSettingTab {
 				.inputEl.setAttribute('type', 'password')
 			)
 
-		// Models
 		let models: Record<string, string> = this.plugin.settings.models;
 
 		new Setting(containerEl)
@@ -94,10 +90,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 				});
 			})
 
-		// Engine Settinhgs
-		containerEl.createEl('h2', {
-			text: 'Model Configuration'
-		});
+		containerEl.createEl('h2', { text: 'Model Configuration' });
 
 		new Setting(containerEl)
 			.setName('System Role Prompt')
@@ -111,18 +104,16 @@ export class WeaverSettingTab extends PluginSettingTab {
 				.inputEl.setAttribute('size', '50')
 			)
 
-		// Tockens
 		new Setting(containerEl)
 			.setName('Maximum Tokens')
 			.setDesc('This represents the maximum number of tokens that will be generated as a response (1000 tokens ~ 750 words).')
 			.addText(text => text
-				.setValue(this.plugin.settings.max_tokens.toString())
+				.setValue(this.plugin.settings.maxTokens.toString())
 				.onChange(async (value) => {
-					this.plugin.settings.max_tokens = parseInt(value);
+					this.plugin.settings.maxTokens = parseInt(value);
 					await this.plugin.saveSettings();
 				}));
 
-		// Temperature
 		new Setting(containerEl)
 			.setName('Temperature')
 			.setDesc('Controls the randomness of the generated text.')
@@ -133,14 +124,13 @@ export class WeaverSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		// Frequency Penality
 		new Setting(containerEl)
 			.setName('Frequency Penalty')
 			.setDesc('Controls the repetition of the generated text.')
 			.addText(text => text
-				.setValue(this.plugin.settings.frequency_penalty.toString())
+				.setValue(this.plugin.settings.frequencyPenalty.toString())
 				.onChange(async (value) => {
-					this.plugin.settings.frequency_penalty = parseFloat(value);
+					this.plugin.settings.frequencyPenalty = parseFloat(value);
 					await this.plugin.saveSettings();
 				})
 			);

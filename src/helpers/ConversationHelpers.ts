@@ -1,20 +1,6 @@
-// Obsidian
+import { IConversation } from 'interfaces/IThread';
 import Weaver from 'main';
 import { FileSystemAdapter, normalizePath } from 'obsidian';
-
-// Third-party modules
-import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
-
-// Interfaces
-import { IChatMessage, IChatSession, IChatThread } from 'interfaces/IChats';
-
-// Local modules
-import { FileIOManager } from './FileIOManager';
-import { MigrationAssistant } from './MigrationAssistant';
-import { DescriptorManager } from 'utils/DescriptorManager';
-import { ConversationBsonManager } from 'utils/ConversationBsonManager';
-import { MetadataManager } from 'utils/MetadataManager';
-import { FileWizard } from 'utils/FileWizard';
 
 export class ConversationHelper {
 	static getRandomWelcomeMessage(): string {
