@@ -1,7 +1,9 @@
 import { IConversation } from "interfaces/IThread";
+import Weaver from "main";
 
 const sectionHeaderHeight = 25;
 const itemHeight = 50;
+const compactItemHeight = 40;
 
 export const filterConversations = (
 	conversations: IConversation[],
@@ -35,4 +37,4 @@ export const getSection = (creationDate: string) => {
 	return "Older";
 };
 
-export const getItemSize = (item: any) => (item.isSectionHeader ? sectionHeaderHeight : itemHeight);
+export const getItemSize = (plugin: Weaver, item: any) => (item.isSectionHeader ? sectionHeaderHeight : plugin.settings.threadViewCompactMode === true ? compactItemHeight : itemHeight);

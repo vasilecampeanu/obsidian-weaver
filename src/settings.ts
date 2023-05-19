@@ -19,6 +19,8 @@ export interface WeaverSettings {
     systemRolePrompt: string,
     temperature: number,
     weaverFolderPath: string,
+	threadViewIdentationGuides: boolean,
+	threadViewCompactMode: boolean
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -34,6 +36,8 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
     systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links and code blocks. In addition to Markdown, please utilize LaTeX formatting when necessary to render mathematical symbols and equations in a clear and concise manner. This includes, but is not limited to, using symbols such as $\alpha$, $\beta$, $\gamma$, $\delta$, and $\theta$ and equations like $f(x) = x^2 + 2x + 1$ and $\int_{0}^{\infty} e^{-x^2} dx$. For formulas that are on a single line, enclose the LaTeX code between four dollar signs ($$$$) Please ensure that you follow proper LaTeX syntax and formatting guidelines to ensure the readability and coherence of your responses.",
     temperature: 0.7,
     weaverFolderPath: "bins/weaver",
+	threadViewIdentationGuides: true,
+	threadViewCompactMode: false
 };
 
 export class WeaverSettingTab extends PluginSettingTab {
@@ -166,6 +170,29 @@ export class WeaverSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showWelcomeMessage)
 				.onChange(async (value) => {
 					this.plugin.settings.showWelcomeMessage = value;
+					await this.plugin.saveSettings();
+				}));
+
+		containerEl.createEl('h2', { text: 'Interface' });
+		containerEl.createEl('h3', { text: 'Thread View' });
+		
+		new Setting(containerEl)
+			.setName('Identation Guides')
+			.setDesc('Show Identation Guides on Thread View.')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.threadViewIdentationGuides)
+				.onChange(async (value) => {
+					this.plugin.settings.threadViewIdentationGuides = value;
+					await this.plugin.saveSettings();
+				}));
+		
+		new Setting(containerEl)
+			.setName('Compact Mode')
+			.setDesc('Show Identation Guides on Thread View.')
+			.addToggle(v => v
+				.setValue(this.plugin.settings.threadViewCompactMode)
+				.onChange(async (value) => {
+					this.plugin.settings.threadViewCompactMode = value;
 					await this.plugin.saveSettings();
 				}));
 	}

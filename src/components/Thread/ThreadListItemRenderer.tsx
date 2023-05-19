@@ -24,7 +24,7 @@ export const ThreadListItemRenderer: React.FC<ItemRendererProps> = ({
 }) => {
 	return (
 		<div className="ow-list-item-wrapper" style={style}>
-			<div className="ow-vertical-line">
+			<div className={`ow-identation-guides ${plugin.settings.threadViewIdentationGuides === false ? 'ow-hide-identation-guides' : null}`}>
 			</div>
 			<ThreadListItem
 				key={item.id}

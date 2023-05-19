@@ -113,10 +113,6 @@
 							display: flex;
 							gap: 5px;
 							align-self: center;
-							color: var(--text-muted);
-							text-transform: uppercase;
-							font-size: 11px;
-							letter-spacing: .05em;
 
 							button
 							{
@@ -138,15 +134,35 @@
 									place-self: center;
 									width: 11px;
 									height: 11px;
-									strokeWidth: 3;
+									stroke-width: 3;
 									color: var(--icon-color);
 								}
 							}
 
 							span
 							{
+								display: flex;
+								gap: 5px;
 								align-self: center;
 								font-weight: bold;
+
+								color: var(--text-muted);
+								text-transform: uppercase;
+								font-size: 11px;
+								letter-spacing: .05em;
+
+								.ow-icon
+								{
+									display: grid;
+
+									svg
+									{
+										place-self: center;
+										width: 11px;
+										height: 11px;
+										stroke-width: 3;
+									}
+								}
 							}
 						}
 					}
