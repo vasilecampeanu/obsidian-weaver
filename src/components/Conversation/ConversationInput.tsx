@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface ConversationInput {
 	plugin: Weaver;
-	conversation: IConversation | null | undefined;
-	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | null>>;
+	conversation: IConversation | undefined;
+	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | undefined>>;
 	onConversationLoad: (conversation: IConversation) => void;
 	onTabSwitch: (tabId: string) => void;
 }

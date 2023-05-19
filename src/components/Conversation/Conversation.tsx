@@ -8,7 +8,7 @@ import { ConversationInput } from "./ConversationInput";
 interface ConversationProps {
 	plugin: Weaver;
 	onTabSwitch: (tabId: string) => void;
-	conversation: IConversation | null;
+	conversation: IConversation | undefined;
 	onConversationLoad: (conversation: IConversation) => void;
 }
 
@@ -18,7 +18,7 @@ export const Conversation: React.FC<ConversationProps> = ({
 	conversation,
 	onConversationLoad
 }) => {
-	const [conversationSession, setConversationSession] = useState<IConversation | null>(null);
+	const [conversationSession, setConversationSession] = useState<IConversation | undefined>();
 
 	useEffect(() => {
 		setConversationSession(conversation);

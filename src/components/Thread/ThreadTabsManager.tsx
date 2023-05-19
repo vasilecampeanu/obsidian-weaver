@@ -14,7 +14,7 @@ interface ThreadTabsManagerProps {
 export const ThreadTabsManager: React.FC<ThreadTabsManagerProps> = ({plugin}) => {
 	const [activeTab, setActiveTab] = useState("thread-page");
 	const [reloadTrigger, setReloadTrigger] = React.useState<number>(0);
-	const [conversation, setConversation] = useState<IConversation | null>(null);
+	const [conversation, setConversation] = useState<IConversation | undefined>();
 
 	useEffect(() => {
 		const handleReload = async () => {

@@ -8,7 +8,7 @@ import { ConversationEngineInfo } from "./ConversationEngineInfo";
 interface ConversationDialogueProps {
 	plugin: Weaver;
 	conversation: IConversation | null | undefined;
-	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | null>>;
+	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | undefined>>;
 }
 
 export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
