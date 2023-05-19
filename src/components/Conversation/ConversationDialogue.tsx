@@ -5,6 +5,7 @@ import { ConversationMessageBubble } from "./ConversationMessageBubble";
 import { ConversationManager } from "utils/ConversationManager";
 import { ConversationEngineInfo } from "./ConversationEngineInfo";
 import { ConversationRenderer } from "helpers/ConversationRenderer";
+import MessageRenderer from "./ConversationMessageRenderer";
 
 interface ConversationDialogueProps {
 	plugin: Weaver;
@@ -20,7 +21,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [selectedChildren, setSelectedChildren] = useState<{ [key: string]: number }>({});
 	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">(plugin.settings.engine as any);
 	const [showEngineInfo, setShowEngineInfo] = useState(false);
-	
+
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
 	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
 	const TIMEOUT_DELAY = 250;
@@ -115,49 +116,6 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		}
 	};
 
-	const renderMessages = (messageId: string, previousMessage: IChatMessage | undefined = undefined): React.ReactNode => {
-		const message: IChatMessage | undefined = conversation?.messages.find((msg) => msg.id === messageId);
-		const renderer = new ConversationRenderer(conversation);
-
-		if (!message) {
-			return null;
-		}
-
-		const childIds = message.children || [];
-		const selectedChildIndex = selectedChildren[messageId] || 0;
-		const selectedPreviousChildIndex = selectedChildren[previousMessage?.id as string] || 0;
-
-		if (message.role === "system") {
-			return childIds[selectedChildIndex] && renderMessages(childIds[selectedChildIndex], message);
-		}
-
-		const messagesRendered = renderer.getRenderedMessages();
-		const reverseMessages = messagesRendered.reverse();
-
-		const lastUserMessage = reverseMessages.find(message => message.role === 'user');
-		const lastAssistantMessage = reverseMessages.find(message => message.role === 'assistant');
-
-		let contextDisplay = false;
-
-		if (conversation?.context === false && ((message.id === lastUserMessage?.id) || (message.id === lastAssistantMessage?.id))) {
-			contextDisplay = true;
-		}
-
-		return (
-			<>
-				<ConversationMessageBubble
-					plugin={plugin}
-					message={message}
-					previousMessage={previousMessage}
-					selectedChild={selectedPreviousChildIndex}
-					onSelectedChildChange={(increment: number) => changeSelectedChild(previousMessage?.id, increment)}
-					contextDisplay={contextDisplay}
-				/>
-				{childIds[selectedChildIndex] && renderMessages(childIds[selectedChildIndex], message)}
-			</>
-		);
-	};
-
 	const handleSetGPT3 = () => {
 		setActiveEngine("gpt-3.5-turbo");
 		plugin.settings.engine = "gpt-3.5-turbo";
@@ -174,7 +132,15 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		<div className={`ow-conversation-dialogue ${conversation?.context === false ? "ow-context" : ""}`} ref={dialogueTimelineRef}>
 			{
 				conversation!?.messages.length > 1 ? (
-					rootMessage && renderMessages(rootMessage.id)
+					rootMessage && (
+						<MessageRenderer
+							messageId={rootMessage.id}
+							selectedChildren={selectedChildren}
+							changeSelectedChild={changeSelectedChild}
+							conversation={conversation}
+							plugin={plugin}
+						/>
+					)
 				) : (
 					showEngineInfo && (
 						<div className="ow-message-empty-dialogue">

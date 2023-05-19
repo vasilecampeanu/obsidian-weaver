@@ -1,7 +1,6 @@
 import { IChatMessage, IConversation } from "interfaces/IThread";
 
 export class ConversationRenderer {
-	// Stores the index of each selected child message by their parent's message id.
 	private selectedChildren: { [key: string]: number } = {};
 
 	constructor(private conversation?: IConversation) {

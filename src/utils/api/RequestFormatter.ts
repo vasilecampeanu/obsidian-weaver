@@ -11,7 +11,6 @@ interface BodyParameters {
 	messages?: { role: string; content: string }[];
 	model: string;
 	temperature: number;
-	stream: boolean
 }
 
 export default class RequestFormatter {
@@ -30,8 +29,7 @@ export default class RequestFormatter {
 				frequency_penalty: parameters.frequencyPenalty,
 				max_tokens: parameters.maxTokens,
 				model: parameters.engine,
-				temperature: parameters.temperature,
-				stream: parameters.stream,
+				temperature: parameters.temperature
 			};
 
 			bodyParameters.messages = conversationHistory.map((message) => {
