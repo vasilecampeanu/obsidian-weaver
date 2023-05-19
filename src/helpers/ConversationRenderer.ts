@@ -1,50 +1,57 @@
 import { IChatMessage, IConversation } from "interfaces/IThread";
 
 export class ConversationRenderer {
-	// Initialize selected children object.
-	static selectedChildren: { [key: string]: number } = {};
+	// Stores the index of each selected child message by their parent's message id.
+	private selectedChildren: { [key: string]: number } = {};
 
-	// Function to find path to current node and populate selectedChildren.
-	static findPathToCurrentNode = (conversation: IConversation | undefined, messageId: string, path: string[]): string[] => {
-		const message = conversation!.messages.find(msg => msg.id === messageId);
+	constructor(private conversation?: IConversation) {
+		if (!conversation) {
+			throw new Error('Conversation cannot be undefined');
+		}
+	}
 
-		if (message) {
-			if (message.children && message.children.length > 0) {
-				for (let i = 0; i < message.children.length; i++) {
-					const childId = message.children[i];
-					if (childId === conversation!.currentNode || this.findPathToCurrentNode(conversation, childId, [...path, messageId]).length > 0) {
-						this.selectedChildren[messageId] = i;
-						return [...path, messageId];
-					}
+	private populateSelectedChildrenWithPathToNode(messageId: string, path: string[] = []): string[] {
+		const message = this.conversation!.messages.find(msg => msg.id === messageId);
+
+		if (!message) {
+			return [];
+		}
+
+		if (message.children && message.children.length > 0) {
+			for (let i = 0; i < message.children.length; i++) {
+				const childId = message.children[i];
+				if (childId === this.conversation!.currentNode || this.populateSelectedChildrenWithPathToNode(childId, [...path, messageId]).length > 0) {
+					this.selectedChildren[messageId] = i;
+					return [...path, messageId];
 				}
 			}
 		}
 
 		return [];
 	}
-	
-	static deriveRenderedMessages = (conversation: IConversation | undefined, messageId: string): IChatMessage[] => {
-		const message: IChatMessage | undefined = conversation!.messages.find((msg) => msg.id === messageId);
 
-		if (!message) return [];
+	private deriveRenderedMessages(messageId: string): IChatMessage[] {
+		const message = this.conversation!.messages.find((msg) => msg.id === messageId);
+
+		if (!message) {
+			return [];
+		}
 
 		const childIds = message.children || [];
 		const selectedChildIndex = this.selectedChildren[messageId] || 0;
+		const nextMessage = childIds[selectedChildIndex] ? this.deriveRenderedMessages(childIds[selectedChildIndex]) : [];
 
-		if (message.role === "system") {
-			return childIds[selectedChildIndex] ? this.deriveRenderedMessages(conversation, childIds[selectedChildIndex]) : [];
+		return message.role === "system" ? nextMessage : [message, ...nextMessage];
+	}
+
+	public getRenderedMessages(): IChatMessage[] {
+		const rootMessage = this.conversation!.messages.find((msg) => msg.role === "system");
+
+		if (!rootMessage) {
+			return [];
 		}
 
-		return [
-			message,
-			...(childIds[selectedChildIndex] ? this.deriveRenderedMessages(conversation, childIds[selectedChildIndex]) : [])
-		];
-	};
-
-	static getRenderedMessages = (conversation: IConversation | undefined): IChatMessage[] => {
-		if (!conversation) return [];
-		this.findPathToCurrentNode(conversation, conversation.messages.find(msg => msg.role === "system")?.id || '', []);
-		const rootMessage = conversation.messages.find((msg) => msg.role === "system");
-		return rootMessage ? this.deriveRenderedMessages(conversation, rootMessage.id) : [];
-	};
+		this.populateSelectedChildrenWithPathToNode(rootMessage.id);
+		return this.deriveRenderedMessages(rootMessage.id);
+	}
 }

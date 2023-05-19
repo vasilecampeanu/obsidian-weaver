@@ -117,6 +117,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 
 	const renderMessages = (messageId: string, previousMessage: IChatMessage | undefined = undefined): React.ReactNode => {
 		const message: IChatMessage | undefined = conversation?.messages.find((msg) => msg.id === messageId);
+		const renderer = new ConversationRenderer(conversation);
 
 		if (!message) {
 			return null;
@@ -130,7 +131,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			return childIds[selectedChildIndex] && renderMessages(childIds[selectedChildIndex], message);
 		}
 
-		const messagesRendered = ConversationRenderer.getRenderedMessages(conversation);
+		const messagesRendered = renderer.getRenderedMessages();
 		const reverseMessages = messagesRendered.reverse();
 
 		const lastUserMessage = reverseMessages.find(message => message.role === 'user');
