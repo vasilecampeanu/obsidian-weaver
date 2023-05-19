@@ -18,9 +18,18 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 }) => {
 	const [selectedChildren, setSelectedChildren] = useState<{ [key: string]: number }>({});
 	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">(plugin.settings.engine as any);
+	const [showEngineInfo, setShowEngineInfo] = useState(false);
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
 
 	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setShowEngineInfo(true);
+		}, 250);
+
+		return () => clearTimeout(timer);
+	}, []);
 
 	useEffect(() => {
 		const messageList = dialogueTimelineRef.current;
@@ -219,33 +228,35 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 				conversation!?.messages.length > 1 ? (
 					rootMessage && renderMessages(rootMessage.id)
 				) : (
-					<div className="ow-message-empty-dialogue">
-						<div className="ow-change-engine">
-							<button
-								className={activeEngine === "gpt-3.5-turbo" ? "ow-active" : ""}
-								onClick={handleSetGPT3}
-							>
-								<div className="ow-icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-								</div>
-								<span>
-									GPT-3.5
-								</span>
-							</button>
-							<button
-								className={activeEngine === "gpt-4" ? "ow-active" : ""}
-								onClick={handleSetGPT4}
-							>
-								<div className="ow-icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
-								</div>
-								<span>
-									GPT-4
-								</span>
-							</button>
+					showEngineInfo && (
+						<div className="ow-message-empty-dialogue">
+							<div className="ow-change-engine">
+								<button
+									className={activeEngine === "gpt-3.5-turbo" ? "ow-active" : ""}
+									onClick={handleSetGPT3}
+								>
+									<div className="ow-icon">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+									</div>
+									<span>
+										GPT-3.5
+									</span>
+								</button>
+								<button
+									className={activeEngine === "gpt-4" ? "ow-active" : ""}
+									onClick={handleSetGPT4}
+								>
+									<div className="ow-icon">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
+									</div>
+									<span>
+										GPT-4
+									</span>
+								</button>
+							</div>
+							<ConversationEngineInfo plugin={plugin} activeEngine={activeEngine} />
 						</div>
-						<ConversationEngineInfo plugin={plugin} activeEngine={activeEngine} />
-					</div>
+					)
 				)
 			}
 		</div>
