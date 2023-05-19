@@ -24,8 +24,7 @@
 			display: grid;
 			grid-template-columns: auto 1fr;
 			gap: 10px;
-			padding: 5px 10px;
-			padding-left: 7px;
+			padding: 5px 7px;
 			border-radius: 3.5px;
 
 			&:hover
@@ -51,6 +50,7 @@
 						width: 13px;
 						height: 13px;
 						color: var(--nav-item-color);
+						strokeWidth: 2;
 					}
 				}
 			}
