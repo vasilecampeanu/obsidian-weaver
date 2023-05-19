@@ -4,10 +4,11 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import { ConversationMessageBubble } from "./ConversationMessageBubble";
 import { ConversationManager } from "utils/ConversationManager";
 import { ConversationEngineInfo } from "./ConversationEngineInfo";
+import { ConversationRenderer } from "helpers/ConversationRenderer";
 
 interface ConversationDialogueProps {
 	plugin: Weaver;
-	conversation: IConversation | null | undefined;
+	conversation: IConversation | undefined;
 	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | undefined>>;
 }
 
@@ -19,14 +20,15 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [selectedChildren, setSelectedChildren] = useState<{ [key: string]: number }>({});
 	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">(plugin.settings.engine as any);
 	const [showEngineInfo, setShowEngineInfo] = useState(false);
+	
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
-
 	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
+	const TIMEOUT_DELAY = 250;
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setShowEngineInfo(true);
-		}, 250);
+		}, TIMEOUT_DELAY);
 
 		return () => clearTimeout(timer);
 	}, []);
@@ -71,61 +73,6 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		}
 	}, [conversation]);
 
-	const getRenderedMessages = (conversation: IConversation | null | undefined): IChatMessage[] => {
-		if (!conversation) {
-			return [];
-		}
-
-		// Initialize selected children object.
-		const selectedChildren: { [key: string]: number } = {};
-
-		// Function to find path to current node and populate selectedChildren.
-		const findPathToCurrentNode = (messageId: string, path: string[]): string[] => {
-			const message = conversation.messages.find(msg => msg.id === messageId);
-			if (message) {
-				if (message.children && message.children.length > 0) {
-					for (let i = 0; i < message.children.length; i++) {
-						const childId = message.children[i];
-						if (childId === conversation.currentNode || findPathToCurrentNode(childId, [...path, messageId]).length > 0) {
-							selectedChildren[messageId] = i;
-							return [...path, messageId];
-						}
-					}
-				}
-			}
-
-			return [];
-		}
-
-		// Start finding path from the root message.
-		findPathToCurrentNode(conversation.messages.find(msg => msg.role === "system")?.id || '', []);
-
-		// Function to get messages to be rendered.
-		const deriveRenderedMessages = (messageId: string): IChatMessage[] => {
-			const message: IChatMessage | undefined | null = conversation.messages.find((msg) => msg.id === messageId);
-
-			if (!message) {
-				return [];
-			}
-
-			const childIds = message.children || [];
-			const selectedChildIndex = selectedChildren[messageId] || 0;
-
-			if (message.role === "system") {
-				return childIds[selectedChildIndex] ? deriveRenderedMessages(childIds[selectedChildIndex]) : [];
-			}
-
-			return [
-				message,
-				...(childIds[selectedChildIndex] ? deriveRenderedMessages(childIds[selectedChildIndex]) : [])
-			];
-		};
-
-		const rootMessage = conversation.messages.find((msg) => msg.role === "system");
-
-		return rootMessage ? deriveRenderedMessages(rootMessage.id) : [];
-	};
-
 	const changeSelectedChild = async (messageId: string | undefined, increment: number) => {
 		const message = conversation?.messages.find((msg) => msg.id === messageId);
 
@@ -169,7 +116,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	};
 
 	const renderMessages = (messageId: string, previousMessage: IChatMessage | undefined = undefined): React.ReactNode => {
-		const message: IChatMessage | undefined | null = conversation?.messages.find((msg) => msg.id === messageId);
+		const message: IChatMessage | undefined = conversation?.messages.find((msg) => msg.id === messageId);
 
 		if (!message) {
 			return null;
@@ -183,7 +130,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			return childIds[selectedChildIndex] && renderMessages(childIds[selectedChildIndex], message);
 		}
 
-		const messagesRendered = getRenderedMessages(conversation);
+		const messagesRendered = ConversationRenderer.getRenderedMessages(conversation);
 		const reverseMessages = messagesRendered.reverse();
 
 		const lastUserMessage = reverseMessages.find(message => message.role === 'user');
