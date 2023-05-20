@@ -3,6 +3,7 @@ import Weaver from "main";
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { ConversationManager } from "utils/ConversationManager";
 import OpenAIContentProvider from "utils/api/OpenAIContentProvider";
+import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
 
 interface ConversationInput {
@@ -62,14 +63,24 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		}
 	};
 
+	// const updateConversationWithMessage = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
+	// 	if (conversation) {
+	// 		const updatedMessages = await ConversationManager.addMessageToConversation(plugin, conversation.id, newMessage);
+	// 		callback(updatedMessages);
+	// 	} else {
+	// 		console.error('Chat session is not initialized.');
+	// 		return;
+	// 	}
+	// };
+
 	const getRenderedMessages = (conversation: IConversation | null | undefined): IChatMessage[] => {
 		if (!conversation) {
 			return [];
 		}
-	
+
 		// Initialize selected children object.
 		const selectedChildren: { [key: string]: number } = {};
-	
+
 		// Function to find path to current node and populate selectedChildren.
 		const findPathToCurrentNode = (messageId: string, path: string[]): string[] => {
 			const message = conversation.messages.find(msg => msg.id === messageId);
@@ -85,35 +96,35 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 					}
 				}
 			}
-	
+
 			return [];
 		}
-	
+
 		// Start finding path from the root message.
-		findPathToCurrentNode(conversation.messages.find(msg => msg.role === "system")?.id || '', []);	
-	
+		findPathToCurrentNode(conversation.messages.find(msg => msg.role === "system")?.id || '', []);
+
 		// Function to get messages to be rendered.
 		const deriveRenderedMessages = (messageId: string): IChatMessage[] => {
 			const message: IChatMessage | undefined | null = conversation.messages.find((msg) => msg.id === messageId);
-		
+
 			if (!message) {
 				return [];
 			}
-		
+
 			const childIds = message.children || [];
 			const selectedChildIndex = selectedChildren[messageId] || 0;
-		
+
 			return [
 				message,
 				...(childIds[selectedChildIndex] ? deriveRenderedMessages(childIds[selectedChildIndex]) : [])
 			];
 		};
-	
+
 		const rootMessage = conversation.messages.find((msg) => msg.role === "system");
-	
+
 		return rootMessage ? deriveRenderedMessages(rootMessage.id) : [];
-	};	
-	
+	};
+
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
@@ -125,7 +136,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		const currentMessage: IChatMessage | undefined = conversation?.messages.find((message) => message.id === currentNode);
 		const parentId: string = currentMessage?.id ?? uuidv4();
 
-		const userMessage: IChatMessage = { 
+		const userMessage: IChatMessage = {
 			children: [],
 			context: false,
 			content: inputText,
@@ -134,7 +145,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			role: 'user',
 			parent: parentId
 		};
-		
+
 		await updateConversation(userMessage, (updatedMessages) => {
 			setInputText('');
 			setConversationSession((prevState) => {
@@ -152,8 +163,8 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		});
 
 		let updatedMessages: IChatMessage[] = [];
-		
-		if(conversation?.context === true) {
+
+		if (conversation?.context === true) {
 			const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
 			let currentNodeMessages = rootMessage ? getRenderedMessages(conversation) : [];
 			updatedMessages = [...(currentNodeMessages), userMessage];
@@ -161,18 +172,17 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			updatedMessages = [userMessage];
 		}
 
-		const loadingAssistantMessage: IChatMessage = { 
+		const loadingAssistantMessage: IChatMessage = {
 			children: [],
 			content: '',
 			context: false,
 			creationDate: '',
 			id: uuidv4(),
-			isLoading: true,
 			role: 'assistant',
 			parent: userMessage.id
 		};
 
-		setIsLoading(true);
+		// setIsLoading(true);
 
 		setConversationSession((prevState) => {
 			const userMessageIndex = prevState?.messages.findIndex(
@@ -194,149 +204,199 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			}
 		});
 
-		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
-		
-		let assistantResponseContent = "";
-
-		if (openAIContentProviderRef.current.isRequestCancelled()) {
-			assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
-		} else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
-			console.error(assistantGeneratedResponse);
-			assistantResponseContent = assistantGeneratedResponse.slice(7);
-		} else {
-			assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
-		}
-
-		const assistantMessage: IChatMessage = { 
-			children: [],
-			context: false,
-			content: assistantResponseContent,
-			creationDate: new Date().toISOString(),
-			id: uuidv4(),
-			role: 'assistant',
-			parent: userMessage.id
-		};
-
-		await updateConversation(assistantMessage, (updatedMessages) => {
+		const updateCurrentAssistantMessageContent = async (newContent: string) => {
 			setConversationSession((prevState) => {
+				const userMessageIndex = prevState?.messages.findIndex(
+					(message) => message.id === userMessage.id
+				);
+
+				const prevMessages = [...prevState!?.messages];
+
+				loadingAssistantMessage.content = newContent;
+				prevMessages.splice(userMessageIndex as number, 1, userMessage);
+
 				if (prevState) {
 					return {
 						...prevState,
-						currentNode: assistantMessage.id,
-						lastModified: new Date().toISOString(),
-						messages: updatedMessages
+						messages: [...(prevMessages ?? []), loadingAssistantMessage],
 					};
 				} else {
 					return prevState;
 				}
 			});
-		});
+		}
 
-		setIsLoading(false);
+		const addMessage = async (message: IChatMessage) => {
+			await updateConversation(message, (updatedMessages) => {
+				setConversationSession((prevState) => {
+					if (prevState) {
+						return {
+							...prevState,
+							currentNode: message.id,
+							lastModified: new Date().toISOString(),
+							messages: updatedMessages
+						};
+					} else {
+						return prevState;
+					}
+				});
+			});
+		}
+
+		// const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
+		const requestManager = new OpenAIRequestManager();
+
+		const assistantResponse = await openAIContentProviderRef.current.generateResponse(
+			plugin.settings,
+			requestManager,
+			{},
+			updatedMessages,
+			userMessage,
+			addMessage,
+			updateCurrentAssistantMessageContent
+		);
+
+		// let assistantResponseContent = "";
+
+		// if (openAIContentProviderRef.current.isRequestCancelled()) {
+		// 	assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
+		// } else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
+		// 	console.error(assistantGeneratedResponse);
+		// 	assistantResponseContent = assistantGeneratedResponse.slice(7);
+		// } else {
+		// 	assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
+		// }
+
+		// const assistantMessage: IChatMessage = { 
+		// 	children: [],
+		// 	context: false,
+		// 	content: assistantResponseContent,
+		// 	creationDate: new Date().toISOString(),
+		// 	id: uuidv4(),
+		// 	role: 'assistant',
+		// 	parent: userMessage.id
+		// };
+
+		// await updateConversation(assistantMessage, (updatedMessages) => {
+		// 	setConversationSession((prevState) => {
+		// 		if (prevState) {
+		// 			return {
+		// 				...prevState,
+		// 				currentNode: assistantMessage.id,
+		// 				lastModified: new Date().toISOString(),
+		// 				messages: updatedMessages
+		// 			};
+		// 		} else {
+		// 			return prevState;
+		// 		}
+		// 	});
+		// });
+
+		// setIsLoading(false);
 	}
 
 	const onCancelRequest = useCallback(() => {
-		openAIContentProviderRef.current.cancelRequest();
+		// openAIContentProviderRef.current.cancelRequest();
 	}, []);
 
 	const handleRegenerateMessage = async () => {
-		if (!conversation) {
-			console.error('Chat session is not initialized.');
-			return;
-		}
-	
-		let currentNodeMessages = getRenderedMessages(conversation);
-		const reverseMessages = currentNodeMessages.reverse();
-		const lastUserMessage = reverseMessages.find(message => message.role === 'user');
-		currentNodeMessages.reverse();
+		// if (!conversation) {
+		// 	console.error('Chat session is not initialized.');
+		// 	return;
+		// }
 
-		if (!lastUserMessage) {
-			console.error('No user message found to regenerate.');
-			return;
-		}
-	
-		const loadingAssistantMessage: IChatMessage = { 
-			children: [],
-			content: '',
-			context: false,
-			creationDate: '',
-			id: uuidv4(),
-			isLoading: true,
-			role: 'assistant',
-			parent: lastUserMessage.id
-		};
-	
-		setIsLoading(true);
-	
-		setConversationSession((prevState) => {
-			const lastUserMessageIndex = prevState?.messages.findIndex(
-				(message) => message.id === lastUserMessage.id
-			);
-	
-			const prevMessages = [...prevState!?.messages];
-			const prevUserMessage = prevMessages[lastUserMessageIndex as number];
+		// let currentNodeMessages = getRenderedMessages(conversation);
+		// const reverseMessages = currentNodeMessages.reverse();
+		// const lastUserMessage = reverseMessages.find(message => message.role === 'user');
+		// currentNodeMessages.reverse();
 
-			prevUserMessage.children.push(loadingAssistantMessage.id);
-			prevMessages.splice(lastUserMessageIndex as number, 1, lastUserMessage);
-	
-			if (prevState) {
-				return {
-					...prevState,
-					currentNode: loadingAssistantMessage.id,
-					messages: [...(prevMessages ?? []), loadingAssistantMessage],
-				};
-			} else {
-				return prevState;
-			}
-		});
-	
-		if(conversation?.context === false) {
-			currentNodeMessages = [lastUserMessage];
-		} else {
-			// Remove the last assistant message
-			currentNodeMessages.splice(currentNodeMessages.length - 1, 1);
-		}
+		// if (!lastUserMessage) {
+		// 	console.error('No user message found to regenerate.');
+		// 	return;
+		// }
 
-		const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, currentNodeMessages);
-		let assistantResponseContent = "";
-	
-		if (openAIContentProviderRef.current.isRequestCancelled()) {
-			assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
-		} else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
-			console.error(assistantGeneratedResponse);
-			assistantResponseContent = assistantGeneratedResponse.slice(7);
-		} else {
-			assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
-		}
-	
-		const assistantMessage: IChatMessage = { 
-			children: [],
-			context: false,
-			content: assistantResponseContent,
-			creationDate: new Date().toISOString(),
-			id: uuidv4(),
-			role: 'assistant',
-			parent: lastUserMessage.id
-		};
-	
-		await updateConversation(assistantMessage, (updatedMessages) => {
-			setConversationSession((prevState) => {
-				if (prevState) {
-					return {
-						...prevState,
-						currentNode: assistantMessage.id,
-						lastModified: new Date().toISOString(),
-						messages: updatedMessages,
-					};
-				} else {
-					return prevState;
-				}
-			});
-		});
-	
-		setIsLoading(false);
+		// const loadingAssistantMessage: IChatMessage = { 
+		// 	children: [],
+		// 	content: '',
+		// 	context: false,
+		// 	creationDate: '',
+		// 	id: uuidv4(),
+		// 	isLoading: true,
+		// 	role: 'assistant',
+		// 	parent: lastUserMessage.id
+		// };
+
+		// setIsLoading(true);
+
+		// setConversationSession((prevState) => {
+		// 	const lastUserMessageIndex = prevState?.messages.findIndex(
+		// 		(message) => message.id === lastUserMessage.id
+		// 	);
+
+		// 	const prevMessages = [...prevState!?.messages];
+		// 	const prevUserMessage = prevMessages[lastUserMessageIndex as number];
+
+		// 	prevUserMessage.children.push(loadingAssistantMessage.id);
+		// 	prevMessages.splice(lastUserMessageIndex as number, 1, lastUserMessage);
+
+		// 	if (prevState) {
+		// 		return {
+		// 			...prevState,
+		// 			currentNode: loadingAssistantMessage.id,
+		// 			messages: [...(prevMessages ?? []), loadingAssistantMessage],
+		// 		};
+		// 	} else {
+		// 		return prevState;
+		// 	}
+		// });
+
+		// if(conversation?.context === false) {
+		// 	currentNodeMessages = [lastUserMessage];
+		// } else {
+		// 	// Remove the last assistant message
+		// 	currentNodeMessages.splice(currentNodeMessages.length - 1, 1);
+		// }
+
+		// const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, currentNodeMessages);
+		// let assistantResponseContent = "";
+
+		// if (openAIContentProviderRef.current.isRequestCancelled()) {
+		// 	assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
+		// } else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
+		// 	console.error(assistantGeneratedResponse);
+		// 	assistantResponseContent = assistantGeneratedResponse.slice(7);
+		// } else {
+		// 	assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
+		// }
+
+		// const assistantMessage: IChatMessage = { 
+		// 	children: [],
+		// 	context: false,
+		// 	content: assistantResponseContent,
+		// 	creationDate: new Date().toISOString(),
+		// 	id: uuidv4(),
+		// 	role: 'assistant',
+		// 	parent: lastUserMessage.id
+		// };
+
+		// await updateConversation(assistantMessage, (updatedMessages) => {
+		// 	setConversationSession((prevState) => {
+		// 		if (prevState) {
+		// 			return {
+		// 				...prevState,
+		// 				currentNode: assistantMessage.id,
+		// 				lastModified: new Date().toISOString(),
+		// 				messages: updatedMessages,
+		// 			};
+		// 		} else {
+		// 			return prevState;
+		// 		}
+		// 	});
+		// });
+
+		// setIsLoading(false);
 	}
-	
+
 	const handleCreateNewConversation = async () => {
 		const newConversation = await ConversationManager.createNewConversation(plugin);
 		onConversationLoad(newConversation);
@@ -364,7 +424,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 							<span>REGENERATE</span>
 						</button>
 					) : null
-				} 
+				}
 			</div>
 			<form
 				className="ow-conversation-input-form"

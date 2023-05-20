@@ -80,6 +80,7 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 			{conversationData.length === 0 ? (
 				<div className="ow-info">No conversations to display.</div>
 			) : (
+				// TODO: Migrate to using react virtualized.
 				<List
 					ref={listRef}
 					key={searchTerm}

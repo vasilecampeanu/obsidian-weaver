@@ -1,113 +1,48 @@
-// Obsidian
 import Weaver from "main";
-import { request } from "obsidian";
-
-// Third-party modules
-import safeAwait from "safe-await";
-
-// Interfaces
-import { IChatMessage } from "interfaces/IThread";
-
-// Local modules
 import RequestFormatter from "./RequestFormatter";
+import { IChatMessage } from "interfaces/IThread";
+import { Notice } from "obsidian";
+import { OpenAIRequestManager } from "./OpenAIRequestManager";
 
 export default class OpenAIContentProvider {
 	private readonly plugin: Weaver;
 
 	private requestFormatter: RequestFormatter;
-	private ongoingRequest: AbortController | null = null;
-	private requestCancelled: boolean = false;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
 		this.requestFormatter = new RequestFormatter(this.plugin);
 	}
 
-	async generateResponse(parameters: any = this.plugin.settings, additionalParameters: any = {}, conversationHistory: IChatMessage[]) {
+	async generateResponse(
+		parameters: any = this.plugin.settings,
+		streamManager: OpenAIRequestManager,
+		additionalParameters: any = {},
+		conversationContext: IChatMessage[],
+		userMessage: IChatMessage,
+		addMessage: (message: IChatMessage) => void,
+		updateCurrentAssistantMessageContent: (content: string) => void,
+	) {
+		const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
+
 		try {
-			const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationHistory);
-			const [error, result] = await safeAwait(this.requestAssistantResponse(requestParameters));
-
-			if (error) {
-				if (error instanceof DOMException && error.name === 'AbortError') {
-					console.warn('Request aborted by the user');
-				} else {
-					console.error('Error in generate:', error);
-				}
-
-				return null;
-			}
-
-			return result;
+			await streamManager.streamSSE(
+				requestParameters,
+				userMessage,
+				addMessage,
+				updateCurrentAssistantMessageContent,
+			);
 		} catch (error) {
-			console.error('Error in generateResponse:', error);
-			return null;
-		}
-	}
+			const errorData = JSON.parse(error.data);
 
-	async requestAssistantResponse(requestParameters: any) {
-		try {
-			this.ongoingRequest = new AbortController();
-			const { signal } = this.ongoingRequest;
-
-			const response = await fetch(requestParameters.url, {
-				body: requestParameters.body,
-				headers: requestParameters.headers,
-				method: requestParameters.method,
-				signal,
-			});
-
-			this.ongoingRequest = null;
-
-			if (!response.ok) {
-				let errorMessage = "";
-
-				switch (response.status) {
-					case 401:
-						errorMessage = "Error: Invalid authentication. Ensure the correct API key and requesting organization are being used.";
-						break;
-					case 404:
-						errorMessage = "Error: The selected model is unavailable. Check your API key, organization status, and model access permissions, then try again.";
-						break;
-					case 429:
-						errorMessage = "Error: Rate limit reached or quota exceeded. Please check your plan and billing details and try again later.";
-						break;
-					case 500:
-						errorMessage = "Error: Server error. Retry your request after a brief wait and contact us if the issue persists.";
-						break;
-					default:
-						errorMessage = `Error: HTTP error! status: ${response.status}`;
-				}
-
-				return errorMessage;
+			if (errorData && errorData.error) {
+				new Notice(
+					`OpenAI error: ${errorData.error.code}. `
+					+ `Pls check the console for the full error message.`
+				);
 			}
 
-			const jsonResponse = await response.json();
-			const content = jsonResponse?.choices[0].message.content;
-
-			return content;
-		} catch (error) {
-			if (error.name === "AbortError") {
-				console.error("Request aborted!");
-			} else {
-				console.error("Error in requestAssistantResponse:", error);
-			}
-
-			return Promise.reject(error);
+			console.error('Error in streamSSE:', error.data);
 		}
-	}
-
-	cancelRequest() {
-		if (this.ongoingRequest) {
-			this.ongoingRequest.abort();
-			this.ongoingRequest = null;
-			this.requestCancelled = true;
-		}
-	}
-
-	isRequestCancelled() {
-		const wasCancelled = this.requestCancelled;
-		this.requestCancelled = false;
-		return wasCancelled;
 	}
 }
