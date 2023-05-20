@@ -38,7 +38,6 @@
 		"react-window": "^1.8.9",
 		"safe-await": "^2.0.0",
 		"use-resize-observer": "^9.1.0",
-		"uuid": "^9.0.0",
-		"sse": "github:mpetazzoni/sse.js"
+		"uuid": "^9.0.0"
 	}
 }

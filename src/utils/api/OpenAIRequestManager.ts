@@ -1,5 +1,5 @@
 import { IChatMessage } from "interfaces/IThread";
-import { SSE } from 'sse';
+import { SSE } from "sse";
 import { v4 as uuidv4 } from 'uuid';
 
 export class OpenAIRequestManager {
@@ -46,7 +46,6 @@ export class OpenAIRequestManager {
 				const onMessage = async (e: any) => {
 					if (this.stopRequested) {
 						source?.close();
-						source = null;
 						addMessage(this.createAssistantMessage(userMessage, assistantResponse));
 						this.stopRequested = false;
 						resolve(null);
@@ -65,7 +64,6 @@ export class OpenAIRequestManager {
 						updateCurrentAssistantMessageContent(assistantResponse);
 					} else {
 						source?.close();
-						source = null;
 						addMessage(this.createAssistantMessage(userMessage, assistantResponse));
 						resolve(assistantResponse);
 					}
@@ -74,7 +72,6 @@ export class OpenAIRequestManager {
 				const onError = (e: any) => {
 					console.error('Error event received:', e);
 					source?.close();
-					source = null;
 					reject(e);
 				};
 	
