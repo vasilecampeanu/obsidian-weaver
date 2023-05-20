@@ -1,3 +1,4 @@
+import { MessageDispatcher } from "helpers/MessageDispatcher";
 import { IChatMessage, IConversation } from "interfaces/IThread";
 import Weaver from "main";
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
@@ -63,16 +64,6 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		}
 	};
 
-	// const updateConversationWithMessage = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
-	// 	if (conversation) {
-	// 		const updatedMessages = await ConversationManager.addMessageToConversation(plugin, conversation.id, newMessage);
-	// 		callback(updatedMessages);
-	// 	} else {
-	// 		console.error('Chat session is not initialized.');
-	// 		return;
-	// 	}
-	// };
-
 	const getRenderedMessages = (conversation: IConversation | null | undefined): IChatMessage[] => {
 		if (!conversation) {
 			return [];
@@ -132,167 +123,20 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			return;
 		}
 
-		const currentNode = conversation?.currentNode;
-		const currentMessage: IChatMessage | undefined = conversation?.messages.find((message) => message.id === currentNode);
-		const parentId: string = currentMessage?.id ?? uuidv4();
+		console.log(inputText)
 
-		const userMessage: IChatMessage = {
-			children: [],
-			context: false,
-			content: inputText,
-			creationDate: new Date().toISOString(),
-			id: uuidv4(),
-			role: 'user',
-			parent: parentId
-		};
-
-		await updateConversation(userMessage, (updatedMessages) => {
-			setInputText('');
-			setConversationSession((prevState) => {
-				if (prevState) {
-					return {
-						...prevState,
-						currentNode: userMessage.id,
-						lastModified: new Date().toISOString(),
-						messages: updatedMessages
-					};
-				} else {
-					return prevState;
-				}
-			});
-		});
-
-		let updatedMessages: IChatMessage[] = [];
-
-		if (conversation?.context === true) {
-			const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
-			let currentNodeMessages = rootMessage ? getRenderedMessages(conversation) : [];
-			updatedMessages = [...(currentNodeMessages), userMessage];
-		} else {
-			updatedMessages = [userMessage];
-		}
-
-		const loadingAssistantMessage: IChatMessage = {
-			children: [],
-			content: '',
-			context: false,
-			creationDate: '',
-			id: uuidv4(),
-			role: 'assistant',
-			parent: userMessage.id
-		};
-
-		// setIsLoading(true);
-
-		setConversationSession((prevState) => {
-			const userMessageIndex = prevState?.messages.findIndex(
-				(message) => message.id === userMessage.id
-			);
-
-			const prevMessages = [...prevState!?.messages];
-			const prevUserMessage = prevMessages[userMessageIndex as number];
-			prevUserMessage.children.push(loadingAssistantMessage.id);
-			prevMessages.splice(userMessageIndex as number, 1, userMessage);
-
-			if (prevState) {
-				return {
-					...prevState,
-					messages: [...(prevMessages ?? []), loadingAssistantMessage],
-				};
-			} else {
-				return prevState;
-			}
-		});
-
-		const updateCurrentAssistantMessageContent = async (newContent: string) => {
-			setConversationSession((prevState) => {
-				const userMessageIndex = prevState?.messages.findIndex(
-					(message) => message.id === userMessage.id
-				);
-
-				const prevMessages = [...prevState!?.messages];
-
-				loadingAssistantMessage.content = newContent;
-				prevMessages.splice(userMessageIndex as number, 1, userMessage);
-
-				if (prevState) {
-					return {
-						...prevState,
-						messages: [...(prevMessages ?? []), loadingAssistantMessage],
-					};
-				} else {
-					return prevState;
-				}
-			});
-		}
-
-		const addMessage = async (message: IChatMessage) => {
-			await updateConversation(message, (updatedMessages) => {
-				setConversationSession((prevState) => {
-					if (prevState) {
-						return {
-							...prevState,
-							currentNode: message.id,
-							lastModified: new Date().toISOString(),
-							messages: updatedMessages
-						};
-					} else {
-						return prevState;
-					}
-				});
-			});
-		}
-
-		// const assistantGeneratedResponse = await openAIContentProviderRef.current.generateResponse(plugin.settings, {}, updatedMessages);
-		const requestManager = new OpenAIRequestManager();
-
-		const assistantResponse = await openAIContentProviderRef.current.generateResponse(
-			plugin.settings,
-			requestManager,
-			{},
-			updatedMessages,
-			userMessage,
-			addMessage,
-			updateCurrentAssistantMessageContent
+		const messageDispatcher = new MessageDispatcher(
+			conversation as IConversation,
+			setConversationSession,
+			updateConversation
 		);
 
-		// let assistantResponseContent = "";
-
-		// if (openAIContentProviderRef.current.isRequestCancelled()) {
-		// 	assistantResponseContent = "The response has been stopped as per your request. If you need assistance, feel free to ask again at any time.";
-		// } else if (typeof assistantGeneratedResponse === 'string' && assistantGeneratedResponse.startsWith("Error:")) {
-		// 	console.error(assistantGeneratedResponse);
-		// 	assistantResponseContent = assistantGeneratedResponse.slice(7);
-		// } else {
-		// 	assistantResponseContent = assistantGeneratedResponse || "I'm sorry, but I am unable to generate a response at this time. Please try again later.";
-		// }
-
-		// const assistantMessage: IChatMessage = { 
-		// 	children: [],
-		// 	context: false,
-		// 	content: assistantResponseContent,
-		// 	creationDate: new Date().toISOString(),
-		// 	id: uuidv4(),
-		// 	role: 'assistant',
-		// 	parent: userMessage.id
-		// };
-
-		// await updateConversation(assistantMessage, (updatedMessages) => {
-		// 	setConversationSession((prevState) => {
-		// 		if (prevState) {
-		// 			return {
-		// 				...prevState,
-		// 				currentNode: assistantMessage.id,
-		// 				lastModified: new Date().toISOString(),
-		// 				messages: updatedMessages
-		// 			};
-		// 		} else {
-		// 			return prevState;
-		// 		}
-		// 	});
-		// });
-
-		// setIsLoading(false);
+		messageDispatcher.handleSubmit(
+			plugin,
+			openAIContentProviderRef,
+			getRenderedMessages,
+			inputText
+		)
 	}
 
 	const onCancelRequest = useCallback(() => {

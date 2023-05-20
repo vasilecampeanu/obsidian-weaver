@@ -2,9 +2,12 @@ import { IChatMessage, IConversation } from "interfaces/IThread";
 
 export class ConversationRenderer {
 	private selectedChildren: { [key: string]: number } = {};
+	private conversation?: IConversation;
 
-	constructor(private conversation?: IConversation) {
-		if (!conversation) {
+	constructor(conversation?: IConversation) {
+		this.conversation = conversation;
+
+		if (!this.conversation) {
 			throw new Error('Conversation cannot be undefined');
 		}
 	}

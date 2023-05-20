@@ -22,7 +22,7 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
 	plugin
 }) => {
 	const message: IChatMessage | undefined = conversation?.messages.find((msg) => msg.id === messageId);
-	const renderer = new ConversationRenderer(conversation);
+	const conversationRenderer = new ConversationRenderer(conversation);
 
 	if (!message) {
 		return null;
@@ -44,7 +44,7 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
 		)
 	}
 
-	const messagesRendered = renderer.getRenderedMessages();
+	const messagesRendered = conversationRenderer.getRenderedMessages();
 	const reverseMessages = messagesRendered.reverse();
 
 	const lastUserMessage = reverseMessages.find(message => message.role === 'user');
@@ -73,7 +73,8 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
 					selectedChildren={selectedChildren}
 					changeSelectedChild={changeSelectedChild}
 					conversation={conversation}
-					plugin={plugin} />
+					plugin={plugin} 
+				/>
 			)}
 		</>
 	);

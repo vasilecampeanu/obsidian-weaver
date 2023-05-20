@@ -31,16 +31,24 @@ export class OpenAIRequestManager {
 	): Promise<string | null> => {
 		return new Promise((resolve, reject) => {
 			let assistantResponse = '';
-
+	
 			try {
+				if (!requestParameters) {
+					throw new Error('requestParameters is undefined');
+				}
+	
+				console.log('Attempting to create SSE with parameters:', requestParameters);
+	
 				let source = new SSE(requestParameters.url, {
 					headers: requestParameters.headers,
 					method: requestParameters.method,
 					payload: requestParameters.body,
 				});
-
+	
 				const onMessage = async (e: any) => {
+					console.log('Received message:', e);
 					if (this.stopRequested) {
+						console.log('Stopping as stop requested');
 						source?.close();
 						source = null;
 						addMessage(this.createAssistantMessage(userMessage, assistantResponse));
@@ -48,39 +56,43 @@ export class OpenAIRequestManager {
 						resolve(null);
 						return;
 					}
-
+	
 					if (e.data !== "[DONE]") {
 						const payload = JSON.parse(e.data);
 						const text = payload.choices[0].delta.content;
-
+	
 						console.log(text);
-
+	
 						if (!text) {
 							return;
 						}
-
+	
 						assistantResponse += text;
-						// addMessage(this.createAssistantMessage(userMessage, assistantResponse));
 						updateCurrentAssistantMessageContent(assistantResponse);
 					} else {
+						console.log('Received [DONE], closing source');
 						source?.close();
 						source = null;
 						addMessage(this.createAssistantMessage(userMessage, assistantResponse));
 						resolve(assistantResponse);
 					}
 				};
-
+	
 				const onError = (e: any) => {
+					console.error('Error event received:', e);
 					source?.close();
 					source = null;
-					reject(e.message);
+					reject(e);
 				};
-
+	
+				console.log('Attaching event listeners to source');
 				source.addEventListener('message', onMessage);
 				source.addEventListener('error', onError);
-
+	
+				console.log('Starting streaming');
 				source.stream();
 			} catch (err) {
+				console.error('Caught an error in streamSSE:', err);
 				reject(err);
 			}
 		});

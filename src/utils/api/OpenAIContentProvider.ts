@@ -25,6 +25,9 @@ export default class OpenAIContentProvider {
 	) {
 		const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
 
+		console.log(conversationContext)
+		console.log(userMessage)
+
 		try {
 			await streamManager.streamSSE(
 				requestParameters,
@@ -33,16 +36,20 @@ export default class OpenAIContentProvider {
 				updateCurrentAssistantMessageContent,
 			);
 		} catch (error) {
-			const errorData = JSON.parse(error.data);
+			if (!error || !error.data) {
+				console.error('Unexpected error format in streamSSE:', error);
+			} else {
+				const errorData = JSON.parse(error.data);
 
-			if (errorData && errorData.error) {
-				new Notice(
-					`OpenAI error: ${errorData.error.code}. `
-					+ `Pls check the console for the full error message.`
-				);
+				if (errorData && errorData.error) {
+					new Notice(
+						`OpenAI error: ${errorData.error.code}. `
+						+ `Pls check the console for the full error message.`
+					);
+				}
+
+				console.error('Error in streamSSE:', error.data);
 			}
-
-			console.error('Error in streamSSE:', error.data);
 		}
 	}
 }
