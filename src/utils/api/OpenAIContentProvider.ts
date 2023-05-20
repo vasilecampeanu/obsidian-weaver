@@ -24,10 +24,6 @@ export default class OpenAIContentProvider {
 		updateCurrentAssistantMessageContent: (content: string) => void,
 	) {
 		const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
-
-		console.log(conversationContext)
-		console.log(userMessage)
-
 		try {
 			await streamManager.streamSSE(
 				requestParameters,

@@ -37,8 +37,6 @@ export class OpenAIRequestManager {
 					throw new Error('requestParameters is undefined');
 				}
 	
-				console.log('Attempting to create SSE with parameters:', requestParameters);
-	
 				let source = new SSE(requestParameters.url, {
 					headers: requestParameters.headers,
 					method: requestParameters.method,
@@ -46,9 +44,7 @@ export class OpenAIRequestManager {
 				});
 	
 				const onMessage = async (e: any) => {
-					console.log('Received message:', e);
 					if (this.stopRequested) {
-						console.log('Stopping as stop requested');
 						source?.close();
 						source = null;
 						addMessage(this.createAssistantMessage(userMessage, assistantResponse));
@@ -61,8 +57,6 @@ export class OpenAIRequestManager {
 						const payload = JSON.parse(e.data);
 						const text = payload.choices[0].delta.content;
 	
-						console.log(text);
-	
 						if (!text) {
 							return;
 						}
@@ -70,7 +64,6 @@ export class OpenAIRequestManager {
 						assistantResponse += text;
 						updateCurrentAssistantMessageContent(assistantResponse);
 					} else {
-						console.log('Received [DONE], closing source');
 						source?.close();
 						source = null;
 						addMessage(this.createAssistantMessage(userMessage, assistantResponse));
@@ -85,11 +78,9 @@ export class OpenAIRequestManager {
 					reject(e);
 				};
 	
-				console.log('Attaching event listeners to source');
 				source.addEventListener('message', onMessage);
 				source.addEventListener('error', onError);
 	
-				console.log('Starting streaming');
 				source.stream();
 			} catch (err) {
 				console.error('Caught an error in streamSSE:', err);

@@ -123,8 +123,6 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			return;
 		}
 
-		console.log(inputText)
-
 		const messageDispatcher = new MessageDispatcher(
 			conversation as IConversation,
 			setConversationSession,
