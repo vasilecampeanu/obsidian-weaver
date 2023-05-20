@@ -68,26 +68,10 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 						</div>
 					</div>
 				)}
-				{message.isLoading ? (
-					<div
-						className="ow-content"
-					>
-						<ThreeDots
-							height="5"
-							width="30"
-							radius="1.5"
-							ariaLabel="three-dots-loading"
-							wrapperClass="ow-three-dots-leader"
-							visible={true}
-						/>
-					</div>
-				) : (
-					<div
-						className="ow-content"
-						dangerouslySetInnerHTML={htmlDescriptionContent || { __html: '' }}
-					>
-					</div>
-				)}
+				<div
+					className="ow-content"
+					dangerouslySetInnerHTML={{ __html: `${htmlDescriptionContent?.__html}${message.isLoading && htmlDescriptionContent?.__html.length === 0 ? '<span class="ow-blinking-cursor"></span>' : ''}` }}
+				/>
 			</div>
 			<div className="ow-message-actions">
 				<button className="ow-copy-button" onClick={copyTextWithMarkdown}>

@@ -48,6 +48,7 @@ export class MessageDispatcher {
 			context: false,
 			creationDate: '',
 			id: uuidv4(),
+			isLoading: true,
 			role: 'assistant',
 			parent: userMessageId
 		};
@@ -99,7 +100,15 @@ export class MessageDispatcher {
 		});
 	}
 
-	public async handleSubmit(plugin: Weaver, openAIContentProviderRef: any, getRenderedMessages: Function, inputText: string) {
+	public async handleSubmit(
+		plugin: Weaver, 
+		openAIContentProviderRef: any, 
+		getRenderedMessages: Function, 
+		inputText: string,
+		setIsLoading: Function
+	) {
+		setIsLoading(true)
+
 		this.userMessage = this.createUserMessage(inputText);
 
 		await this.updateConversation(this.userMessage, (contextMessages: IChatMessage[]) => {
@@ -167,5 +176,7 @@ export class MessageDispatcher {
 			this.addMessage.bind(this),
 			this.updateCurrentAssistantMessageContent.bind(this)
 		);
+
+		setIsLoading(false)
 	}
 }

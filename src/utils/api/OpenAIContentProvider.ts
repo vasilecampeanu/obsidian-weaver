@@ -37,12 +37,12 @@ export default class OpenAIContentProvider {
 			} else {
 				const errorData = JSON.parse(error.data);
 
-				if (errorData && errorData.error) {
-					new Notice(
-						`OpenAI error: ${errorData.error.code}. `
-						+ `Pls check the console for the full error message.`
-					);
-				}
+				// if (errorData && errorData.error) {
+				// 	new Notice(
+				// 		`OpenAI error: ${errorData.error.code}. `
+				// 		+ `Pls check the console for the full error message.`
+				// 	);
+				// }
 
 				console.error('Error in streamSSE:', error.data);
 			}

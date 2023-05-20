@@ -128,13 +128,16 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			setConversationSession,
 			updateConversation
 		);
-
+		
 		messageDispatcher.handleSubmit(
 			plugin,
 			openAIContentProviderRef,
 			getRenderedMessages,
-			inputText
-		)
+			inputText,
+			setIsLoading
+		);
+
+		setInputText('');
 	}
 
 	const onCancelRequest = useCallback(() => {

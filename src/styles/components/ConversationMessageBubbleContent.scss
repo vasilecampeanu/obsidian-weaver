@@ -1,5 +1,30 @@
 .ow-message-bubble-content
 {
+	@keyframes blink 
+	{
+		0% {
+			opacity: .7;
+		}
+
+		50%  {
+			opacity: 0;
+		}
+
+		100%  {
+			opacity: .7;
+		}
+	}
+
+	.ow-blinking-cursor 
+	{
+		width: 8px;
+		border-radius: 1px;
+		height: calc(1em);
+		background-color: var(--text-muted);
+		animation: blink 1s infinite;
+		display: block;
+	}
+
 	.ow-content
 	{
 		user-select: text;
@@ -7,12 +32,10 @@
 		word-break: normal;
 		text-align: left;
 		word-spacing: normal;
-		
 		-webkit-hyphens: none;
 		-moz-hyphens: none;
 		-ms-hyphens: none;
 		hyphens: none;
-
 
 		.ow-three-dots-leader
 		{
