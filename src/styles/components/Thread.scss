@@ -2,6 +2,7 @@
 {
 	display: grid;
 	height: 100%;
+	overflow-y: hidden !important;
 	
 	.ow-thread-tabs-manager
 	{
@@ -134,7 +135,7 @@
 									place-self: center;
 									width: 11px;
 									height: 11px;
-									strokeWidth: 3;
+									stroke-width: 3;
 									color: var(--icon-color);
 								}
 							}
@@ -160,7 +161,7 @@
 										place-self: center;
 										width: 11px;
 										height: 11px;
-										strokeWidth: 3;
+										stroke-width: 3;
 									}
 								}
 							}
