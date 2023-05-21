@@ -6,17 +6,17 @@ import { OpenAIRequestManager } from "./OpenAIRequestManager";
 
 export default class OpenAIContentProvider {
 	private readonly plugin: Weaver;
-
 	private requestFormatter: RequestFormatter;
+	private streamManager: OpenAIRequestManager;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
 		this.requestFormatter = new RequestFormatter(this.plugin);
+		this.streamManager = new OpenAIRequestManager();
 	}
 
-	async generateResponse(
+	public async generateResponse(
 		parameters: any = this.plugin.settings,
-		streamManager: OpenAIRequestManager,
 		additionalParameters: any = {},
 		conversationContext: IChatMessage[],
 		userMessage: IChatMessage,
@@ -24,8 +24,9 @@ export default class OpenAIContentProvider {
 		updateCurrentAssistantMessageContent: (content: string) => void,
 	) {
 		const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
+
 		try {
-			await streamManager.streamSSE(
+			await this.streamManager.streamSSE(
 				requestParameters,
 				userMessage,
 				addMessage,
@@ -35,17 +36,12 @@ export default class OpenAIContentProvider {
 			if (!error || !error.data) {
 				console.error('Unexpected error format in streamSSE:', error);
 			} else {
-				const errorData = JSON.parse(error.data);
-
-				// if (errorData && errorData.error) {
-				// 	new Notice(
-				// 		`OpenAI error: ${errorData.error.code}. `
-				// 		+ `Pls check the console for the full error message.`
-				// 	);
-				// }
-
 				console.error('Error in streamSSE:', error.data);
 			}
 		}
+	}
+
+	public async stopStreaming() {
+		this.streamManager.stopStreaming();
 	}
 }

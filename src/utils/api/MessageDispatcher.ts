@@ -2,22 +2,27 @@ import { IChatMessage, IConversation } from "interfaces/IThread";
 import Weaver from "main";
 import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
+import OpenAIContentProvider from "./OpenAIContentProvider";
 
 export class MessageDispatcher {
+	private readonly plugin: Weaver;
 	private conversation?: IConversation;
 	private setConversationSession: Function;
 	private updateConversation: Function;
 
 	private userMessage?: IChatMessage;
     private loadingAssistantMessage?: IChatMessage;
+	private openAIContentProvider: OpenAIContentProvider;
 
-	constructor(conversation: IConversation, setConversationSession: Function, updateConversation: Function) {
+	constructor(plugin: Weaver, conversation: IConversation, setConversationSession: Function, updateConversation: Function) {
+		this.plugin = plugin;
 		this.conversation = conversation;
 		this.updateConversation = updateConversation;
 		this.setConversationSession = setConversationSession;
 		this.userMessage = undefined;
 		this.loadingAssistantMessage = undefined;
-		
+		this.openAIContentProvider = new OpenAIContentProvider(plugin)
+
 		if (!this.conversation) {
 			throw new Error('Conversation cannot be undefined.');
 		}
@@ -101,8 +106,6 @@ export class MessageDispatcher {
 	}
 
 	public async handleSubmit(
-		plugin: Weaver, 
-		openAIContentProviderRef: any, 
 		getRenderedMessages: Function, 
 		inputText: string,
 		setIsLoading: Function
@@ -148,7 +151,6 @@ export class MessageDispatcher {
 				return message.id === this.userMessage.id;
 			});
 
-
 			const prevMessages = [...conversation!?.messages];
 			const prevUserMessage = prevMessages[userMessageIndex as number];
 
@@ -165,11 +167,8 @@ export class MessageDispatcher {
 			}
 		});
 
-		const requestManager = new OpenAIRequestManager();
-
-		await openAIContentProviderRef.current.generateResponse(
-			plugin.settings,
-			requestManager,
+		await this.openAIContentProvider.generateResponse(
+			this.plugin.settings,
 			{},
 			contextMessages,
 			this.userMessage,
@@ -178,5 +177,9 @@ export class MessageDispatcher {
 		);
 
 		setIsLoading(false)
+	}
+
+	public async handleStopStreaming() {
+		await this.openAIContentProvider.stopStreaming();
 	}
 }

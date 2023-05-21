@@ -1,8 +1,8 @@
-import { MessageDispatcher } from "helpers/MessageDispatcher";
 import { IChatMessage, IConversation } from "interfaces/IThread";
 import Weaver from "main";
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { ConversationManager } from "utils/ConversationManager";
+import { MessageDispatcher } from "utils/api/MessageDispatcher";
 import OpenAIContentProvider from "utils/api/OpenAIContentProvider";
 import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
@@ -26,7 +26,30 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 	const [showButton, setShowButton] = useState(true);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
-	const openAIContentProviderRef = useRef(new OpenAIContentProvider(plugin));
+	// Create a ref for your dispatcher
+	const messageDispatcherRef = useRef<MessageDispatcher | null>(null);
+
+	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
+		if (conversation) {
+			const updatedMessages = await ConversationManager.addMessageToConversation(plugin, conversation.id, newMessage);
+			callback(updatedMessages);
+		} else {
+			console.error('Chat session is not initialized.');
+			return;
+		}
+	};
+
+	useEffect(() => {
+		if (conversation) {
+			messageDispatcherRef.current = new MessageDispatcher(
+				plugin,
+				conversation as IConversation,
+				setConversationSession,
+				updateConversation
+			);
+		}
+	}, [plugin, conversation, setConversationSession, updateConversation]); // Add dependencies here.
+
 
 	const onPinInputBox = (event: React.FormEvent) => {
 		event.preventDefault();
@@ -53,16 +76,6 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			return;
 		}
 	}
-
-	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
-		if (conversation) {
-			const updatedMessages = await ConversationManager.addMessageToConversation(plugin, conversation.id, newMessage);
-			callback(updatedMessages);
-		} else {
-			console.error('Chat session is not initialized.');
-			return;
-		}
-	};
 
 	const getRenderedMessages = (conversation: IConversation | null | undefined): IChatMessage[] => {
 		if (!conversation) {
@@ -123,15 +136,8 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			return;
 		}
 
-		const messageDispatcher = new MessageDispatcher(
-			conversation as IConversation,
-			setConversationSession,
-			updateConversation
-		);
-		
-		messageDispatcher.handleSubmit(
-			plugin,
-			openAIContentProviderRef,
+		// use the ref's current value
+		messageDispatcherRef.current?.handleSubmit(
 			getRenderedMessages,
 			inputText,
 			setIsLoading
@@ -141,7 +147,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 	}
 
 	const onCancelRequest = useCallback(() => {
-		// openAIContentProviderRef.current.cancelRequest();
+		messageDispatcherRef.current?.handleStopStreaming();
 	}, []);
 
 	const handleRegenerateMessage = async () => {
