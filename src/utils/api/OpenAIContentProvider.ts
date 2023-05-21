@@ -1,17 +1,17 @@
 import Weaver from "main";
-import RequestFormatter from "./RequestFormatter";
+import OpenAIRequestFormatter from "./OpenAIRequestFormatter";
 import { IChatMessage } from "interfaces/IThread";
 import { Notice } from "obsidian";
 import { OpenAIRequestManager } from "./OpenAIRequestManager";
 
 export default class OpenAIContentProvider {
 	private readonly plugin: Weaver;
-	private requestFormatter: RequestFormatter;
+	private OpenAIRequestFormatter: OpenAIRequestFormatter;
 	private streamManager: OpenAIRequestManager;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
-		this.requestFormatter = new RequestFormatter(this.plugin);
+		this.OpenAIRequestFormatter = new OpenAIRequestFormatter(this.plugin);
 		this.streamManager = new OpenAIRequestManager();
 	}
 
@@ -23,7 +23,7 @@ export default class OpenAIContentProvider {
 		addMessage: (message: IChatMessage) => void,
 		updateCurrentAssistantMessageContent: (content: string) => void,
 	) {
-		const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
+		const requestParameters = this.OpenAIRequestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
 
 		try {
 			await this.streamManager.streamSSE(

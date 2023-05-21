@@ -9,23 +9,23 @@ import safeAwait from "safe-await";
 import { IChatMessage } from "interfaces/IThread";
 
 // Local modules
-import RequestFormatter from "./RequestFormatter";
+import OpenAIRequestFormatter from "./OpenAIRequestFormatter";
 
 export default class OpenAIContentProvider {
 	private readonly plugin: Weaver;
 
-	private requestFormatter: RequestFormatter;
+	private OpenAIRequestFormatter: OpenAIRequestFormatter;
 	private ongoingRequest: AbortController | null = null;
 	private requestCancelled: boolean = false;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
-		this.requestFormatter = new RequestFormatter(this.plugin);
+		this.OpenAIRequestFormatter = new OpenAIRequestFormatter(this.plugin);
 	}
 
 	async generateResponse(parameters: any = this.plugin.settings, additionalParameters: any = {}, conversationHistory: IChatMessage[]) {
 		try {
-			const requestParameters = this.requestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationHistory);
+			const requestParameters = this.OpenAIRequestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationHistory);
 			const [error, result] = await safeAwait(this.requestAssistantResponse(requestParameters));
 
 			if (error) {

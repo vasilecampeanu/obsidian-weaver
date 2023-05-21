@@ -14,7 +14,7 @@ interface BodyParameters {
 	stream: boolean;
 }
 
-export default class RequestFormatter {
+export default class OpenAIRequestFormatter {
 	private readonly plugin: Weaver;
 
 	constructor(plugin: Weaver) {
