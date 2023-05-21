@@ -11,7 +11,7 @@ export class MessageDispatcher {
 	private updateConversation: Function;
 
 	private userMessage?: IChatMessage;
-    private loadingAssistantMessage?: IChatMessage;
+	private loadingAssistantMessage?: IChatMessage;
 	private openAIContentProvider: OpenAIContentProvider;
 
 	constructor(plugin: Weaver, conversation: IConversation, setConversationSession: Function, updateConversation: Function) {
@@ -42,7 +42,7 @@ export class MessageDispatcher {
 			role: 'user',
 			parent: userMessageParentId
 		};
-		
+
 		return userMessage;
 	}
 
@@ -106,13 +106,15 @@ export class MessageDispatcher {
 	}
 
 	public async handleSubmit(
-		getRenderedMessages: Function, 
+		getRenderedMessages: Function,
 		inputText: string,
 		setIsLoading: Function
 	) {
 		setIsLoading(true)
 
 		this.userMessage = this.createUserMessage(inputText);
+
+		console.log(this.userMessage);
 
 		await this.updateConversation(this.userMessage, (contextMessages: IChatMessage[]) => {
 			this.setConversationSession((conversation: IConversation) => {
@@ -181,5 +183,70 @@ export class MessageDispatcher {
 
 	public async handleStopStreaming() {
 		await this.openAIContentProvider.stopStreaming();
+	}
+
+	public async handleRegenerateAssistantResponse(
+		getRenderedMessages: Function,
+		setIsLoading: Function
+	) {
+		setIsLoading(true)
+
+		let currentNodeMessages = getRenderedMessages(this.conversation);
+		const reverseMessages = currentNodeMessages.reverse();
+		const lastUserMessage = reverseMessages.find((message: { role: string; }) => message.role === 'user');
+		currentNodeMessages.reverse();
+
+		if (!lastUserMessage) {
+			console.error('No user message found to regenerate.');
+			return;
+		}
+
+		this.userMessage = lastUserMessage;
+
+		if(this.conversation?.context === false) {
+			currentNodeMessages = [this.userMessage];
+		} else {
+			currentNodeMessages.splice(currentNodeMessages.length - 1, 1);
+		}
+
+		this.loadingAssistantMessage = this.createAssistantLoadingMessage(this.userMessage!.id);
+
+		this.setConversationSession((conversation: IConversation) => {
+			const userMessageIndex = conversation?.messages.findIndex((message) => {
+				if (!message || !this.userMessage) {
+					console.error('One or more objects are undefined:', { message, userMessage: this.userMessage });
+					return false;
+				}
+
+				return message.id === this.userMessage.id;
+			});
+
+			const prevMessages = [...conversation!?.messages];
+			const prevUserMessage = prevMessages[userMessageIndex as number];
+
+			prevUserMessage.children.push(this.loadingAssistantMessage!.id);
+			prevMessages.splice(userMessageIndex as number, 1, this.userMessage as IChatMessage);
+
+			if (conversation) {
+				return {
+					...conversation,
+					currentNode: this.loadingAssistantMessage!.id,
+					messages: [...(prevMessages ?? []), this.loadingAssistantMessage],
+				};
+			} else {
+				return conversation;
+			}
+		});
+
+		await this.openAIContentProvider.generateResponse(
+			this.plugin.settings,
+			{},
+			currentNodeMessages,
+			this.userMessage as IChatMessage,
+			this.addMessage.bind(this),
+			this.updateCurrentAssistantMessageContent.bind(this)
+		);
+
+		setIsLoading(false)
 	}
 }
