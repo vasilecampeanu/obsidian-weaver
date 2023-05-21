@@ -180,7 +180,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 		
 		new Setting(containerEl)
 			.setName('Identation Guides')
-			.setDesc('Show Identation Guides on Thread View.')
+			.setDesc('Display identation guides.')
 			.addToggle(v => v
 				.setValue(this.plugin.settings.threadViewIdentationGuides)
 				.onChange(async (value) => {
@@ -190,7 +190,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 		
 		new Setting(containerEl)
 			.setName('Compact Mode')
-			.setDesc('Show Identation Guides on Thread View.')
+			.setDesc('Show only the title of the conversation.')
 			.addToggle(v => v
 				.setValue(this.plugin.settings.threadViewCompactMode)
 				.onChange(async (value) => {
