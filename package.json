@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-weaver",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"description": "Weaver is a useful Obsidian plugin that integrates ChatGPT/GPT-3 into your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.",
 	"main": "main.js",
 	"scripts": {
