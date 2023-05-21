@@ -6,9 +6,9 @@ import { ThreadManager } from "utils/ThreadManager";
 
 interface ConversationHeaderProps {
 	plugin: Weaver;
-	conversation: IConversation | null | undefined;
+	conversation: IConversation | undefined;
 	onTabSwitch: (tabId: string) => void;
-	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | null>>;
+	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | undefined>>;
 }
 
 export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
@@ -83,9 +83,12 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 				} else {
 					setConversationSession(prevConversation => {
 						if (prevConversation) {
-							return { ...prevConversation, title: uniqueTitle };
+							return { 
+								...prevConversation, 
+								title: uniqueTitle 
+							};
 						} else {
-							return null;
+							return prevConversation;
 						}
 					});
 
@@ -131,7 +134,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 			if (prevConversation) {
 				return { ...prevConversation, context: newContext };
 			} else {
-				return null;
+				return;
 			}
 		});
 

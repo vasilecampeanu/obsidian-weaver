@@ -80,12 +80,13 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 			{conversationData.length === 0 ? (
 				<div className="ow-info">No conversations to display.</div>
 			) : (
+				// TODO: Migrate to using react virtualized.
 				<List
 					ref={listRef}
 					key={searchTerm}
 					height={containerHeight || 0}
 					itemCount={conversationData.length}
-					itemSize={index => getItemSize(conversationData[index])}
+					itemSize={index => getItemSize(plugin, conversationData[index])}
 					width="100%"
 				>
 					{({ index, style }) => {
@@ -109,7 +110,9 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 												</button>
 											)
 										}
-										<span>{item.section}</span>
+										<span>
+											{item.section}
+										</span>
 									</div>
 								</div>
 							);

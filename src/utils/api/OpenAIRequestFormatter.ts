@@ -11,9 +11,10 @@ interface BodyParameters {
 	messages?: { role: string; content: string }[];
 	model: string;
 	temperature: number;
+	stream: boolean;
 }
 
-export default class RequestFormatter {
+export default class OpenAIRequestFormatter {
 	private readonly plugin: Weaver;
 
 	constructor(plugin: Weaver) {
@@ -30,6 +31,7 @@ export default class RequestFormatter {
 				max_tokens: parameters.maxTokens,
 				model: parameters.engine,
 				temperature: parameters.temperature,
+				stream: true
 			};
 
 			bodyParameters.messages = conversationHistory.map((message) => {
@@ -45,6 +47,9 @@ export default class RequestFormatter {
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${parameters.apiKey}`,
+					...(process.env.OPENAI_ORGANIZATION && {
+						'OpenAI-Organization': process.env.OPENAI_ORGANIZATION,
+					})
 				}
 			};
 

@@ -100,8 +100,6 @@ export class ConversationManager {
 					throw new Error('The updated conversation is missing required fields.');
 				}
 
-				// Keep the original messages field from the conversation and assign it to the updated conversation
-
 				updatedConversation.messages = conversation.messages;
 
 				// Write the updated conversation back to the file

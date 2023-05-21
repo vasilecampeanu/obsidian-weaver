@@ -5,19 +5,26 @@
 		display: grid;
 		grid-template-columns: auto 1fr;
 		gap: 5px;
-		.ow-vertical-line
+
+		.ow-identation-guides
 		{
 			height: 100%;
 			border-left: var(--nav-indentation-guide-width) solid var(--nav-indentation-guide-color);
 			margin-left: calc(8px - (var(--nav-indentation-guide-width) * 1 / 2));
+
+			&.ow-hide-identation-guides
+			{
+				opacity: 0;
+			}
 		}
+
 		.ow-thread-list-item
 		{
 			align-self: center;
 			display: grid;
 			grid-template-columns: auto 1fr;
 			gap: 10px;
-			padding: 5px 10px;
+			padding: 5px 7px;
 			border-radius: 3.5px;
 
 			&:hover
@@ -43,11 +50,12 @@
 						width: 13px;
 						height: 13px;
 						color: var(--nav-item-color);
+						strokeWidth: 2;
 					}
 				}
 			}
 
-			.ow-chat-content
+			.ow-card-content
 			{
 				.ow-chat-title
 				{
@@ -166,6 +174,30 @@
 				.ow-messages-count
 				{
 					display: none;
+				}
+			}
+
+			&.ow-compact-item
+			{
+				.ow-card-content
+				{
+					.ow-chat-title
+					{
+						.ow-title-wrapper
+						{
+							.ow-title
+							{
+								font-size: 14px;
+								padding: 3px 0px;
+								align-self: center;
+							}
+
+							.ow-date
+							{
+								display: none;
+							}
+						}
+					}
 				}
 			}
 		}

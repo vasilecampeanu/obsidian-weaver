@@ -1,7 +1,6 @@
 import { FileSystemAdapter, normalizePath } from 'obsidian';
 import Weaver from 'main';
 
-import { ConversationHelper } from 'helpers/ConversationHelpers';
 import { IConversation } from 'interfaces/IThread';
 import { ThreadManager } from './ThreadManager';
 import { ConversationManager } from './ConversationManager';

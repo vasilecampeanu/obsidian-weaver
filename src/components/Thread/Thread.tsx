@@ -40,7 +40,6 @@ export const Thread: React.FC<ThreadProps> = ({
 		setSearchTerm(event.target.value);
 	};
 
-	// Filter the conversations based on the search term.
 	const filteredConversations = useMemo(
 		() => filterConversations(conversations, searchTerm),
 		[conversations, searchTerm]
