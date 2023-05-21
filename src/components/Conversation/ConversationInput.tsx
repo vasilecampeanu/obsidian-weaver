@@ -39,18 +39,6 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		}
 	};
 
-	useEffect(() => {
-		if (conversation) {
-			messageDispatcherRef.current = new MessageDispatcher(
-				plugin,
-				conversation as IConversation,
-				setConversationSession,
-				updateConversation
-			);
-		}
-	}, [plugin, conversation, setConversationSession, updateConversation]); // Add dependencies here.
-
-
 	const onPinInputBox = (event: React.FormEvent) => {
 		event.preventDefault();
 		setIsPinned(!isPinned);
@@ -136,6 +124,14 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			return;
 		}
 
+		// Create a new MessageDispatcher when the form is submitted
+		messageDispatcherRef.current = new MessageDispatcher(
+			plugin,
+			conversation as IConversation,
+			setConversationSession,
+			updateConversation
+		);
+
 		// use the ref's current value
 		messageDispatcherRef.current?.handleSubmit(
 			getRenderedMessages,
@@ -147,7 +143,9 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 	}
 
 	const onCancelRequest = useCallback(() => {
-		messageDispatcherRef.current?.handleStopStreaming();
+		if (messageDispatcherRef.current) {
+			messageDispatcherRef.current.handleStopStreaming();
+		}
 	}, []);
 
 	const handleRegenerateMessage = async () => {
