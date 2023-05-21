@@ -2,7 +2,7 @@ import { IChatMessage, IConversation } from "interfaces/IThread";
 import Weaver from "main";
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { ConversationManager } from "utils/ConversationManager";
-import { MessageDispatcher } from "utils/api/MessageDispatcher";
+import { OpenAIMessageDispatcher } from "utils/api/OpenAIMessageDispatcher";
 import OpenAIContentProvider from "utils/api/OpenAIContentProvider";
 import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
@@ -27,7 +27,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	// Create a ref for your dispatcher
-	const messageDispatcherRef = useRef<MessageDispatcher | null>(null);
+	const messageDispatcherRef = useRef<OpenAIMessageDispatcher | null>(null);
 
 	const updateConversation = async (newMessage: IChatMessage, callback: (updatedMessages: IChatMessage[]) => void) => {
 		if (conversation) {
@@ -124,8 +124,8 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			return;
 		}
 
-		// Create a new MessageDispatcher when the form is submitted
-		messageDispatcherRef.current = new MessageDispatcher(
+		// Create a new OpenAIMessageDispatcher when the form is submitted
+		messageDispatcherRef.current = new OpenAIMessageDispatcher(
 			plugin,
 			conversation as IConversation,
 			setConversationSession,
@@ -149,7 +149,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 	}, []);
 
 	const handleRegenerateMessage = async () => {
-		messageDispatcherRef.current = new MessageDispatcher(
+		messageDispatcherRef.current = new OpenAIMessageDispatcher(
 			plugin,
 			conversation as IConversation,
 			setConversationSession,

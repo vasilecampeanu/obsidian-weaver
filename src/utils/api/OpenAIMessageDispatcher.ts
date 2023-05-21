@@ -4,7 +4,7 @@ import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
 import OpenAIContentProvider from "./OpenAIContentProvider";
 
-export class MessageDispatcher {
+export class OpenAIMessageDispatcher {
 	private readonly plugin: Weaver;
 	private conversation?: IConversation;
 	private setConversationSession: Function;
@@ -114,8 +114,6 @@ export class MessageDispatcher {
 
 		this.userMessage = this.createUserMessage(inputText);
 
-		console.log(this.userMessage);
-
 		await this.updateConversation(this.userMessage, (contextMessages: IChatMessage[]) => {
 			this.setConversationSession((conversation: IConversation) => {
 				if (conversation) {
@@ -177,7 +175,7 @@ export class MessageDispatcher {
 			this.addMessage.bind(this),
 			this.updateCurrentAssistantMessageContent.bind(this)
 		);
-
+		
 		setIsLoading(false)
 	}
 

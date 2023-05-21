@@ -26,18 +26,14 @@ export default class OpenAIContentProvider {
 		const requestParameters = this.OpenAIRequestFormatter.prepareChatRequestParameters(parameters, additionalParameters, conversationContext);
 
 		try {
-			await this.streamManager.streamSSE(
+			await this.streamManager.handleOpenAIStreamSSE(
 				requestParameters,
 				userMessage,
 				addMessage,
 				updateCurrentAssistantMessageContent,
 			);
 		} catch (error) {
-			if (!error || !error.data) {
-				console.error('Unexpected error format in streamSSE:', error);
-			} else {
-				console.error('Error in streamSSE:', error.data);
-			}
+			console.error('Error in handleOpenAIStreamSSE:', error.data);
 		}
 	}
 
