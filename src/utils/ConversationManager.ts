@@ -233,4 +233,41 @@ export class ConversationManager {
 		console.error(`Conversation with ID: ${id} not found`);
 		return [];
 	}
+
+	static async addChildToMessage(plugin: Weaver, conversationId: string, messageId: string, newChildId: string): Promise<boolean> {
+		const folderPath = `${plugin.settings.weaverFolderPath}/threads/base`;
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+	
+		const folderContent = await adapter.list(folderPath);
+		const filesInFolder = folderContent.files.filter(filePath => filePath.endsWith('.json'));
+	
+		for (const filePath of filesInFolder) {
+			const fileContent = await adapter.read(filePath);
+			const conversation = JSON.parse(fileContent) as IConversation;
+	
+			if (conversation.id === conversationId && conversation.identifier === 'obsidian-weaver') {
+				// Find the target message in the conversation's messages
+				const targetMessage = conversation.messages.find(message => message.id === messageId);
+	
+				if (!targetMessage) {
+					console.error('Target message not found in the conversation.');
+					return false;
+				}
+	
+				// Add the new child id to the target message's children array
+				targetMessage.children.push(newChildId);
+	
+				// Update lastModified
+				conversation.lastModified = new Date().toISOString();
+	
+				// Write the updated conversation back to the file
+				await adapter.write(filePath, JSON.stringify(conversation, null, 4));
+	
+				return true;
+			}
+		}
+	
+		console.error(`Conversation with ID: ${conversationId} not found`);
+		return false;
+	}	
 }

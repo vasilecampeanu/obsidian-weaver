@@ -3,6 +3,7 @@ import Weaver from "main";
 import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
 import OpenAIContentProvider from "./OpenAIContentProvider";
+import { ConversationManager } from "utils/ConversationManager";
 
 export class OpenAIMessageDispatcher {
 	private readonly plugin: Weaver;
@@ -12,6 +13,7 @@ export class OpenAIMessageDispatcher {
 
 	private userMessage?: IChatMessage;
 	private loadingAssistantMessage?: IChatMessage;
+	private infoMessage?: IChatMessage;
 	private openAIContentProvider: OpenAIContentProvider;
 
 	constructor(plugin: Weaver, conversation: IConversation, setConversationSession: Function, updateConversation: Function) {
@@ -21,18 +23,23 @@ export class OpenAIMessageDispatcher {
 		this.setConversationSession = setConversationSession;
 		this.userMessage = undefined;
 		this.loadingAssistantMessage = undefined;
+		this.infoMessage = undefined;
 		this.openAIContentProvider = new OpenAIContentProvider(plugin)
 
 		if (!this.conversation) {
 			throw new Error('Conversation cannot be undefined.');
 		}
 	}
-
-	private createUserMessage(inputText: string): IChatMessage {
+	private createUserMessage(inputText: string, shouldSetInfoMessageAsParent: boolean): IChatMessage {
 		const currentNode = this.conversation?.currentNode;
 		const currentMessage: IChatMessage | undefined = this.conversation?.messages.find((message) => message.id === currentNode);
-		const userMessageParentId: string = currentMessage?.id ?? uuidv4();
-
+		let userMessageParentId: string = currentMessage?.id ?? uuidv4();
+		
+		// If the condition is true, set the parent as the info message
+		if (shouldSetInfoMessageAsParent) {
+			userMessageParentId = this.infoMessage!.id;
+		}
+	
 		const userMessage: IChatMessage = {
 			children: [],
 			context: false,
@@ -42,10 +49,10 @@ export class OpenAIMessageDispatcher {
 			role: 'user',
 			parent: userMessageParentId
 		};
-
+	
 		return userMessage;
 	}
-
+	
 	private createAssistantLoadingMessage(userMessageId: string): IChatMessage {
 		const loadingAssistantMessage: IChatMessage = {
 			children: [],
@@ -59,6 +66,20 @@ export class OpenAIMessageDispatcher {
 		};
 
 		return loadingAssistantMessage;
+	}
+
+	private createInfoMessage(parentId: string): IChatMessage {
+		const infoMessage: IChatMessage = {
+			children: [],
+			context: false,
+			content: 'This is a dummy info content',
+			creationDate: new Date().toISOString(),
+			id: uuidv4(),
+			role: 'assistant',
+			parent: parentId
+		};
+
+		return infoMessage;
 	}
 
 	public async addMessage(message: IChatMessage) {
@@ -111,8 +132,31 @@ export class OpenAIMessageDispatcher {
 		setIsLoading: Function
 	) {
 		setIsLoading(true)
+		
+		const shouldAddInfoMessage = this.conversation?.messages.length === 1;
 
-		this.userMessage = this.createUserMessage(inputText);
+		if (shouldAddInfoMessage) {
+			const systemMessage = this.conversation!.messages[0];
+			this.infoMessage = this.createInfoMessage(systemMessage.id);
+			
+			// Add info message to conversation
+			await this.updateConversation(this.infoMessage, (contextMessages: IChatMessage[]) => {
+				this.setConversationSession((conversation: IConversation) => {
+					if (conversation) {
+						return {
+							...conversation,
+							currentNode: this.infoMessage!.id,
+							lastModified: new Date().toISOString(),
+							messages: contextMessages
+						};
+					} else {
+						return conversation;
+					}
+				});
+			});
+		}
+
+		this.userMessage = this.createUserMessage(inputText, shouldAddInfoMessage);
 
 		await this.updateConversation(this.userMessage, (contextMessages: IChatMessage[]) => {
 			this.setConversationSession((conversation: IConversation) => {
@@ -175,7 +219,7 @@ export class OpenAIMessageDispatcher {
 			this.addMessage.bind(this),
 			this.updateCurrentAssistantMessageContent.bind(this)
 		);
-		
+
 		setIsLoading(false)
 	}
 
@@ -192,6 +236,7 @@ export class OpenAIMessageDispatcher {
 		let currentNodeMessages = getRenderedMessages(this.conversation);
 		const reverseMessages = currentNodeMessages.reverse();
 		const lastUserMessage = reverseMessages.find((message: { role: string; }) => message.role === 'user');
+
 		currentNodeMessages.reverse();
 
 		if (!lastUserMessage) {
@@ -201,7 +246,7 @@ export class OpenAIMessageDispatcher {
 
 		this.userMessage = lastUserMessage;
 
-		if(this.conversation?.context === false) {
+		if (this.conversation?.context === false) {
 			currentNodeMessages = [this.userMessage];
 		} else {
 			currentNodeMessages.splice(currentNodeMessages.length - 1, 1);

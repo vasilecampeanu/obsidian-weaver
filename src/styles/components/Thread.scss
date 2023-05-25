@@ -3,7 +3,7 @@
 	display: grid;
 	height: 100%;
 	overflow-y: hidden !important;
-	
+
 	.ow-thread-tabs-manager
 	{
 		align-self: stretch;
@@ -145,7 +145,6 @@
 								display: flex;
 								gap: 5px;
 								align-self: center;
-								font-weight: bold;
 
 								color: var(--text-muted);
 								text-transform: uppercase;
