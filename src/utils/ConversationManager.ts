@@ -43,6 +43,7 @@ export class ConversationManager {
 					context: false,
 					creationDate: new Date().toISOString(),
 					id: currentNodeId,
+					model: plugin.settings.engine,
 					role: "system",
 					parent: uuidv4(),
 				}

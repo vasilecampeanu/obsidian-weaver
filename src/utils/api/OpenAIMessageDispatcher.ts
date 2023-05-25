@@ -3,14 +3,12 @@ import Weaver from "main";
 import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
 import { v4 as uuidv4 } from 'uuid';
 import OpenAIContentProvider from "./OpenAIContentProvider";
-import { ConversationManager } from "utils/ConversationManager";
 
 export class OpenAIMessageDispatcher {
 	private readonly plugin: Weaver;
 	private conversation?: IConversation;
 	private setConversationSession: Function;
 	private updateConversation: Function;
-
 	private userMessage?: IChatMessage;
 	private loadingAssistantMessage?: IChatMessage;
 	private infoMessage?: IChatMessage;
@@ -46,6 +44,7 @@ export class OpenAIMessageDispatcher {
 			content: inputText,
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
+			model: this.plugin.settings.engine,
 			role: 'user',
 			parent: userMessageParentId
 		};
@@ -61,6 +60,7 @@ export class OpenAIMessageDispatcher {
 			creationDate: '',
 			id: uuidv4(),
 			isLoading: true,
+			model: this.plugin.settings.engine,
 			role: 'assistant',
 			parent: userMessageId
 		};
@@ -72,10 +72,11 @@ export class OpenAIMessageDispatcher {
 		const infoMessage: IChatMessage = {
 			children: [],
 			context: false,
-			content: 'This is a dummy info content',
+			content: 'Info...',
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			role: 'assistant',
+			model: this.plugin.settings.engine,
+			role: 'info',
 			parent: parentId
 		};
 
@@ -177,8 +178,12 @@ export class OpenAIMessageDispatcher {
 
 		if (this.conversation?.context === true) {
 			const rootMessage = this.conversation?.messages.find((msg) => msg.role === "system");
-			let currentNodeMessages = rootMessage ? getRenderedMessages(this.conversation) : [];
-			contextMessages = [...(currentNodeMessages), this.userMessage];
+			let currentNodeMessages: IChatMessage[] = rootMessage ? getRenderedMessages(this.conversation) : [];
+			let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
+				return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+			});
+			console.log(filteredMessages);
+			contextMessages = [...(filteredMessages), this.userMessage];
 		} else {
 			contextMessages = [this.userMessage];
 		}
@@ -233,11 +238,16 @@ export class OpenAIMessageDispatcher {
 	) {
 		setIsLoading(true)
 
-		let currentNodeMessages = getRenderedMessages(this.conversation);
-		const reverseMessages = currentNodeMessages.reverse();
+		let currentNodeMessages: IChatMessage[] = getRenderedMessages(this.conversation);
+
+		let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
+			return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+		});
+
+		const reverseMessages = filteredMessages.reverse();
 		const lastUserMessage = reverseMessages.find((message: { role: string; }) => message.role === 'user');
 
-		currentNodeMessages.reverse();
+		filteredMessages.reverse();
 
 		if (!lastUserMessage) {
 			console.error('No user message found to regenerate.');
@@ -247,9 +257,9 @@ export class OpenAIMessageDispatcher {
 		this.userMessage = lastUserMessage;
 
 		if (this.conversation?.context === false) {
-			currentNodeMessages = [this.userMessage];
+			filteredMessages = [this.userMessage];
 		} else {
-			currentNodeMessages.splice(currentNodeMessages.length - 1, 1);
+			filteredMessages.splice(filteredMessages.length - 1, 1);
 		}
 
 		this.loadingAssistantMessage = this.createAssistantLoadingMessage(this.userMessage!.id);
@@ -284,7 +294,7 @@ export class OpenAIMessageDispatcher {
 		await this.openAIContentProvider.generateResponse(
 			this.plugin.settings,
 			{},
-			currentNodeMessages,
+			filteredMessages,
 			this.userMessage as IChatMessage,
 			this.addMessage.bind(this),
 			this.updateCurrentAssistantMessageContent.bind(this)

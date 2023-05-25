@@ -5,6 +5,7 @@ export interface IChatMessage {
 	creationDate: string;
 	id: string;
 	isLoading?: boolean;
+	model: string;
 	role: string;
 	parent: string;
 }

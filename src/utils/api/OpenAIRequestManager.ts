@@ -1,13 +1,17 @@
 import { IChatMessage } from "interfaces/IThread";
 import { SSE } from "../../js/sse/sse";
 import { v4 as uuidv4 } from 'uuid';
+import Weaver from "main";
 
 export class OpenAIRequestManager {
+	private readonly plugin: Weaver;
 	private stopRequested = false;
 	private assistantResponseChunks: string[] = [];
 	private DONE_MESSAGE = '[DONE]';
 
-	constructor() { }
+	constructor(plugin: Weaver) { 
+		this.plugin = plugin;
+	}
 
 	stopStreaming(): void {
 		this.stopRequested = true;
@@ -20,6 +24,7 @@ export class OpenAIRequestManager {
 			context: false,
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
+			model: this.plugin.settings.engine,
 			role: 'assistant',
 			parent: userMessage.id
 		};

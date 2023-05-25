@@ -1,3 +1,28 @@
+.ow-message-info-bubble
+{
+	display: flex;
+	gap: 5px;
+
+	.ow-icon
+	{
+		align-self: center;
+		svg
+		{
+			color: var(--interactive-accent);
+			fill: var(--interactive-accent);
+			width: 11px;				
+			height: 11px;	
+		}
+	}
+
+	span
+	{
+		align-self: center;
+		font-size: 11px;
+		color: var(--text-muted);
+	}
+}
+
 .ow-message-bubble
 {
 	display: flex;

@@ -12,7 +12,7 @@ export default class OpenAIContentProvider {
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
 		this.OpenAIRequestFormatter = new OpenAIRequestFormatter(this.plugin);
-		this.streamManager = new OpenAIRequestManager();
+		this.streamManager = new OpenAIRequestManager(plugin);
 	}
 
 	public async generateResponse(
