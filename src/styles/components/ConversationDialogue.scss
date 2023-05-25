@@ -43,7 +43,7 @@
 				padding: 3.5px;
 				border-radius: 10px;	
 
-				button
+				.ow-btn-change-model
 				{
 					all: unset;
 					padding: 8.5px 21px;
@@ -66,24 +66,32 @@
 						}
 					}
 
-					span
+					.ow-engine-wrapper
 					{
-						color: var(--text-muted);
-						font-size: 13px;
-					}
+						display: flex;
+						gap: 5px;
 
-					.ow-btn-icon
-					{
-						display: none;
-						align-self: center;
-
-						svg
+						span
 						{
-							place-self: center;
-							width: 16px;
-							height: 16px;
-							stroke-width: 3;
-							color: var(--text-normal) !important;
+							align-self: center;
+							color: var(--text-muted);
+							font-size: 13px;
+						}
+
+						.ow-btn-show-info
+						{
+							all: unset;
+							display: none;
+							align-self: center;
+	
+							svg
+							{
+								place-self: center;
+								width: 16px;
+								height: 16px;
+								stroke-width: 3;
+								color: var(--text-normal) !important;
+							}
 						}
 					}
 
@@ -102,14 +110,17 @@
 							}
 						}
 
-						span
+						.ow-engine-wrapper
 						{
-							color: var(--text-normal);
-						}
-
-						.ow-btn-icon
-						{
-							display: grid;
+							span
+							{
+								color: var(--text-normal);
+							}
+	
+							.ow-btn-show-info
+							{
+								display: grid;
+							}
 						}
 					}
 				}

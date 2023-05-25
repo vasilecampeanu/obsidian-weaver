@@ -30,7 +30,7 @@ export const ThreadHeader: React.FC<ThreadHeaderProps> = ({
 		<div className="ow-thread-header">
 			<div className="ow-thread-title">
 				<div className="ow-title">
-					Base Thread
+					Thread View
 				</div>
 				<div className="ow-actions">
 					<button
