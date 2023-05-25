@@ -52,7 +52,7 @@ export class ConversationManager {
 
 		plugin.settings.lastConversationId = newConversation.id;
 		plugin.settings.loadLastConversationState = true;
-		plugin.saveSettings();
+		await plugin.saveSettings();
 
 		// Ensure the folder exists
 		await FileIOManager.ensureWeaverFolderPathExists(plugin);

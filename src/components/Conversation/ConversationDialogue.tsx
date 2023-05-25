@@ -116,16 +116,16 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		}
 	};
 
-	const handleSetGPT3 = () => {
+	const handleSetGPT3 = async () => {
 		setActiveEngine("gpt-3.5-turbo");
 		plugin.settings.engine = "gpt-3.5-turbo";
-		plugin.saveSettings();
+		await plugin.saveSettings();
 	}
 
-	const handleSetGPT4 = () => {
+	const handleSetGPT4 = async () => {
 		setActiveEngine("gpt-4");
 		plugin.settings.engine = "gpt-4";
-		plugin.saveSettings();
+		await plugin.saveSettings();
 	}
 
 	return (

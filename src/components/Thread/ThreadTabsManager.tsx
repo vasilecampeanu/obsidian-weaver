@@ -34,16 +34,16 @@ export const ThreadTabsManager: React.FC<ThreadTabsManagerProps> = ({ plugin }) 
 		setActiveTab(tabId);
 	}
 
-	const handleConversationLoad = (conversation: IConversation) => {
+	const handleConversationLoad = async (conversation: IConversation) => {
 		setConversation(conversation);
 		plugin.settings.lastConversationId = conversation.id;
 		plugin.settings.loadLastConversationState = true;
-		plugin.saveSettings();
+		await plugin.saveSettings();
 	};
 
 	useEffect(() => {
 		(async () => {
-			if (plugin.settings.loadLastConversationState && plugin.settings.lastConversationId !== "") {
+			if (plugin.settings.loadLastConversation && plugin.settings.loadLastConversationState && plugin.settings.lastConversationId !== "") {
 				// Add a timeout of 500 milliseconds (0.5 seconds)
 				const timeout = setTimeout(async () => {
 					const conversationData = await ThreadManager.getAllConversations(plugin, `${plugin.settings.weaverFolderPath}/threads/base`);

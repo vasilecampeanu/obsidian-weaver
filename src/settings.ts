@@ -11,11 +11,11 @@ export interface WeaverSettings {
     activeThreadTitle: string | null,
     apiKey: string,
     engine: string,
+	engineInfo: boolean,
     frequencyPenalty: number,
     maxTokens: number,
     models: any,
     openOnStartUp: boolean,
-    showWelcomeMessage: boolean,
 	stream: boolean,
     systemRolePrompt: string,
     temperature: number,
@@ -23,7 +23,8 @@ export interface WeaverSettings {
 	threadViewIdentationGuides: boolean,
 	threadViewCompactMode: boolean,
 	lastConversationId: string,
-	loadLastConversationState: boolean
+	loadLastConversationState: boolean,
+	loadLastConversation: boolean
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -31,11 +32,11 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
     activeThreadTitle: null,
     apiKey: "",
     engine: "gpt-3.5-turbo",
+	engineInfo: true,
     frequencyPenalty: 0.5,
     maxTokens: 512,
     models: DEFAULT_MODELS,
     openOnStartUp: true,
-    showWelcomeMessage: true,
 	stream: false,
     systemRolePrompt: "You are a personal knowledge management assistant designed to work within Obsidian, a popular note-taking and knowledge management tool. Your purpose is to help users organize, manage, and expand their knowledge base by providing well-structured, informative, and relevant responses. Please ensure that you format your responses using Markdown syntax, which is the default formatting language used in Obsidian. This includes, but is not limited to, using appropriate headers, lists, links and code blocks. In addition to Markdown, please utilize LaTeX formatting when necessary to render mathematical symbols and equations in a clear and concise manner. This includes, but is not limited to, using symbols such as $\alpha$, $\beta$, $\gamma$, $\delta$, and $\theta$ and equations like $f(x) = x^2 + 2x + 1$ and $\int_{0}^{\infty} e^{-x^2} dx$. For formulas that are on a single line, enclose the LaTeX code between four dollar signs ($$$$) Please ensure that you follow proper LaTeX syntax and formatting guidelines to ensure the readability and coherence of your responses.",
     temperature: 0.7,
@@ -43,7 +44,8 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	threadViewIdentationGuides: true,
 	threadViewCompactMode: false,
 	lastConversationId: "",
-	loadLastConversationState: true
+	loadLastConversationState: true,
+	loadLastConversation: true
 };
 
 export class WeaverSettingTab extends PluginSettingTab {
@@ -170,12 +172,12 @@ export class WeaverSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Insert Welcome Message')
-			.setDesc('Controls whether or not a welcome message will be automatically added when a new chat session is created.')
+			.setName('Load Last Selectd Conversation')
+			.setDesc('Loads by default the most conversation you have used.')
 			.addToggle(v => v
-				.setValue(this.plugin.settings.showWelcomeMessage)
+				.setValue(this.plugin.settings.loadLastConversation)
 				.onChange(async (value) => {
-					this.plugin.settings.showWelcomeMessage = value;
+					this.plugin.settings.loadLastConversation = value;
 					await this.plugin.saveSettings();
 				}));
 
