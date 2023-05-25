@@ -21,7 +21,9 @@ export interface WeaverSettings {
     temperature: number,
     weaverFolderPath: string,
 	threadViewIdentationGuides: boolean,
-	threadViewCompactMode: boolean
+	threadViewCompactMode: boolean,
+	lastConversationId: string,
+	loadLastConversationState: boolean
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -39,7 +41,9 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
     temperature: 0.7,
     weaverFolderPath: "bins/weaver",
 	threadViewIdentationGuides: true,
-	threadViewCompactMode: false
+	threadViewCompactMode: false,
+	lastConversationId: "",
+	loadLastConversationState: true
 };
 
 export class WeaverSettingTab extends PluginSettingTab {

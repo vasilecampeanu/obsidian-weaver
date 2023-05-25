@@ -6,12 +6,13 @@ import { Thread } from "./Thread"
 import { eventEmitter } from 'utils/EventEmitter';
 import { Conversation } from "components/Conversation/Conversation";
 import { IConversation } from "interfaces/IThread";
+import { ThreadManager } from "utils/ThreadManager";
 
 interface ThreadTabsManagerProps {
 	plugin: Weaver,
 }
 
-export const ThreadTabsManager: React.FC<ThreadTabsManagerProps> = ({plugin}) => {
+export const ThreadTabsManager: React.FC<ThreadTabsManagerProps> = ({ plugin }) => {
 	const [activeTab, setActiveTab] = useState("thread-page");
 	const [reloadTrigger, setReloadTrigger] = React.useState<number>(0);
 	const [conversation, setConversation] = useState<IConversation | undefined>();
@@ -35,19 +36,39 @@ export const ThreadTabsManager: React.FC<ThreadTabsManagerProps> = ({plugin}) =>
 
 	const handleConversationLoad = (conversation: IConversation) => {
 		setConversation(conversation);
+		plugin.settings.lastConversationId = conversation.id;
+		plugin.settings.loadLastConversationState = true;
+		plugin.saveSettings();
 	};
+
+	useEffect(() => {
+		(async () => {
+			if (plugin.settings.loadLastConversationState && plugin.settings.lastConversationId !== "") {
+				// Add a timeout of 500 milliseconds (0.5 seconds)
+				const timeout = setTimeout(async () => {
+					const conversationData = await ThreadManager.getAllConversations(plugin, `${plugin.settings.weaverFolderPath}/threads/base`);
+					const conversationToLoad = conversationData.find(conversation => conversation.id === plugin.settings.lastConversationId);
+					handleTabSwitch("conversation-page");
+					handleConversationLoad(conversationToLoad as IConversation);
+				}, 500);
+
+				// Clean up the timeout if the component unmounts before it expires
+				return () => clearTimeout(timeout);
+			}
+		})();
+	}, []);
 
 	return (
 		<div className="ow-thread-tabs-manager" key={reloadTrigger}>
 			{activeTab === "thread-page" ? (
-				<Thread 
-					plugin={plugin} 
+				<Thread
+					plugin={plugin}
 					onTabSwitch={handleTabSwitch}
 					onConversationLoad={handleConversationLoad}
 				/>
 			) : (
-				<Conversation 
-					plugin={plugin} 
+				<Conversation
+					plugin={plugin}
 					onTabSwitch={handleTabSwitch}
 					conversation={conversation}
 					onConversationLoad={handleConversationLoad}

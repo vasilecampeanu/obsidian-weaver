@@ -124,6 +124,9 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
 	const handleTabSwitch = () => {
 		onTabSwitch("thread-page");
+		plugin.settings.lastConversationId = "";
+		plugin.settings.loadLastConversationState = false;
+		plugin.saveSettings();
 	}
 
 	const handleToggleContext = () => {

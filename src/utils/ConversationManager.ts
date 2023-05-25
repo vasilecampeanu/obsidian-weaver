@@ -29,7 +29,7 @@ export class ConversationManager {
 
 		// Create a new conversation object
 		const newConversation: IConversation = {
-			id: Date.now().toString(), // Generate a unique id
+			id: uuidv4(), // Generate a unique id
 			title: uniqueTitle,
 			identifier: 'obsidian-weaver',
 			currentNode: currentNodeId,
@@ -49,6 +49,10 @@ export class ConversationManager {
 				}
 			]
 		};
+
+		plugin.settings.lastConversationId = newConversation.id;
+		plugin.settings.loadLastConversationState = true;
+		plugin.saveSettings();
 
 		// Ensure the folder exists
 		await FileIOManager.ensureWeaverFolderPathExists(plugin);
