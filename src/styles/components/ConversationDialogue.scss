@@ -242,6 +242,62 @@
 					}
 				}	
 			}
+
+			.ow-change-mode
+			{
+				display: grid;
+				gap: 20px;
+				margin-top: 300px;
+
+				.ow-title
+				{
+					justify-self: center;
+					font-size: 13px;
+				}
+
+				.ow-mode-list
+				{
+					justify-self: center;
+					display: flex;
+					gap: 5px;
+
+					background-color: var(--interactive-normal);
+					box-shadow: rgb(0 0 0 / 10%) 0px 0px 5px 0px, rgb(0 0 0 / 10%) 0px 0px 1px 0px;
+					padding: 3.5px;
+					border: 1px solid var(--prompt-border-color);
+					border-radius: 5px;
+					
+					.ow-mode-wrapper
+					{
+						all: unset;
+						display: grid;
+						gap: 2.5px;
+						padding: 7px 20px;
+						border-radius: 5px;
+
+						background-color: var(--ui2);
+
+						&.active
+						{
+							background-color: var(--interactive-accent);
+						}
+
+						.ow-more
+						{
+							text-align: center;
+							font-size: 11px;
+							line-height: 1em;
+						}
+
+						.ow-mode
+						{
+							font-size: 13px;
+							line-height: 1em;
+							font-weight: 500;
+						}
+					}
+				}
+			}
 		}
 	}	
 }

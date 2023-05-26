@@ -22,6 +22,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">(plugin.settings.engine as any);
 	const [showEngineInfo, setShowEngineInfo] = useState(false);
 	const [showConversationEngineInfo, setShowConversationEngineInfo] = useState(plugin.settings.engineInfo);
+	const [activeMode, setActiveMode] = useState("balanced");
 
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
 	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
@@ -141,6 +142,10 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		await plugin.saveSettings();
 	};
 
+	const handleModeChange = (newMode: string) => {
+		setActiveMode(newMode);
+	};
+
 	return (
 		<div className={`ow-conversation-dialogue ${conversation?.context === false ? "ow-context" : ""}`} ref={dialogueTimelineRef}>
 			{
@@ -169,19 +174,19 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 										<span>
 											GPT-3.5
 										</span>
-										{showConversationEngineInfo === true ?(
+										{showConversationEngineInfo === true ? (
 											<button
 												className="ow-btn-show-info"
 												onClick={handleHideInfoClick}
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 											</button>
 										) : (
 											<button
 												className="ow-btn-show-info"
 												onClick={handleShowInfoClick}
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
 											</button>
 										)}
 									</div>
@@ -197,25 +202,54 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 										<span>
 											GPT-4
 										</span>
-										{showConversationEngineInfo === true ?(
+										{showConversationEngineInfo === true ? (
 											<button
 												className="ow-btn-show-info"
 												onClick={handleHideInfoClick}
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 											</button>
 										) : (
 											<button
 												className="ow-btn-show-info"
 												onClick={handleShowInfoClick}
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
 											</button>
 										)}
 									</div>
 								</div>
 							</div>
 							{showConversationEngineInfo && <ConversationEngineInfo plugin={plugin} activeEngine={activeEngine} />}
+							<div className="ow-change-mode">
+								<div className="ow-title">
+									Choose a conversation style
+								</div>
+								<div className="ow-mode-list">
+									<button
+										className={`ow-mode-wrapper ${activeMode === "creative" ? "active" : ""}`}
+										onClick={() => handleModeChange("creative")}
+									>
+										<span className="ow-more">More</span>
+										<span className="ow-mode">Creative</span>
+									</button>
+									<button
+										className={`ow-mode-wrapper ${activeMode === "balanced" ? "active" : ""}`}
+										onClick={() => handleModeChange("balanced")}
+									>
+										<span className="ow-more">More</span>
+										<span className="ow-mode">Balanced</span>
+									</button>
+									<button
+										className={`ow-mode-wrapper ${activeMode === "precise" ? "active" : ""}`}
+										onClick={() => handleModeChange("precise")}
+									>
+										<span className="ow-more">More</span>
+										<span className="ow-mode">Precise</span>
+									</button>
+								</div>
+							</div>
+
 						</div>
 					)
 				)
