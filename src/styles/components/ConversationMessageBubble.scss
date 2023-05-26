@@ -134,7 +134,7 @@
 		.ow-message-bubble-content
 		{
 			order: 2;
-			background-color: hsla(var(--interactive-accent-hsl), 0.55);
+			background-color: var(--interactive-accent);
 			
 			.ow-message-bubble-top-bar
 			{
