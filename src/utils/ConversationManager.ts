@@ -44,10 +44,13 @@ export class ConversationManager {
 					creationDate: new Date().toISOString(),
 					id: currentNodeId,
 					model: plugin.settings.engine,
+					mode: "balanced",
 					role: "system",
 					parent: uuidv4(),
 				}
-			]
+			],
+			mode: "balanced",
+			model: plugin.settings.engine
 		};
 
 		plugin.settings.lastConversationId = newConversation.id;
@@ -134,28 +137,28 @@ export class ConversationManager {
 
 	static async updateConversationTitleById(plugin: Weaver, id: string, newTitle: string): Promise<{ success: boolean; errorMessage?: string }> {
 		try {
-			const adapter = plugin.app.vault.adapter as FileSystemAdapter;	
+			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const folderPath = `${plugin.settings.weaverFolderPath}/threads/base`;
 			const folderContent = await adapter.list(folderPath);
 			const filesInFolder = folderContent.files.filter(filePath => filePath.endsWith('.json'));
-	
+
 			const conversations: IConversation[] = [];
-	
+
 			// Iterate through files to build conversations list
 			for (const filePath of filesInFolder) {
 				const fileContent = await adapter.read(filePath);
 				const conversation = JSON.parse(fileContent) as IConversation;
 				conversations.push(conversation);
 			}
-	
+
 			// Check for duplicate titles and adjust newTitle if necessary
 			newTitle = this.getUniqueTitle(newTitle, conversations);
-	
+
 			// Iterate through files again to update the conversation with the correct id
 			for (const filePath of filesInFolder) {
 				const fileContent = await adapter.read(filePath);
 				const conversation = JSON.parse(fileContent) as IConversation;
-	
+
 				if (conversation.id === id && conversation.identifier === 'obsidian-weaver') {
 					plugin.isRenamingFromInside = true;
 					conversation.title = newTitle;
@@ -165,7 +168,7 @@ export class ConversationManager {
 					plugin.isRenamingFromInside = false;
 				}
 			}
-	
+
 			return { success: true };
 		} catch (error) {
 			console.error(`Error updating conversation title: ${error}`);
@@ -242,37 +245,85 @@ export class ConversationManager {
 	static async addChildToMessage(plugin: Weaver, conversationId: string, messageId: string, newChildId: string): Promise<boolean> {
 		const folderPath = `${plugin.settings.weaverFolderPath}/threads/base`;
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
-	
+
 		const folderContent = await adapter.list(folderPath);
 		const filesInFolder = folderContent.files.filter(filePath => filePath.endsWith('.json'));
-	
+
 		for (const filePath of filesInFolder) {
 			const fileContent = await adapter.read(filePath);
 			const conversation = JSON.parse(fileContent) as IConversation;
-	
+
 			if (conversation.id === conversationId && conversation.identifier === 'obsidian-weaver') {
 				// Find the target message in the conversation's messages
 				const targetMessage = conversation.messages.find(message => message.id === messageId);
-	
+
 				if (!targetMessage) {
 					console.error('Target message not found in the conversation.');
 					return false;
 				}
-	
+
 				// Add the new child id to the target message's children array
 				targetMessage.children.push(newChildId);
-	
+
 				// Update lastModified
 				conversation.lastModified = new Date().toISOString();
-	
+
 				// Write the updated conversation back to the file
 				await adapter.write(filePath, JSON.stringify(conversation, null, 4));
-	
+
 				return true;
 			}
 		}
-	
+
 		console.error(`Conversation with ID: ${conversationId} not found`);
 		return false;
-	}	
+	}
+
+	static async updateConversationModel(plugin: Weaver, id: string, newModel: string): Promise<boolean> {
+		const folderPath = `${plugin.settings.weaverFolderPath}/threads/base`;
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+
+		const folderContent = await adapter.list(folderPath);
+		const filesInFolder = folderContent.files.filter(filePath => filePath.endsWith('.json'));
+
+		for (const filePath of filesInFolder) {
+			const fileContent = await adapter.read(filePath);
+			const conversation = JSON.parse(fileContent) as IConversation;
+
+			if (conversation.id === id && conversation.identifier === 'obsidian-weaver') {
+				conversation.model = newModel;
+				conversation.lastModified = new Date().toISOString();
+
+				await adapter.write(filePath, JSON.stringify(conversation, null, 4));
+				return true;
+			}
+		}
+
+		console.error(`Conversation with ID: ${id} not found`);
+		return false;
+	}
+
+	static async updateConversationMode(plugin: Weaver, id: string, newMode: string): Promise<boolean> {
+		const folderPath = `${plugin.settings.weaverFolderPath}/threads/base`;
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+
+		const folderContent = await adapter.list(folderPath);
+		const filesInFolder = folderContent.files.filter(filePath => filePath.endsWith('.json'));
+
+		for (const filePath of filesInFolder) {
+			const fileContent = await adapter.read(filePath);
+			const conversation = JSON.parse(fileContent) as IConversation;
+
+			if (conversation.id === id && conversation.identifier === 'obsidian-weaver') {
+				conversation.mode = newMode;
+				conversation.lastModified = new Date().toISOString();
+
+				await adapter.write(filePath, JSON.stringify(conversation, null, 4));
+				return true;
+			}
+		}
+
+		console.error(`Conversation with ID: ${id} not found`);
+		return false;
+	}
 }

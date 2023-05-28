@@ -19,7 +19,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	setConversationSession
 }) => {
 	const [selectedChildren, setSelectedChildren] = useState<{ [key: string]: number }>({});
-	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">(plugin.settings.engine as any);
+	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">();
 	const [showEngineInfo, setShowEngineInfo] = useState(false);
 	const [showConversationEngineInfo, setShowConversationEngineInfo] = useState(plugin.settings.engineInfo);
 	const [activeMode, setActiveMode] = useState("balanced");
@@ -27,6 +27,10 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
 	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
 	const TIMEOUT_DELAY = 250;
+
+	useEffect(() => {
+		setActiveEngine(conversation?.model as "gpt-3.5-turbo" | "gpt-4")
+	}, [conversation?.model])
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -120,14 +124,22 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 
 	const handleSetGPT3 = async () => {
 		setActiveEngine("gpt-3.5-turbo");
-		plugin.settings.engine = "gpt-3.5-turbo";
-		await plugin.saveSettings();
+
+		if (conversation) {
+			const updatedConversation = { ...conversation, model: "gpt-3.5-turbo" };
+			setConversationSession(updatedConversation)
+			await ConversationManager.updateConversationModel(plugin, conversation!?.id, "gpt-3.5-turbo");
+		}
 	}
 
 	const handleSetGPT4 = async () => {
 		setActiveEngine("gpt-4");
-		plugin.settings.engine = "gpt-4";
-		await plugin.saveSettings();
+
+		if (conversation) {
+			const updatedConversation = { ...conversation, model: "gpt-4" };
+			setConversationSession(updatedConversation)
+			await ConversationManager.updateConversationModel(plugin, conversation!?.id, "gpt-4");
+		}
 	}
 
 	const handleShowInfoClick = async () => {
@@ -142,8 +154,14 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		await plugin.saveSettings();
 	};
 
-	const handleModeChange = (newMode: string) => {
+	const handleModeChange = async (newMode: string) => {
 		setActiveMode(newMode);
+
+		if (conversation) {
+			const updatedConversation = { ...conversation, mode: newMode };
+			setConversationSession(updatedConversation)
+			await ConversationManager.updateConversationMode(plugin, conversation!?.id, newMode);
+		}
 	};
 
 	return (
@@ -220,7 +238,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 									</div>
 								</div>
 							</div>
-							{showConversationEngineInfo && <ConversationEngineInfo plugin={plugin} activeEngine={activeEngine} />}
+							{showConversationEngineInfo && <ConversationEngineInfo plugin={plugin} activeEngine={activeEngine as "gpt-3.5-turbo" | "gpt-4"} />}
 							<div className="ow-change-mode">
 								<div className="ow-title">
 									Choose a conversation style

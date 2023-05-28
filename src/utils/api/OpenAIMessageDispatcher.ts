@@ -28,6 +28,7 @@ export class OpenAIMessageDispatcher {
 			throw new Error('Conversation cannot be undefined.');
 		}
 	}
+
 	private createUserMessage(inputText: string, shouldSetInfoMessageAsParent: boolean): IChatMessage {
 		const currentNode = this.conversation?.currentNode;
 		const currentMessage: IChatMessage | undefined = this.conversation?.messages.find((message) => message.id === currentNode);
@@ -44,11 +45,12 @@ export class OpenAIMessageDispatcher {
 			content: inputText,
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			model: this.plugin.settings.engine,
+			mode: this.conversation!?.mode,
+			model: this.conversation!?.model,
 			role: 'user',
 			parent: userMessageParentId
 		};
-	
+
 		return userMessage;
 	}
 	
@@ -60,7 +62,8 @@ export class OpenAIMessageDispatcher {
 			creationDate: '',
 			id: uuidv4(),
 			isLoading: true,
-			model: this.plugin.settings.engine,
+			mode: this.conversation!?.mode,
+			model: this.conversation!?.model,
 			role: 'assistant',
 			parent: userMessageId
 		};
@@ -75,7 +78,8 @@ export class OpenAIMessageDispatcher {
 			content: 'Info...',
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			model: this.plugin.settings.engine,
+			mode: this.conversation!?.mode,
+			model: this.conversation!?.model,
 			role: 'info',
 			parent: parentId
 		};
@@ -219,6 +223,7 @@ export class OpenAIMessageDispatcher {
 		await this.openAIContentProvider.generateResponse(
 			this.plugin.settings,
 			{},
+			this.conversation as IConversation,
 			contextMessages,
 			this.userMessage,
 			this.addMessage.bind(this),
@@ -294,6 +299,7 @@ export class OpenAIMessageDispatcher {
 		await this.openAIContentProvider.generateResponse(
 			this.plugin.settings,
 			{},
+			this.conversation as IConversation,
 			filteredMessages,
 			this.userMessage as IChatMessage,
 			this.addMessage.bind(this),

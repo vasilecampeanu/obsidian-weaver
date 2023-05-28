@@ -60,11 +60,13 @@ export class WeaverImporter {
 							id: messageData.id,
 							role: messageData.author.role,
 							parent: node.parent,
-							children: node.children
+							children: node.children,
+							mode: "balanced",
+							model: plugin.settings.engine
 						});
 					}
 				}
-	
+
 				const conversationData: IConversation = {
 					context: true,
 					creationDate: new Date(conversation.create_time * 1000).toISOString(),
@@ -74,6 +76,8 @@ export class WeaverImporter {
 					lastModified: new Date(conversation.update_time * 1000).toISOString(),
 					title: conversationTitle,
 					messages: messages,
+					mode: "balanced",
+					model: plugin.settings.engine
 				};
 	
 				await FileIOManager.ensureFolderPathExists(plugin, "threads/base");
