@@ -142,10 +142,12 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		setInputText('');
 	}
 
-	const onCancelRequest = useCallback(() => {
+	const onCancelRequest = useCallback(async () => {
 		if (messageDispatcherRef.current) {
-			messageDispatcherRef.current.handleStopStreaming();
+			await messageDispatcherRef.current.handleStopStreaming();
 		}
+
+		setIsLoading(false);
 	}, []);
 
 	const handleRegenerateMessage = async () => {
