@@ -326,4 +326,41 @@ export class ConversationManager {
 		console.error(`Conversation with ID: ${id} not found`);
 		return false;
 	}
+
+	static async updateSystemPrompt(plugin: Weaver, id: string, newPrompt: string): Promise<boolean> {
+		const folderPath = `${plugin.settings.weaverFolderPath}/threads/base`;
+		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
+	
+		const folderContent = await adapter.list(folderPath);
+		const filesInFolder = folderContent.files.filter(filePath => filePath.endsWith('.json'));
+	
+		for (const filePath of filesInFolder) {
+			const fileContent = await adapter.read(filePath);
+			const conversation = JSON.parse(fileContent) as IConversation;
+	
+			if (conversation.id === id && conversation.identifier === 'obsidian-weaver') {
+				// Find the system prompt in the conversation's messages
+				const systemPrompt = conversation.messages.find(message => message.role === 'system');
+	
+				if (!systemPrompt) {
+					console.error('System prompt not found in the conversation.');
+					return false;
+				}
+	
+				// Update the content of the system prompt
+				systemPrompt.content = newPrompt;
+	
+				// Update lastModified
+				conversation.lastModified = new Date().toISOString();
+	
+				// Write the updated conversation back to the file
+				await adapter.write(filePath, JSON.stringify(conversation, null, 4));
+	
+				return true;
+			}
+		}
+	
+		console.error(`Conversation with ID: ${id} not found`);
+		return false;
+	}	
 }

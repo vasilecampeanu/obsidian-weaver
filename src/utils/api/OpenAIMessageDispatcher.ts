@@ -244,7 +244,7 @@ export class OpenAIMessageDispatcher {
 		setIsLoading(true)
 
 		let currentNodeMessages: IChatMessage[] = getRenderedMessages(this.conversation);
-
+		console.log(currentNodeMessages);
 		let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
 			return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
 		});

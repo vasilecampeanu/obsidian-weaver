@@ -20,9 +20,9 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 }) => {
 	const [selectedChildren, setSelectedChildren] = useState<{ [key: string]: number }>({});
 	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">();
+	const [activeMode, setActiveMode] = useState<"creative" | "balanced" | "precise">();
 	const [showEngineInfo, setShowEngineInfo] = useState(false);
 	const [showConversationEngineInfo, setShowConversationEngineInfo] = useState(plugin.settings.engineInfo);
-	const [activeMode, setActiveMode] = useState("balanced");
 
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
 	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
@@ -30,7 +30,8 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 
 	useEffect(() => {
 		setActiveEngine(conversation?.model as "gpt-3.5-turbo" | "gpt-4")
-	}, [conversation?.model])
+		setActiveMode(conversation?.mode as "creative" | "balanced" | "precise")
+	}, [conversation?.model, conversation?.mode])
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -155,14 +156,34 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	};
 
 	const handleModeChange = async (newMode: string) => {
-		setActiveMode(newMode);
+		setActiveMode(newMode as "creative" | "balanced" | "precise");
+
+		let systemPromptContent = ""
+
+		if (newMode === "creative") {
+			systemPromptContent = plugin.settings.creativeSystemRolePrompt;
+		} else if (newMode === "balanced") {
+			systemPromptContent = plugin.settings.balancedSystemRolePrompt;
+		} else if (newMode === "precise") {
+			systemPromptContent = plugin.settings.preciseSystemRolePrompt;
+		}
 
 		if (conversation) {
 			const updatedConversation = { ...conversation, mode: newMode };
-			setConversationSession(updatedConversation)
+
+			// Update the system message content in the updated conversation
+			const systemPrompt = updatedConversation.messages.find(message => message.role === 'system');
+
+			if (systemPrompt) {
+				systemPrompt.content = systemPromptContent; // update to your desired content
+			}
+
+			setConversationSession(updatedConversation);
+
+			await ConversationManager.updateSystemPrompt(plugin, conversation!?.id, systemPromptContent);
 			await ConversationManager.updateConversationMode(plugin, conversation!?.id, newMode);
 		}
-	};
+	};	
 
 	return (
 		<div className={`ow-conversation-dialogue ${conversation?.context === false ? "ow-context" : ""}`} ref={dialogueTimelineRef}>
