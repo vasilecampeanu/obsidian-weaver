@@ -79,9 +79,35 @@
 
 	.ow-message-actions
 	{
+		display: flex;
+		align-content: start;
+		align-items: start;
+		gap: 5px;
 		opacity: 0;
 
 		.ow-copy-button
+		{
+			all: unset;
+			cursor: var(--cursor);
+
+			svg
+			{
+				width: 13px;
+				height: 13px;
+				color: var(--icon-color);
+				opacity: .5;
+			}
+
+			&:hover
+			{
+				svg
+				{
+					opacity: .75;
+				}
+			}
+		}
+
+		.ow-edit-button
 		{
 			all: unset;
 			cursor: var(--cursor);
