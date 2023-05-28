@@ -254,6 +254,11 @@
 				gap: 20px;
 				margin-top: 300px;
 
+				&.showConversationEngineInfoEnabled
+				{
+					margin-top: 0px;
+				}
+
 				.ow-title
 				{
 					justify-self: center;

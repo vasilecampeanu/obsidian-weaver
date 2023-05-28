@@ -71,6 +71,11 @@ export default class Weaver extends Plugin {
 			// Check for legacy data
 			await MigrationAssistant.migrateData(this);
 
+			if (this.settings.systemRolePrompt !== this.settings.balancedSystemRolePrompt) {
+				this.settings.systemRolePrompt = this.settings.balancedSystemRolePrompt;
+				this.saveSettings();
+			}
+
 			// Refresh thread view
 			eventEmitter.emit('reloadThreadViewEvent');
 		}, 500);

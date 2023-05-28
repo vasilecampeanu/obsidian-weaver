@@ -260,7 +260,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 								</div>
 							</div>
 							{showConversationEngineInfo && <ConversationEngineInfo plugin={plugin} activeEngine={activeEngine as "gpt-3.5-turbo" | "gpt-4"} />}
-							<div className="ow-change-mode">
+							<div className={`ow-change-mode ${showConversationEngineInfo === true ? "showConversationEngineInfoEnabled" : ""}`}>
 								<div className="ow-title">
 									Choose a conversation style
 								</div>
