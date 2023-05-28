@@ -83,14 +83,19 @@
 							all: unset;
 							display: none;
 							align-self: center;
-	
+							border-radius: 2.5px;
+
+							&:hover
+							{
+								background-color: var(--background-modifier-hover);	
+							}
+
 							svg
 							{
 								place-self: center;
 								width: 16px;
 								height: 16px;
-								stroke-width: 3;
-								color: var(--text-normal) !important;
+								color: var(--icon-color) !important;
 							}
 						}
 					}
