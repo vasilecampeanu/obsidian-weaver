@@ -137,7 +137,6 @@ export class WeaverSettingTab extends PluginSettingTab {
 			.setName('Precise System Role Prompt')
 			.setDesc('This setting determines the behavior of the assistant in precise mode.')
 			.addTextArea(text => text
-				text.inputEl.style.width = "200px";
 				.setValue(this.plugin.settings.preciseSystemRolePrompt)
 				.onChange(async (value) => {
 					this.plugin.settings.preciseSystemRolePrompt = value;
@@ -202,7 +201,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Load Last Selectd Conversation')
-			.setDesc('Loads by default the most conversation you have used.')
+			.setDesc('Loads by default the last conversation you have used.')
 			.addToggle(v => v
 				.setValue(this.plugin.settings.loadLastConversation)
 				.onChange(async (value) => {
