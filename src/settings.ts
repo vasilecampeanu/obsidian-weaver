@@ -111,15 +111,38 @@ export class WeaverSettingTab extends PluginSettingTab {
 		containerEl.createEl('h2', { text: 'Model Configuration' });
 
 		new Setting(containerEl)
-			.setName('System Role Prompt')
-			.setDesc('This setting determines the behavior of the assistant.')
-			.addText(text => text
-				.setValue(this.plugin.settings.systemRolePrompt)
+			.setName('Creative System Role Prompt')
+			.setDesc('This setting determines the behavior of the assistant in creative mode.')
+			.addTextArea(text => text
+				.setValue(this.plugin.settings.creativeSystemRolePrompt)
 				.onChange(async (value) => {
-					this.plugin.settings.systemRolePrompt = value;
+					this.plugin.settings.creativeSystemRolePrompt = value;
 					await this.plugin.saveSettings();
 				})
-				.inputEl.setAttribute('size', '50')
+			)
+
+		new Setting(containerEl)
+			.setName('Balanced System Role Prompt')
+			.setDesc('This setting determines the behavior of the assistant in balanced mode.')
+			.addTextArea(text => text
+				.setValue(this.plugin.settings.balancedSystemRolePrompt)
+				.onChange(async (value) => {
+					this.plugin.settings.systemRolePrompt = value;
+					this.plugin.settings.balancedSystemRolePrompt = value;
+					await this.plugin.saveSettings();
+				})
+			)
+
+		new Setting(containerEl)
+			.setName('Precise System Role Prompt')
+			.setDesc('This setting determines the behavior of the assistant in precise mode.')
+			.addTextArea(text => text
+				text.inputEl.style.width = "200px";
+				.setValue(this.plugin.settings.preciseSystemRolePrompt)
+				.onChange(async (value) => {
+					this.plugin.settings.preciseSystemRolePrompt = value;
+					await this.plugin.saveSettings();
+				})
 			)
 
 		new Setting(containerEl)
