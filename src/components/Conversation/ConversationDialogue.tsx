@@ -158,7 +158,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const handleModeChange = async (newMode: string) => {
 		setActiveMode(newMode as "creative" | "balanced" | "precise");
 
-		let systemPromptContent = ""
+		let systemPromptContent = plugin.settings.systemRolePrompt;
 
 		if (newMode === "creative") {
 			systemPromptContent = plugin.settings.creativeSystemRolePrompt;

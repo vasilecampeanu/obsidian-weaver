@@ -29,7 +29,7 @@ export default class OpenAIRequestFormatter {
 			const bodyParameters: BodyParameters = {
 				frequency_penalty: parameters.frequencyPenalty,
 				max_tokens: parameters.maxTokens,
-				model: conversation.model,
+				model: conversation.model ? conversation.model : parameters.engine,
 				temperature: parameters.temperature,
 				stream: true
 			};
