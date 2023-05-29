@@ -1,25 +1,35 @@
-import { IChatMessage } from "interfaces/IThread";
+import { IChatMessage, IConversation } from "interfaces/IThread";
 import { SSE } from "../../js/sse/sse";
 import { v4 as uuidv4 } from 'uuid';
+import Weaver from "main";
 
 export class OpenAIRequestManager {
+	private readonly plugin: Weaver;
 	private stopRequested = false;
 	private assistantResponseChunks: string[] = [];
 	private DONE_MESSAGE = '[DONE]';
 
-	constructor() { }
+	constructor(plugin: Weaver) { 
+		this.plugin = plugin;
+	}
 
 	stopStreaming(): void {
 		this.stopRequested = true;
 	}
 
-	private createAssistantMessage(userMessage: IChatMessage, content: string): IChatMessage {
+	private createAssistantMessage(
+		userMessage: IChatMessage, 
+		content: string,
+		conversation: IConversation
+	): IChatMessage {
 		return {
 			children: [],
 			content: content,
 			context: false,
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
+			mode: conversation.mode,
+			model: conversation.model,
 			role: 'assistant',
 			parent: userMessage.id
 		};
@@ -31,11 +41,16 @@ export class OpenAIRequestManager {
 		userMessage: IChatMessage,
 		addMessage: (message: IChatMessage) => void,
 		updateCurrentAssistantMessageContent: (content: string) => void,
-		resolve: (value: string | null) => void
+		resolve: (value: string | null) => void,
+		conversation: IConversation
 	) => {
 		if (this.stopRequested) {
 			response?.close();
-			addMessage(this.createAssistantMessage(userMessage, this.assistantResponseChunks.join('')));
+			addMessage(this.createAssistantMessage(
+				userMessage, 
+				this.assistantResponseChunks.join(''),
+				conversation
+			));
 			this.stopRequested = false;
 			this.assistantResponseChunks = [];
 			return;
@@ -53,7 +68,11 @@ export class OpenAIRequestManager {
 			updateCurrentAssistantMessageContent(this.assistantResponseChunks.join(''));
 		} else {
 			response?.close();
-			addMessage(this.createAssistantMessage(userMessage, this.assistantResponseChunks.join('')));
+			addMessage(this.createAssistantMessage(
+				userMessage, 
+				this.assistantResponseChunks.join(''),
+				conversation
+			));
 			this.assistantResponseChunks = [];
 			resolve(this.assistantResponseChunks.join(''));
 		}
@@ -64,7 +83,8 @@ export class OpenAIRequestManager {
 		response: SSE,
 		userMessage: IChatMessage,
 		addMessage: (message: IChatMessage) => void,
-		reject: (reason?: any) => void
+		reject: (reason?: any) => void,
+		conversation: IConversation
 	) => {
 		const errorStatus = JSON.parse(error.status);
 		let errorMessage = "";
@@ -86,7 +106,11 @@ export class OpenAIRequestManager {
 				errorMessage = `Error: HTTP error! status: ${errorStatus}`;
 		}
 
-		addMessage(this.createAssistantMessage(userMessage, errorMessage));
+		addMessage(this.createAssistantMessage(
+			userMessage, 
+			errorMessage, 
+			conversation
+		));
 
 		response?.close();
 		reject(new Error(errorMessage));
@@ -96,7 +120,8 @@ export class OpenAIRequestManager {
 		requestParameters: any,
 		userMessage: IChatMessage,
 		addMessage: (message: IChatMessage) => void,
-		updateCurrentAssistantMessageContent: (content: string) => void
+		updateCurrentAssistantMessageContent: (content: string) => void,
+		conversation: IConversation
 	): Promise<string | null> => {
 		return new Promise((resolve, reject) => {
 			try {
@@ -110,8 +135,8 @@ export class OpenAIRequestManager {
 					payload: requestParameters.body,
 				});
 
-				response.addEventListener('message', (e: any) => this.onMessage(e, response, userMessage, addMessage, updateCurrentAssistantMessageContent, resolve));
-				response.addEventListener('error', (error: any) => this.onError(error, response, userMessage, addMessage, reject));
+				response.addEventListener('message', (e: any) => this.onMessage(e, response, userMessage, addMessage, updateCurrentAssistantMessageContent, resolve, conversation));
+				response.addEventListener('error', (error: any) => this.onError(error, response, userMessage, addMessage, reject, conversation));
 
 				response.stream();
 			} catch (err) {

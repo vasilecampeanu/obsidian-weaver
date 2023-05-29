@@ -1,3 +1,28 @@
+.ow-message-info-bubble
+{
+	display: flex;
+	gap: 5px;
+
+	.ow-icon
+	{
+		align-self: center;
+		svg
+		{
+			color: var(--interactive-accent);
+			fill: var(--interactive-accent);
+			width: 11px;				
+			height: 11px;	
+		}
+	}
+
+	span
+	{
+		align-self: center;
+		font-size: 11px;
+		color: var(--text-muted);
+	}
+}
+
 .ow-message-bubble
 {
 	display: flex;
@@ -54,9 +79,35 @@
 
 	.ow-message-actions
 	{
+		display: flex;
+		align-content: start;
+		align-items: start;
+		gap: 5px;
 		opacity: 0;
 
 		.ow-copy-button
+		{
+			all: unset;
+			cursor: var(--cursor);
+
+			svg
+			{
+				width: 13px;
+				height: 13px;
+				color: var(--icon-color);
+				opacity: .5;
+			}
+
+			&:hover
+			{
+				svg
+				{
+					opacity: .75;
+				}
+			}
+		}
+
+		.ow-edit-button
 		{
 			all: unset;
 			cursor: var(--cursor);
@@ -109,7 +160,7 @@
 		.ow-message-bubble-content
 		{
 			order: 2;
-			background-color: hsla(var(--interactive-accent-hsl), 0.55);
+			background-color: var(--interactive-accent);
 			
 			.ow-message-bubble-top-bar
 			{

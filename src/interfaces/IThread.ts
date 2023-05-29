@@ -5,6 +5,8 @@ export interface IChatMessage {
 	creationDate: string;
 	id: string;
 	isLoading?: boolean;
+	model: string;
+	mode: string;
 	role: string;
 	parent: string;
 }
@@ -18,6 +20,8 @@ export interface IConversation {
 	lastModified: string;
 	title: string;
 	messages: Array<IChatMessage>;
+	mode: string;
+	model: string;
 }
 
 export interface IThreadDescriptor {

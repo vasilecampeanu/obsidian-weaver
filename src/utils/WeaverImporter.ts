@@ -51,20 +51,25 @@ export class WeaverImporter {
 				for (const nodeId in conversation.mapping) {
 					const node = conversation.mapping[nodeId];
 					const messageData = node.message;
-
+				
 					if (messageData) {
+						const contentParts = messageData.content?.parts;
+						const content = Array.isArray(contentParts) ? contentParts.join(' ') : '';
+
 						messages.push({
-							content: messageData.content.parts.join(' '),
+							content: content,
 							context: false,
 							creationDate: new Date(messageData.create_time * 1000).toISOString(),
 							id: messageData.id,
 							role: messageData.author.role,
 							parent: node.parent,
-							children: node.children
+							children: node.children,
+							mode: "balanced",
+							model: plugin.settings.engine
 						});
 					}
 				}
-	
+				
 				const conversationData: IConversation = {
 					context: true,
 					creationDate: new Date(conversation.create_time * 1000).toISOString(),
@@ -74,6 +79,8 @@ export class WeaverImporter {
 					lastModified: new Date(conversation.update_time * 1000).toISOString(),
 					title: conversationTitle,
 					messages: messages,
+					mode: "balanced",
+					model: plugin.settings.engine
 				};
 	
 				await FileIOManager.ensureFolderPathExists(plugin, "threads/base");

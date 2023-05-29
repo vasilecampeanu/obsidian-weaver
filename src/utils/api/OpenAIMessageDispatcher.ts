@@ -9,9 +9,9 @@ export class OpenAIMessageDispatcher {
 	private conversation?: IConversation;
 	private setConversationSession: Function;
 	private updateConversation: Function;
-
 	private userMessage?: IChatMessage;
 	private loadingAssistantMessage?: IChatMessage;
+	private infoMessage?: IChatMessage;
 	private openAIContentProvider: OpenAIContentProvider;
 
 	constructor(plugin: Weaver, conversation: IConversation, setConversationSession: Function, updateConversation: Function) {
@@ -21,6 +21,7 @@ export class OpenAIMessageDispatcher {
 		this.setConversationSession = setConversationSession;
 		this.userMessage = undefined;
 		this.loadingAssistantMessage = undefined;
+		this.infoMessage = undefined;
 		this.openAIContentProvider = new OpenAIContentProvider(plugin)
 
 		if (!this.conversation) {
@@ -28,24 +29,31 @@ export class OpenAIMessageDispatcher {
 		}
 	}
 
-	private createUserMessage(inputText: string): IChatMessage {
+	private createUserMessage(inputText: string, shouldSetInfoMessageAsParent: boolean): IChatMessage {
 		const currentNode = this.conversation?.currentNode;
 		const currentMessage: IChatMessage | undefined = this.conversation?.messages.find((message) => message.id === currentNode);
-		const userMessageParentId: string = currentMessage?.id ?? uuidv4();
-
+		let userMessageParentId: string = currentMessage?.id ?? uuidv4();
+		
+		// If the condition is true, set the parent as the info message
+		if (shouldSetInfoMessageAsParent) {
+			userMessageParentId = this.infoMessage!.id;
+		}
+	
 		const userMessage: IChatMessage = {
 			children: [],
 			context: false,
 			content: inputText,
 			creationDate: new Date().toISOString(),
 			id: uuidv4(),
+			mode: this.conversation!?.mode,
+			model: this.conversation!?.model,
 			role: 'user',
 			parent: userMessageParentId
 		};
 
 		return userMessage;
 	}
-
+	
 	private createAssistantLoadingMessage(userMessageId: string): IChatMessage {
 		const loadingAssistantMessage: IChatMessage = {
 			children: [],
@@ -54,11 +62,29 @@ export class OpenAIMessageDispatcher {
 			creationDate: '',
 			id: uuidv4(),
 			isLoading: true,
+			mode: this.conversation!?.mode,
+			model: this.conversation!?.model,
 			role: 'assistant',
 			parent: userMessageId
 		};
 
 		return loadingAssistantMessage;
+	}
+
+	private createInfoMessage(parentId: string): IChatMessage {
+		const infoMessage: IChatMessage = {
+			children: [],
+			context: false,
+			content: 'Info...',
+			creationDate: new Date().toISOString(),
+			id: uuidv4(),
+			mode: this.conversation!?.mode,
+			model: this.conversation!?.model,
+			role: 'info',
+			parent: parentId
+		};
+
+		return infoMessage;
 	}
 
 	public async addMessage(message: IChatMessage) {
@@ -111,8 +137,31 @@ export class OpenAIMessageDispatcher {
 		setIsLoading: Function
 	) {
 		setIsLoading(true)
+		
+		const shouldAddInfoMessage = this.conversation?.messages.length === 1;
 
-		this.userMessage = this.createUserMessage(inputText);
+		if (shouldAddInfoMessage) {
+			const systemMessage = this.conversation!.messages[0];
+			this.infoMessage = this.createInfoMessage(systemMessage.id);
+			
+			// Add info message to conversation
+			await this.updateConversation(this.infoMessage, (contextMessages: IChatMessage[]) => {
+				this.setConversationSession((conversation: IConversation) => {
+					if (conversation) {
+						return {
+							...conversation,
+							currentNode: this.infoMessage!.id,
+							lastModified: new Date().toISOString(),
+							messages: contextMessages
+						};
+					} else {
+						return conversation;
+					}
+				});
+			});
+		}
+
+		this.userMessage = this.createUserMessage(inputText, shouldAddInfoMessage);
 
 		await this.updateConversation(this.userMessage, (contextMessages: IChatMessage[]) => {
 			this.setConversationSession((conversation: IConversation) => {
@@ -133,8 +182,12 @@ export class OpenAIMessageDispatcher {
 
 		if (this.conversation?.context === true) {
 			const rootMessage = this.conversation?.messages.find((msg) => msg.role === "system");
-			let currentNodeMessages = rootMessage ? getRenderedMessages(this.conversation) : [];
-			contextMessages = [...(currentNodeMessages), this.userMessage];
+			let currentNodeMessages: IChatMessage[] = rootMessage ? getRenderedMessages(this.conversation) : [];
+			let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
+				return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+			});
+			console.log(filteredMessages);
+			contextMessages = [...(filteredMessages), this.userMessage];
 		} else {
 			contextMessages = [this.userMessage];
 		}
@@ -170,12 +223,13 @@ export class OpenAIMessageDispatcher {
 		await this.openAIContentProvider.generateResponse(
 			this.plugin.settings,
 			{},
+			this.conversation as IConversation,
 			contextMessages,
 			this.userMessage,
 			this.addMessage.bind(this),
 			this.updateCurrentAssistantMessageContent.bind(this)
 		);
-		
+
 		setIsLoading(false)
 	}
 
@@ -189,10 +243,16 @@ export class OpenAIMessageDispatcher {
 	) {
 		setIsLoading(true)
 
-		let currentNodeMessages = getRenderedMessages(this.conversation);
-		const reverseMessages = currentNodeMessages.reverse();
+		let currentNodeMessages: IChatMessage[] = getRenderedMessages(this.conversation);
+		console.log(currentNodeMessages);
+		let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
+			return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+		});
+
+		const reverseMessages = filteredMessages.reverse();
 		const lastUserMessage = reverseMessages.find((message: { role: string; }) => message.role === 'user');
-		currentNodeMessages.reverse();
+
+		filteredMessages.reverse();
 
 		if (!lastUserMessage) {
 			console.error('No user message found to regenerate.');
@@ -201,10 +261,10 @@ export class OpenAIMessageDispatcher {
 
 		this.userMessage = lastUserMessage;
 
-		if(this.conversation?.context === false) {
-			currentNodeMessages = [this.userMessage];
+		if (this.conversation?.context === false) {
+			filteredMessages = [this.userMessage];
 		} else {
-			currentNodeMessages.splice(currentNodeMessages.length - 1, 1);
+			filteredMessages.splice(filteredMessages.length - 1, 1);
 		}
 
 		this.loadingAssistantMessage = this.createAssistantLoadingMessage(this.userMessage!.id);
@@ -239,7 +299,8 @@ export class OpenAIMessageDispatcher {
 		await this.openAIContentProvider.generateResponse(
 			this.plugin.settings,
 			{},
-			currentNodeMessages,
+			this.conversation as IConversation,
+			filteredMessages,
 			this.userMessage as IChatMessage,
 			this.addMessage.bind(this),
 			this.updateCurrentAssistantMessageContent.bind(this)

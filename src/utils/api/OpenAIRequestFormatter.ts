@@ -3,7 +3,7 @@ import Weaver from "main";
 import { WeaverSettings } from "settings";
 
 // Interfaces
-import { IChatMessage } from "interfaces/IThread";
+import { IChatMessage, IConversation } from "interfaces/IThread";
 
 interface BodyParameters {
 	frequency_penalty: number;
@@ -21,7 +21,7 @@ export default class OpenAIRequestFormatter {
 		this.plugin = plugin;
 	}
 
-	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversationHistory: IChatMessage[] = []) {
+	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversation: IConversation, conversationHistory: IChatMessage[] = []) {
 		try {
 			const requestUrlBase = "https://api.openai.com/v1";
 			let requestUrl = `${requestUrlBase}/chat/completions`;
@@ -29,7 +29,7 @@ export default class OpenAIRequestFormatter {
 			const bodyParameters: BodyParameters = {
 				frequency_penalty: parameters.frequencyPenalty,
 				max_tokens: parameters.maxTokens,
-				model: parameters.engine,
+				model: conversation.model,
 				temperature: parameters.temperature,
 				stream: true
 			};

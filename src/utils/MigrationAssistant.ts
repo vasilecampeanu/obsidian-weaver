@@ -77,7 +77,9 @@ export class MigrationAssistant {
 							creationDate: message.timestamp,
 							id: messageId,
 							role: message.role,
-							parent: previousMessageId
+							parent: previousMessageId,
+							mode: "balanced",
+							model: plugin.settings.engine
 						};
 
 						if (previousMessage) {
@@ -114,7 +116,9 @@ export class MigrationAssistant {
 						identifier: "obsidian-weaver",
 						lastModified: conversation.timestamp,
 						title: conversationTitle,
-						messages: newMessages
+						messages: newMessages,
+						model: plugin.settings.engine,
+						mode: "balanced"
 					};
 
 					let conversationPath = normalizePath(`${plugin.settings.weaverFolderPath}/threads/base/${conversationTitle}.json`);
