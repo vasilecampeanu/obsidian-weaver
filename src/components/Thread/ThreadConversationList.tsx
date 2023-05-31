@@ -1,8 +1,7 @@
-import React, { useMemo, useRef, useState } from "react";
-import { VariableSizeList as List } from "react-window";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { List, CellMeasurer, CellMeasurerCache, AutoSizer } from "react-virtualized";
 import { IConversation } from "interfaces/IThread";
 import Weaver from "main";
-import useResizeObserver from "use-resize-observer";
 import { groupBy } from "lodash";
 import { ThreadListItemRenderer } from './ThreadListItemRenderer';
 import { filterConversations, getSection, getItemSize } from '../../helpers/ThreadHelperFunctions';
@@ -24,9 +23,6 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 	onTabSwitch,
 	onConversationLoad
 }) => {
-	const { ref, height: containerHeight } = useResizeObserver<HTMLDivElement>();
-	const listRef = useRef<List>(null);
-
 	const [expandedSections, setExpandedSections] = useState<string[]>([
 		"Today",
 		"Yesterday",
@@ -43,6 +39,34 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 			}),
 		[conversations]
 	);
+
+	const listRef = useRef<HTMLDivElement>(null);  // Define type of ref
+
+	useEffect(() => {
+		const listElement = listRef.current;
+
+		if (listElement) {
+			listElement.addEventListener('mouseover', function () {
+				document.body.classList.add('hide-tooltip');
+			});
+
+			listElement.addEventListener('mouseout', function () {
+				document.body.classList.remove('hide-tooltip');
+			});
+		}
+
+		return () => {
+			if (listElement) {
+				listElement.removeEventListener('mouseover', function () {
+					document.body.classList.add('hide-tooltip');
+				});
+
+				listElement.removeEventListener('mouseout', function () {
+					document.body.classList.remove('hide-tooltip');
+				});
+			}
+		};
+	}, []);
 
 	const groupedConversations = useMemo(
 		() => groupBy(sortedConversations, (conversation) => getSection(conversation.lastModified)),
@@ -66,71 +90,90 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 		setExpandedSections((current) =>
 			current.includes(section) ? current.filter((s) => s !== section) : [...current, section]
 		);
-
-		listRef.current?.resetAfterIndex(0);
 	};
 
 	const handleConversationDeleted = (id: string) => {
 		onConversationDeleted(id);
-		listRef.current?.resetAfterIndex(0);
+	};
+
+	const cache = new CellMeasurerCache({
+		defaultHeight: 50, // a default height for rows, you can adjust this according to your needs
+		fixedWidth: false,
+	});
+
+	const rowRenderer = ({ index, parent, key, style }: { index: number, parent: any, key: string, style: any }) => {
+		const item = conversationData[index];
+
+		return (
+			<CellMeasurer
+				cache={cache}
+				columnIndex={0}
+				key={key}
+				rowIndex={index}
+				parent={parent}
+			>
+				{({ measure }: { measure: () => void }) => {
+					if (item.isSectionHeader) {
+						return (
+							<div
+								className="ow-list-section"
+								style={style}
+								onClick={() => handleSectionHeaderClick(item.section)}
+							>
+								<div className="ow-list-section-title">
+									{
+										expandedSections.includes(item.section) ? (
+											<button>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+											</button>
+										) : (
+											<button>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+											</button>
+										)
+									}
+									<span>
+										{item.section}
+									</span>
+								</div>
+							</div>
+						);
+					} else {
+						return (
+							<ThreadListItemRenderer
+								index={index}
+								style={style}
+								item={item}
+								plugin={plugin}
+								onConversationDeleted={handleConversationDeleted}
+								onTabSwitch={onTabSwitch}
+								onConversationLoad={onConversationLoad}
+							/>
+						);
+					}
+				}}
+			</CellMeasurer>
+		);
 	};
 
 	return (
-		<div ref={ref} className="ow-thread-list" style={{ height: "100%" }}>
+		<div ref={listRef} className="ow-thread-list" style={{ height: "100%" }}>
 			{conversationData.length === 0 ? (
 				<div className="ow-info">No conversations to display.</div>
 			) : (
-				// TODO: Migrate to using react virtualized.
-				<List
-					ref={listRef}
-					key={searchTerm}
-					height={containerHeight || 0}
-					itemCount={conversationData.length}
-					itemSize={index => getItemSize(plugin, conversationData[index])}
-					width="100%"
-				>
-					{({ index, style }) => {
-						const item = conversationData[index];
-						if (item.isSectionHeader) {
-							return (
-								<div
-									className="ow-list-section"
-									style={style}
-									onClick={() => handleSectionHeaderClick(item.section)}
-								>
-									<div className="ow-list-section-title">
-										{
-											expandedSections.includes(item.section) ? (
-												<button>
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
-												</button>
-											) : (
-												<button>
-													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-												</button>
-											)
-										}
-										<span>
-											{item.section}
-										</span>
-									</div>
-								</div>
-							);
-						} else {
-							return (
-								<ThreadListItemRenderer
-									index={index}
-									style={style}
-									item={item}
-									plugin={plugin}
-									onConversationDeleted={handleConversationDeleted}
-									onTabSwitch={onTabSwitch}
-									onConversationLoad={onConversationLoad}
-								/>
-							);
-						}
-					}}
-				</List>
+				<AutoSizer>
+					{({ height, width }) => (
+						<List
+							width={width}
+							height={height}
+							rowCount={conversationData.length}
+							rowHeight={cache.rowHeight}
+							rowRenderer={rowRenderer}
+							overscanRowCount={10}
+							className="HelloWorld"
+						/>
+					)}
+				</AutoSizer>
 			)}
 		</div>
 	);

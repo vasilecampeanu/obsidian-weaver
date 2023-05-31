@@ -2,6 +2,7 @@ import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
 import fs from "fs";
+import path from "path"; // Add this line
 
 import { sassPlugin } from "esbuild-sass-plugin";
 
@@ -24,6 +25,17 @@ function moveStylesPlugin() {
 		},
 	};
 }
+
+const resolveFixup = {
+	name: 'resolve-fixup',
+	setup(build) {
+		build.onResolve({ filter: /react-virtualized/ }, async (args) => {
+			return {
+				path: path.resolve('./node_modules/react-virtualized/dist/umd/react-virtualized.js'),
+			}
+		})
+	},
+};
 
 const context = await esbuild.context({
 	banner: {
@@ -53,7 +65,7 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outdir: "./",
-	plugins: [sassPlugin(), moveStylesPlugin()],
+	plugins: [sassPlugin(), moveStylesPlugin(), resolveFixup]
 });
 
 if (prod) {

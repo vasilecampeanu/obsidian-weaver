@@ -16,7 +16,7 @@
 		"@types/node": "^16.11.6",
 		"@types/react": "^18.2.6",
 		"@types/react-dom": "^18.2.4",
-		"@types/react-window": "^1.8.5",
+		"@types/react-virtualized": "^9.21.22",
 		"@types/uuid": "^9.0.1",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
@@ -34,10 +34,8 @@
 		"react-dom": "^18.2.0",
 		"react-loader-spinner": "^5.3.4",
 		"react-resize-observer": "^1.1.1",
-		"react-virtualized-auto-sizer": "^1.0.15",
-		"react-window": "^1.8.9",
+		"react-virtualized": "^9.22.5",
 		"safe-await": "^2.0.0",
-		"use-resize-observer": "^9.1.0",
 		"uuid": "^9.0.0"
 	}
 }
