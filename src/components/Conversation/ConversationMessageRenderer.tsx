@@ -65,6 +65,7 @@ const MessageRenderer: React.FC<MessageRendererProps> = ({
 				selectedChild={selectedPreviousChildIndex}
 				onSelectedChildChange={(increment: number) => changeSelectedChild(previousMessage?.id, increment)}
 				contextDisplay={contextDisplay}
+				mode={conversation!?.mode}
 			/>
 			{childIds[selectedChildIndex] && (
 				<MessageRenderer

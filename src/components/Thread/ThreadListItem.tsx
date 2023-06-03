@@ -59,7 +59,7 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({
 
 	return (
 		<div
-			className={`ow-thread-list-item ${plugin.settings.threadViewCompactMode === true ? 'ow-compact-item' : null}`}
+			className={`ow-thread-list-item ${plugin.settings.threadViewCompactMode === true ? 'ow-compact-item' : null} ow-mode-${conversation.mode}`}
 			ref={listItemRef}
 		>
 			<div className="ow-chat-icon">

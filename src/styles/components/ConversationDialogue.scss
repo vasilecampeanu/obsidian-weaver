@@ -129,6 +129,60 @@
 						}
 					}
 				}
+
+				&.ow-mode-creative
+				{
+					.ow-btn-change-model
+					{
+						&.ow-active
+						{
+							.ow-icon
+							{
+								svg
+								{
+									color: var(--color-pink);
+									fill: var(--color-pink);
+								}
+							}
+						}
+					}
+				}
+
+				&.ow-mode-balanced
+				{
+					.ow-btn-change-model
+					{
+						&.ow-active
+						{
+							.ow-icon
+							{
+								svg
+								{
+									color: var(--interactive-accent);
+									fill: var(--interactive-accent);
+								}
+							}
+						}
+					}
+				}
+
+				&.ow-mode-precise
+				{
+					.ow-btn-change-model
+					{
+						&.ow-active
+						{
+							.ow-icon
+							{
+								svg
+								{
+									color: var(--color-cyan);
+									fill: var(--color-cyan);
+								}
+							}
+						}
+					}
+				}
 			}
 
 			.ow-engine-info
@@ -287,9 +341,28 @@
 
 						background-color: var(--ui2);
 
-						&.active
+						&.ow-mode-creative
 						{
-							background-color: var(--interactive-accent);
+							&.active
+							{
+								background-color: var(--color-pink);
+							}
+						}
+
+						&.ow-mode-balanced
+						{
+							&.active
+							{
+								background-color: var(--interactive-accent);
+							}
+						}
+
+						&.ow-mode-precise
+						{
+							&.active
+							{
+								background-color: var(--color-cyan);
+							}
 						}
 
 						.ow-more

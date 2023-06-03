@@ -6,12 +6,49 @@
 	.ow-icon
 	{
 		align-self: center;
+
 		svg
 		{
 			color: var(--interactive-accent);
 			fill: var(--interactive-accent);
 			width: 11px;				
 			height: 11px;	
+		}
+	}
+
+	&.ow-mode-creative
+	{
+		.ow-icon
+		{
+			svg
+			{
+				color: var(--color-pink);
+				fill: var(--color-pink);
+			}
+		}
+	}
+
+	&.ow-mode-balanced
+	{
+		.ow-icon
+		{
+			svg
+			{
+				color: var(--interactive-accent);
+				fill: var(--interactive-accent);
+			}
+		}
+	}
+
+	&.ow-mode-precise
+	{
+		.ow-icon
+		{
+			svg
+			{
+				color: var(--color-cyan);
+				fill: var(--color-cyan);
+			}
 		}
 	}
 

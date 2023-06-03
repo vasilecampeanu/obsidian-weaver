@@ -201,7 +201,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 				) : (
 					showEngineInfo && (
 						<div className="ow-message-empty-dialogue">
-							<div className="ow-change-engine">
+							<div className={`ow-change-engine ow-mode-${activeMode}`}>
 								<div
 									className={`ow-btn-change-model ${activeEngine === "gpt-3.5-turbo" ? "ow-active" : ""}`}
 									onClick={handleSetGPT3}
@@ -266,21 +266,21 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 								</div>
 								<div className="ow-mode-list">
 									<button
-										className={`ow-mode-wrapper ${activeMode === "creative" ? "active" : ""}`}
+										className={`ow-mode-wrapper ow-mode-creative ${activeMode === "creative" ? "active" : ""}`}
 										onClick={() => handleModeChange("creative")}
 									>
 										<span className="ow-more">More</span>
 										<span className="ow-mode">Creative</span>
 									</button>
 									<button
-										className={`ow-mode-wrapper ${activeMode === "balanced" ? "active" : ""}`}
+										className={`ow-mode-wrapper ow-mode-balanced ${activeMode === "balanced" ? "active" : ""}`}
 										onClick={() => handleModeChange("balanced")}
 									>
 										<span className="ow-more">More</span>
 										<span className="ow-mode">Balanced</span>
 									</button>
 									<button
-										className={`ow-mode-wrapper ${activeMode === "precise" ? "active" : ""}`}
+										className={`ow-mode-wrapper ow-mode-precise ${activeMode === "precise" ? "active" : ""}`}
 										onClick={() => handleModeChange("precise")}
 									>
 										<span className="ow-more">More</span>

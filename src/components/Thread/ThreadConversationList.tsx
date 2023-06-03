@@ -97,7 +97,7 @@ export const ThreadConversationList: React.FC<ThreadConversationListProps> = ({
 	};
 
 	const cache = new CellMeasurerCache({
-		defaultHeight: 50, // a default height for rows, you can adjust this according to your needs
+		defaultHeight: 50,
 		fixedWidth: false,
 	});
 

@@ -36,6 +36,30 @@
 				border-radius: 3.5px;
 			}
 
+			&.ow-mode-creative
+			{
+				&:hover
+				{
+					border-left: 3px solid var(--color-pink);
+				}
+			}
+
+			&.ow-mode-balanced
+			{
+				&:hover
+				{
+					border-left: 3px solid var(--interactive-accent);
+				}
+			}
+
+			&.ow-mode-precise
+			{
+				&:hover
+				{
+					border-left: 3px solid var(--color-cyan);
+				}
+			}
+
 			.ow-chat-icon
 			{
 				display: grid;

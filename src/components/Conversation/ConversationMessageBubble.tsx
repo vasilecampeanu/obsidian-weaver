@@ -11,6 +11,7 @@ interface ConversationMessageBubbleProps {
 	selectedChild: number;
 	onSelectedChildChange: (increment: number) => void;
 	contextDisplay?: boolean;
+	mode: string;
 }
 
 export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps> = ({
@@ -19,7 +20,8 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 	previousMessage,
 	selectedChild,
 	onSelectedChildChange,
-	contextDisplay
+	contextDisplay,
+	mode
 }) => {
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [htmlDescriptionContent, setHtmlDescriptionContent] = useState<{ __html: string } | null>(null);
@@ -54,7 +56,7 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 
 	return (
 		message.role === 'info' ? (
-			<div className="ow-message-info-bubble">
+			<div className={`ow-message-info-bubble ow-mode-${mode}`}>
 				{((message && message.model) || plugin.settings.engine) === "gpt-3.5-turbo" ? (
 					<>
 						<div className="ow-icon">
