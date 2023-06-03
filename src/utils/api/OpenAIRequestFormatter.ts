@@ -23,7 +23,7 @@ export default class OpenAIRequestFormatter {
 
 	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversation: IConversation, conversationHistory: IChatMessage[] = []) {
 		try {
-			const requestUrlBase = "https://api.openai.com/v1";
+			const requestUrlBase = parameters.provider;
 			let requestUrl = `${requestUrlBase}/chat/completions`;
 
 			const bodyParameters: BodyParameters = {

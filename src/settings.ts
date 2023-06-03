@@ -33,6 +33,7 @@ export interface WeaverSettings {
 export const DEFAULT_SETTINGS: WeaverSettings = {
     activeThreadId: -1,
     activeThreadTitle: null,
+    provider: "https://api.openai.com/v1",
     apiKey: "",
     engine: "gpt-3.5-turbo",
 	engineInfo: true,
@@ -72,13 +73,24 @@ export class WeaverSettingTab extends PluginSettingTab {
 		containerEl.createEl('h1', { text: 'Weaver Settings' });
 
 		containerEl.createEl('h2', {
-			text: 'OpenAI'
+			text: 'Text Generation Provider'
 		});
+
+		new Setting(containerEl)
+			.setName('Provider')
+			.setDesc('The endpoint URL of a text generation service, such as OpenAI.')
+			.addText(text => text
+				.setValue(this.plugin.settings.provider)
+				.onChange(async (value) => {
+					this.plugin.settings.provider = value;
+					await this.plugin.saveSettings();
+				})
+			)
 
 		let inputEl;
 		new Setting(containerEl)
 			.setName('API Key')
-			.setDesc('In order to generate an API Key, you must first create an OpenAI account.')
+			.setDesc('In order to generate an API Key, you must first create an account on the providing service.')
 			.addText(text => text
 				.setPlaceholder('Enter your API Key')
 				.setValue(this.plugin.settings.apiKey)
