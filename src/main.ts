@@ -1,4 +1,4 @@
-import { FileSystemAdapter, Notice, Plugin, Workspace } from 'obsidian';
+import { FileSystemAdapter, Notice, Plugin, Workspace, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings';
 import { WEAVER_THREAD_VIEW } from './constants';
 import { FileIOManager } from 'utils/FileIOManager';
@@ -10,6 +10,8 @@ import { eventEmitter } from 'utils/EventEmitter';
 import LocalJsonModal from 'modals/ImportModal';
 import { MigrationAssistant } from 'utils/MigrationAssistant';
 import { ConversationManager } from 'utils/ConversationManager';
+import { PluginValue, EditorView, ViewPlugin } from "@codemirror/view";
+import { weaverEditor } from 'utils/editor/WeaverEditor';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
@@ -23,6 +25,9 @@ export default class Weaver extends Plugin {
 		// Settings
 		await this.loadSettings();
 
+		// Register Extensions
+		this.registerEditorExtension(weaverEditor);
+
 		// Listeners
 		await this.registerEventListeners();
 
@@ -31,13 +36,13 @@ export default class Weaver extends Plugin {
 
 		// Bind user interface elements
 		await this.registerUserInteractions();
-			
+
 		// Bind plugin components
 		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
 
 		// Weaver health
 		await this.ensureWeaverHealth();
-	}	
+	}
 
 	async onunload() {
 		new Notice('Weaver disabled!');
@@ -60,7 +65,7 @@ export default class Weaver extends Plugin {
 	}
 
 	private async ensureWeaverHealth() {
-		setTimeout(async () => {	
+		setTimeout(async () => {
 			// Ensure the folder exists
 			await FileIOManager.ensureWeaverFolderPathExists(this);
 			await FileIOManager.ensureFolderPathExists(this, "threads/base");
@@ -81,7 +86,28 @@ export default class Weaver extends Plugin {
 		}, 500);
 	}
 
+	private async getSelection(leaf: WorkspaceLeaf): Promise<void> {
+		// @ts-expect-error
+		const editor = leaf?.view?.editor;
+
+		if (editor) {
+			const editorView = editor.cm as EditorView;
+			const editorPlugin = editorView.plugin(weaverEditor);
+			editorPlugin?.addPlugin(this);
+			editorPlugin?.update();
+		}
+	}
+
 	private async registerEventListeners() {
+		this.registerEvent(
+			this.app.workspace.on(
+				"active-leaf-change",
+				async (leaf: WorkspaceLeaf) => {
+					this.getSelection(leaf);
+				}
+			)
+		);
+
 		this.registerEvent(
 			this.app.vault.on('rename', async (item, oldPath) => {
 				// Check if the path has an extension
@@ -173,5 +199,6 @@ export default class Weaver extends Plugin {
 		}
 
 		this.addSettingTab(new WeaverSettingTab(this.app, this));
+		this.getSelection(this.app.workspace.getMostRecentLeaf() as WorkspaceLeaf);
 	}
 }
