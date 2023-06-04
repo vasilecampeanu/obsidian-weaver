@@ -1,13 +1,20 @@
 .ow-conversation
 {
 	display: grid;
-	gap: 10px;
-	height: calc(100vh - 40px - 32px); /* here */
 	grid-template-rows: auto 1fr auto;
+	grid-template-areas: 
+    "header"
+    "dialogue"
+    "input"
+    "settings";
+    position: relative;
+	gap: 10px;
+	height: calc(100vh - 40px - 32px);
 	overflow-y: auto;
 
 	.ow-conversation-dialogue
 	{
+		grid-area: dialogue;
 		display: grid;
 		grid-auto-rows: min-content;
 		gap: 15px;

@@ -1,5 +1,6 @@
 .ow-conversation-header
 {
+    grid-area: header;
 	display: grid;
 	grid-template-columns: auto 1fr auto;
 	gap: 5px;
@@ -63,6 +64,8 @@
 
 	.ow-user-actions-right
 	{
+		display: flex;
+
 		.ow-btn-context
 		{
 			align-self: center;
@@ -102,6 +105,30 @@
 				width: 16px;
 				height: 16px;
 				color: var(--icon-color);
+			}
+		}
+
+		.ow-btn-conversation-settings
+		{
+			align-self: center;
+			all: unset;
+			display: grid;
+			padding: 5px;
+			border-radius: 5px;
+
+			cursor: var(--cursor);
+
+			svg
+			{
+				place-self: center;
+				width: 14px;
+				height: 14px;
+				color: var(--icon-color);
+			}
+
+			&:hover
+			{
+				background-color: var(--background-modifier-hover);	
 			}
 		}
 	}
