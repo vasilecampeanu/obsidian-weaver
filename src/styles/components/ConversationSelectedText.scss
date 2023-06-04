@@ -1,0 +1,56 @@
+.ow-selected-text
+{
+	background-color: var(--interactive-normal);
+	display: grid;
+	gap: 10px;
+	font-size: 13px;
+	grid-template-rows: auto auto;
+	padding: 15px;
+	border-radius: 10px;
+	border: 1px solid hsla(var(--interactive-accent-hsl), 0.45);
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+	margin-bottom: 20px;
+
+	.ow-title
+	{
+		font-size: 14px;
+		font-weight: bold;
+		line-height: 1em;
+	}
+
+	.ow-selected-text-content
+	{
+		
+	}
+
+	.ow-user-actions
+	{
+		display: grid;
+		gap: 10px;
+		grid-template-columns: repeat(2, 1fr);
+
+		button
+		{
+			all: unset;
+			background-color: var(--interactive-normal);
+			display: flex;
+			gap: 5px;
+			justify-content: center;
+			border-radius: 5px;
+			padding: 5px 0px;
+			border: 1px solid var(--prompt-border-color);
+
+			svg
+			{
+				align-self: center;
+				width: 13px;
+				height: 13px;
+			}
+
+			span
+			{
+				align-self: center;
+			}
+		}
+	}
+}

@@ -1,9 +1,7 @@
 .ow-conversation-input-area
 {
 	display: grid;
-	grid-template-rows: auto 1fr;
-
-	gap: 10px;
+	grid-template-rows: auto auto 1fr;
 
 	padding: 15px 0px;
 	padding-top: 0px;
@@ -12,6 +10,7 @@
 	.ow-input-tool-bar
 	{
 		display: grid;
+		margin-bottom: 10px;
 
 		button
 		{

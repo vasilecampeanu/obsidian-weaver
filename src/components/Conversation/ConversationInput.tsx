@@ -3,9 +3,8 @@ import Weaver from "main";
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { ConversationManager } from "utils/ConversationManager";
 import { OpenAIMessageDispatcher } from "utils/api/OpenAIMessageDispatcher";
-import OpenAIContentProvider from "utils/api/OpenAIContentProvider";
-import { OpenAIRequestManager } from "utils/api/OpenAIRequestManager";
-import { v4 as uuidv4 } from 'uuid';
+import { ConversationSelectedText } from "./ConversationSelectedText";
+import { eventEmitter } from "utils/EventEmitter";
 
 interface ConversationInput {
 	plugin: Weaver;
@@ -25,6 +24,13 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 	const [isPinned, setIsPinned] = useState<Boolean>(false);
 	const [showButton, setShowButton] = useState(true);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [selectedText, setSelectedText] = useState("");
+
+	useEffect(() => {
+		const handleTextSelected = (text: string) => setSelectedText(text);
+		eventEmitter.on("textSelected", handleTextSelected);
+		return () => eventEmitter.off("textSelected", handleTextSelected);
+	}, []);
 
 	// Create a ref for your dispatcher
 	const messageDispatcherRef = useRef<OpenAIMessageDispatcher | null>(null);
@@ -172,27 +178,37 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 
 	return (
 		<div className="ow-conversation-input-area">
-			<div className="ow-input-tool-bar">
-				{
-					isLoading === true ? (
-						<button
-							onClick={onCancelRequest}
-							className="ow-btn-stop-request"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-							<span>STOP</span>
-						</button>
-					) : conversation!?.messages.length > 2 ? (
-						<button
-							onClick={handleRegenerateMessage}
-							className="ow-btn-stop-request"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-							<span>REGENERATE</span>
-						</button>
+			{
+				selectedText !== "" ? (
+					<ConversationSelectedText
+						plugin={plugin}
+						selectedText={selectedText}
+						setSelectedText={setSelectedText}
+					/>
+				) : (
+					conversation!?.messages.length >= 2 ? (
+						<div className="ow-input-tool-bar">
+							{isLoading === true ? (
+								<button
+									onClick={onCancelRequest}
+									className="ow-btn-stop-request"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+									<span>STOP</span>
+								</button>
+							) : (
+								<button
+									onClick={handleRegenerateMessage}
+									className="ow-btn-stop-request"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+									<span>REGENERATE</span>
+								</button>
+							)}
+						</div>
 					) : null
-				}
-			</div>
+				)
+			}
 			<form
 				className="ow-conversation-input-form"
 				onSubmit={onSubmit}
