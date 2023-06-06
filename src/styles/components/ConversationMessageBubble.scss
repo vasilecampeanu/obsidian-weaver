@@ -237,4 +237,36 @@
 			order: 2;
 		}
 	}
+
+	&.ow-selected-text-bubble
+	{
+		justify-content: start;
+
+		.ow-message-bubble-content
+		{
+			order: 1;
+			background-color: var(--interactive-normal);
+			border: 1px solid hsla(var(--interactive-accent-hsl), 0.45);
+
+			.ow-selected-text-info
+			{
+				padding-bottom: 10px;
+				font-weight: bold;
+				font-size: 14px;
+			}
+
+			.ow-message-bubble-top-bar
+			{
+				.ow-branch-selector
+				{
+					justify-self: start;
+				}
+			}
+		}
+
+		.ow-message-actions
+		{
+			order: 2;
+		}
+	}
 }

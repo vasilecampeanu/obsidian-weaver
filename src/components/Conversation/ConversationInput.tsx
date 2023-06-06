@@ -184,6 +184,10 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 						plugin={plugin}
 						selectedText={selectedText}
 						setSelectedText={setSelectedText}
+						conversation={conversation}
+						setConversationSession={setConversationSession}
+						updateConversation={updateConversation}
+						getRenderedMessages={getRenderedMessages}
 					/>
 				) : (
 					conversation!?.messages.length >= 2 ? (

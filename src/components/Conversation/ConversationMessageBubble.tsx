@@ -28,6 +28,12 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 
 	const contextClass = contextDisplay === true ? "ow-remove-context" : "";
 
+	const roleClassNames: { [key: string]: string } = {
+		'user': 'ow-user-bubble',
+		'assistant': 'ow-assistant-bubble',
+		'selected-text': 'ow-selected-text-bubble'
+	};	
+
 	useEffect(() => {
 		const contentWrapper = document.createElement('div');
 		const context = new Component();
@@ -74,7 +80,10 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 				)}
 			</div>
 		) : (
-			<div className={`ow-message-bubble ${message.role === 'user' ? 'ow-user-bubble' : 'ow-assistant-bubble'} ${previousMessage?.children && previousMessage?.children.length > 1 ? 'ow-message-bubble-has-top-bar' : ''} ${contextClass}`} key={message.id}>
+			<div 
+				className={`ow-message-bubble ${(roleClassNames as { [key: string]: string })[message.role] || ''} ${previousMessage?.children && previousMessage?.children.length > 1 ? 'ow-message-bubble-has-top-bar' : ''} ${contextClass}`} 
+				key={message.id}
+			>
 				<div className={`ow-message-bubble-content`}>
 					{previousMessage?.children && previousMessage?.children.length > 1 && (
 						<div className={`ow-message-bubble-top-bar ${message.isLoading === true ? "show" : ""}`}>
@@ -89,6 +98,11 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 							</div>
 						</div>
 					)}
+					{message.role === "selected-text" ? (
+						<div className="ow-selected-text-info">
+							Selected from note
+						</div>
+					) : null}
 					<div
 						className="ow-content"
 						dangerouslySetInnerHTML={{ __html: `${htmlDescriptionContent?.__html}${message.isLoading && htmlDescriptionContent?.__html.length === 0 ? '<span class="ow-blinking-cursor"></span>' : ''}` }}

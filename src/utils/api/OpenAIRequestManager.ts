@@ -1,4 +1,6 @@
 import { IChatMessage, IConversation } from "interfaces/IThread";
+
+// @ts-expect-error
 import { SSE } from "../../js/sse/sse";
 import { v4 as uuidv4 } from 'uuid';
 import Weaver from "main";
