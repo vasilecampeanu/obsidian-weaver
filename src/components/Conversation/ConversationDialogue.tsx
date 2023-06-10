@@ -6,6 +6,7 @@ import { ConversationManager } from "utils/ConversationManager";
 import { ConversationEngineInfo } from "./ConversationEngineInfo";
 import { ConversationRenderer } from "helpers/ConversationRenderer";
 import MessageRenderer from "./ConversationMessageRenderer";
+import { ConversationQuestionsSection } from "./ConversationQuestionsSection";
 
 interface ConversationDialogueProps {
 	plugin: Weaver;

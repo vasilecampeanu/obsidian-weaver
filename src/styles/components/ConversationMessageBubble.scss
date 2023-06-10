@@ -244,6 +244,8 @@
 
 		.ow-message-bubble-content
 		{
+			max-height: 250px;
+			overflow-x: auto;
 			order: 1;
 			background-color: var(--interactive-normal);
 			border: 1px solid hsla(var(--interactive-accent-hsl), 0.45);

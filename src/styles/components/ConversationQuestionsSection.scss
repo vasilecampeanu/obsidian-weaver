@@ -1,0 +1,26 @@
+.ow-conversation-questions 
+{
+	display: grid;
+    gap: 5px;
+    align-content: end; 
+	margin-bottom: 10px;
+}
+
+.ow-conversation-questions-inner 
+{
+    display: flex;
+    flex-flow: row wrap-reverse;
+    align-content: flex-end;
+	justify-content: flex-end;
+	row-gap: 10px;
+	column-gap: 5px;
+}
+
+.ow-question 
+{
+    background-color: var(--interactive-normal);
+    border: 1px solid hsla(var(--interactive-accent-hsl), 0.45);
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 11px;
+}

@@ -5,6 +5,7 @@ import { ConversationManager } from "utils/ConversationManager";
 import { OpenAIMessageDispatcher } from "utils/api/OpenAIMessageDispatcher";
 import { ConversationSelectedText } from "./ConversationSelectedText";
 import { eventEmitter } from "utils/EventEmitter";
+import { ConversationQuestionsSection } from "./ConversationQuestionsSection";
 
 interface ConversationInput {
 	plugin: Weaver;
@@ -178,6 +179,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 
 	return (
 		<div className="ow-conversation-input-area">
+			<ConversationQuestionsSection plugin={plugin} conversation={conversation} />
 			{
 				selectedText !== "" ? (
 					<ConversationSelectedText

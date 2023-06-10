@@ -20,7 +20,8 @@
 
 	.ow-selected-text-content
 	{
-		
+		max-height: 250px;
+		overflow-x: auto;
 	}
 
 	.ow-user-actions
@@ -50,6 +51,15 @@
 			span
 			{
 				align-self: center;
+			}
+
+			&.ow-cancel
+			{
+				svg
+				{
+					width: 16px;
+					height: 16px;	
+				}
 			}
 		}
 	}
