@@ -38,18 +38,26 @@ export class ConversationManager {
 			lastModified: new Date().toISOString(),
 			messages: [
 				{
-					children: [],
-					content: `${plugin.settings.systemRolePrompt}`,
-					context: false,
-					creationDate: new Date().toISOString(),
 					id: currentNodeId,
-					model: plugin.settings.engine,
-					mode: "balanced",
-					role: "system",
 					parent: uuidv4(),
-				}
+					children: [],
+					message_type: 'chat',
+					status: 'sent',
+					context: false,
+					create_time: new Date().toISOString(),
+					update_time: new Date().toISOString(),
+					author: {
+						role: 'system',
+						ai_model: plugin.settings.engine,
+						mode: 'balanced',
+					},
+					content: {
+						content_type: 'text',
+						parts: `${plugin.settings.systemRolePrompt}`,
+					},
+				}				
 			],
-			mode: "balanced",
+			mode: 'balanced',
 			model: plugin.settings.engine
 		};
 
@@ -209,7 +217,7 @@ export class ConversationManager {
 
 			if (conversation.id === id && conversation.identifier === 'obsidian-weaver') {
 				// Ensure the message is valid
-				if (!newMessage.id || !newMessage.content || !newMessage.creationDate || !newMessage.role || !newMessage.parent) {
+				if (!newMessage.id || !newMessage.content || !newMessage.create_time || !newMessage.author.role || !newMessage.parent) {
 					console.error('The new message is missing required fields.');
 					throw new Error('The new message is missing required fields.');
 				}
@@ -340,7 +348,7 @@ export class ConversationManager {
 	
 			if (conversation.id === id && conversation.identifier === 'obsidian-weaver') {
 				// Find the system prompt in the conversation's messages
-				const systemPrompt = conversation.messages.find(message => message.role === 'system');
+				const systemPrompt = conversation.messages.find(message => message.author.role === 'system');
 	
 				if (!systemPrompt) {
 					console.error('System prompt not found in the conversation.');
@@ -348,7 +356,7 @@ export class ConversationManager {
 				}
 	
 				// Update the content of the system prompt
-				systemPrompt.content = newPrompt;
+				systemPrompt.content.parts = newPrompt;
 	
 				// Update lastModified
 				conversation.lastModified = new Date().toISOString();

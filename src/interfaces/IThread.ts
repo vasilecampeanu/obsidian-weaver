@@ -1,14 +1,22 @@
 export interface IChatMessage {
-	children: Array<string>;
-	content: string;
-	context: boolean,
-	creationDate: string;
 	id: string;
-	isLoading?: boolean;
-	model: string;
-	mode: string;
-	role: string;
 	parent: string;
+	children: Array<string>;
+	message_type: string;
+	status: string;
+	context: boolean;
+	is_loading?: boolean;
+	create_time: string;
+	update_time: string;
+	author: {
+		role: string;
+		ai_model: string;
+		mode: string;
+	};
+	content: {
+		content_type: string;
+		parts: string;
+	};
 }
 
 export interface IConversation {
@@ -26,9 +34,9 @@ export interface IConversation {
 
 export interface IThreadDescriptor {
 	creationDate: string;
-    description: string;
-    id: string;
+	description: string;
+	id: string;
 	identifier: string;
 	lastModified: string;
-    title: string;
+	title: string;
 }

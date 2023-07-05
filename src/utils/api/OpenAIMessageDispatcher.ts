@@ -37,72 +37,108 @@ export class OpenAIMessageDispatcher {
 		const currentNode = this.conversation?.currentNode;
 		const currentMessage: IChatMessage | undefined = this.conversation?.messages.find((message) => message.id === currentNode);
 		let userMessageParentId: string = currentMessage?.id ?? uuidv4();
-		
+
 		// If the condition is true, set the parent as the info message
 		if (shouldSetInfoMessageAsParent) {
 			userMessageParentId = this.infoMessage!.id;
 		}
-	
+
 		const userMessage: IChatMessage = {
-			children: [],
-			context: false,
-			content: inputText,
-			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			mode: this.conversation!?.mode,
-			model: this.conversation!?.model,
-			role: 'user',
-			parent: userMessageParentId
+			parent: userMessageParentId,
+			children: [],
+			message_type: 'chat',
+			status: 'finished_successfully',
+			context: false,
+			create_time: new Date().toISOString(),
+			update_time: new Date().toISOString(),
+			author: {
+				role: 'user',
+				ai_model: this.conversation!?.model,
+				mode: this.conversation!?.mode,
+			},
+			content: {
+				content_type: 'text',
+				parts: inputText
+			},
 		};
 
 		return userMessage;
 	}
-	
+
 	private createAssistantLoadingMessage(userMessageId: string): IChatMessage {
 		const loadingAssistantMessage: IChatMessage = {
-			children: [],
-			content: '',
-			context: false,
-			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			isLoading: true,
-			mode: this.conversation!?.mode,
-			model: this.conversation!?.model,
-			role: 'assistant',
-			parent: userMessageId
+			parent: userMessageId,
+			children: [],
+			message_type: 'chat',
+			status: 'loading',
+			context: false,
+			is_loading: true,
+			create_time: new Date().toISOString(),
+			update_time: new Date().toISOString(),
+			author: {
+				role: 'assistant',
+				ai_model: this.conversation!?.model,
+				mode: this.conversation!?.mode,
+			},
+			content: {
+				content_type: 'text',
+				parts: ''
+			},
 		};
 
 		return loadingAssistantMessage;
 	}
 
-	private createAssistantMessage(userMessageId: string, contentMessage: string): IChatMessage {
-		const loadingAssistantMessage: IChatMessage = {
-			children: [],
-			content: contentMessage,
-			context: false,
-			creationDate: new Date().toISOString(),
+	private createAssistantMessage(
+		userMessageId: string, 
+		contentMessage: string,
+		contentType: string
+	): IChatMessage {
+		const assistantMessage: IChatMessage = {
 			id: uuidv4(),
-			isLoading: false,
-			mode: this.conversation!?.mode,
-			model: this.conversation!?.model,
-			role: 'assistant',
-			parent: userMessageId
+			parent: userMessageId,
+			children: [],
+			message_type: 'chat',
+			status: 'finished_successfully',
+			context: false,
+			create_time: new Date().toISOString(),
+			update_time: new Date().toISOString(),
+			author: {
+				role: 'assistant',
+				ai_model: this.conversation!?.model,
+				mode: this.conversation!?.mode,
+			},
+			content: {
+				content_type: contentType,
+				parts: contentMessage
+			},
 		};
 
-		return loadingAssistantMessage;
+		return assistantMessage;
 	}
 
 	private createInfoMessage(parentId: string): IChatMessage {
 		const infoMessage: IChatMessage = {
-			children: [],
-			context: false,
-			content: 'Info...',
-			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			mode: this.conversation!?.mode,
-			model: this.conversation!?.model,
-			role: 'info',
-			parent: parentId
+			parent: parentId,
+			children: [],
+			message_type: 'info',
+			status: 'finished_successfully',
+			context: false,
+			// is_loading: false,
+			create_time: new Date().toISOString(),
+			update_time: new Date().toISOString(),
+			author: {
+				role: 'helper',
+				ai_model: this.conversation!?.model,
+				mode: this.conversation!?.mode,
+			},
+			content: {
+				content_type: 'text',
+				parts: ''
+			},
 		};
 
 		return infoMessage;
@@ -110,15 +146,23 @@ export class OpenAIMessageDispatcher {
 
 	private createSelectedTextMessage(parentId: string, selectedText: string): IChatMessage {
 		const selectedTextMessage: IChatMessage = {
-			children: [],
-			context: false,
-			content: selectedText,
-			creationDate: new Date().toISOString(),
 			id: uuidv4(),
-			mode: this.conversation!?.mode,
-			model: this.conversation!?.model,
-			role: 'selected-text',
-			parent: parentId
+			parent: parentId,
+			children: [],
+			message_type: 'chat',
+			status: 'finished_successfully',
+			context: false,
+			create_time: new Date().toISOString(),
+			update_time: new Date().toISOString(),
+			author: {
+				role: 'assistant',
+				ai_model: this.conversation!?.model,
+				mode: this.conversation!?.mode,
+			},
+			content: {
+				content_type: 'selected_text',
+				parts: selectedText
+			},
 		};
 
 		return selectedTextMessage;
@@ -154,7 +198,12 @@ export class OpenAIMessageDispatcher {
 
 			const contextMessages = [...conversation!?.messages];
 
-			this.loadingAssistantMessage!.content = newContent;
+			if (!this.loadingAssistantMessage || !this.loadingAssistantMessage.id) {
+				throw new Error('loadingAssistantMessage is not properly defined');
+			}
+
+			this.loadingAssistantMessage.content.parts = newContent;
+
 			contextMessages.splice(userMessageIndex as number, 1, this.userMessage as IChatMessage);
 
 			if (conversation) {
@@ -174,13 +223,13 @@ export class OpenAIMessageDispatcher {
 		setIsLoading: Function
 	) {
 		setIsLoading(true)
-		
+
 		const shouldAddInfoMessage = this.conversation?.messages.length === 1;
 
 		if (shouldAddInfoMessage) {
 			const systemMessage = this.conversation!.messages[0];
 			this.infoMessage = this.createInfoMessage(systemMessage.id);
-			
+
 			// Add info message to conversation
 			await this.updateConversation(this.infoMessage, (contextMessages: IChatMessage[]) => {
 				this.setConversationSession((conversation: IConversation) => {
@@ -218,12 +267,14 @@ export class OpenAIMessageDispatcher {
 		let contextMessages: IChatMessage[] = [];
 
 		if (this.conversation?.context === true) {
-			const rootMessage = this.conversation?.messages.find((msg) => msg.role === "system");
+			const rootMessage = this.conversation?.messages.find((msg) => msg.author.role === "system");
+
 			let currentNodeMessages: IChatMessage[] = rootMessage ? getRenderedMessages(this.conversation) : [];
+
 			let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
-				return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+				return message.author.role === 'assistant' || message.author.role === 'user' || message.author.role === 'system';
 			});
-			console.log(filteredMessages);
+
 			contextMessages = [...(filteredMessages), this.userMessage];
 		} else {
 			contextMessages = [this.userMessage];
@@ -283,11 +334,11 @@ export class OpenAIMessageDispatcher {
 		let currentNodeMessages: IChatMessage[] = getRenderedMessages(this.conversation);
 
 		let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
-			return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+			return message.author.role === 'assistant' || message.author.role === 'user' || message.author.role === 'system';
 		});
 
 		const reverseMessages = filteredMessages.reverse();
-		const lastUserMessage = reverseMessages.find((message: { role: string; }) => message.role === 'user');
+		const lastUserMessage = reverseMessages.find((message) => message.author.role === 'user');
 
 		filteredMessages.reverse();
 
@@ -353,7 +404,7 @@ export class OpenAIMessageDispatcher {
 		let currentNodeMessages: IChatMessage[] = getRenderedMessages(this.conversation);
 
 		let filteredMessages: IChatMessage[] = currentNodeMessages.filter(message => {
-			return message.role === 'assistant' || message.role === 'user' || message.role === 'system';
+			return message.author.role === 'assistant' || message.author.role === 'user' || message.author.role === 'system';
 		});
 
 		// Create a copy of the filteredMessages array
@@ -383,7 +434,11 @@ export class OpenAIMessageDispatcher {
 			});
 		});
 
-		this.assistantMessage = this.createAssistantMessage(this.selectedTextMessage!?.id, "What do you want to do with the text?");
+		this.assistantMessage = this.createAssistantMessage(
+			this.selectedTextMessage!?.id, 
+			'What do you want to do with the text?',
+			'question'
+		);
 
 		// Add info message to conversation
 		await this.updateConversation(this.assistantMessage, (contextMessages: IChatMessage[]) => {

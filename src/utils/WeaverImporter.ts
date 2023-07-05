@@ -27,11 +27,11 @@ export class WeaverImporter {
 			const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 			const rawExportData = await adapter.read(normalizePath(exportPath));
 			const conversationsData = JSON.parse(rawExportData);
-
+	
 			if (conversationsData.identifier === "obsidian-weaver") {
 				return;
 			}
-
+	
 			const existingConversations = await ThreadManager.getAllConversations(plugin, conversationsFolderPath);
 	
 			for (const conversation of conversationsData) {
@@ -55,17 +55,26 @@ export class WeaverImporter {
 					if (messageData) {
 						const contentParts = messageData.content?.parts;
 						const content = Array.isArray(contentParts) ? contentParts.join(' ') : '';
-
+	
 						messages.push({
-							content: content,
-							context: false,
-							creationDate: new Date(messageData.create_time * 1000).toISOString(),
 							id: messageData.id,
-							role: messageData.author.role,
 							parent: node.parent,
 							children: node.children,
-							mode: "balanced",
-							model: plugin.settings.engine
+							message_type: 'chat',
+							status: 'sent', // set this to the appropriate status
+							context: false,
+							is_loading: false, // set this to the appropriate loading state
+							create_time: new Date(messageData.create_time * 1000).toISOString(),
+							update_time: new Date(messageData.update_time * 1000).toISOString(), // set this to the appropriate update time
+							author: {
+								role: messageData.author.role,
+								ai_model: plugin.settings.engine,
+								mode: 'balanced' // set this to the appropriate mode
+							},
+							content: {
+								content_type: 'text', // set this to the appropriate content type
+								parts: contentParts || []
+							}
 						});
 					}
 				}
@@ -79,17 +88,17 @@ export class WeaverImporter {
 					lastModified: new Date(conversation.update_time * 1000).toISOString(),
 					title: conversationTitle,
 					messages: messages,
-					mode: "balanced",
+					mode: 'balanced',
 					model: plugin.settings.engine
 				};
 	
 				await FileIOManager.ensureFolderPathExists(plugin, "threads/base");
 				await adapter.write(conversationPath, JSON.stringify(conversationData, null, 4));
 			}
-
+	
 			eventEmitter.emit('reloadThreadViewEvent');
 		} catch (error) {
 			console.error('Error importing conversations:', error);
 		}
-	}
+	}	
 }

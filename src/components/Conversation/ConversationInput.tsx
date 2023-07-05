@@ -5,7 +5,7 @@ import { ConversationManager } from "utils/ConversationManager";
 import { OpenAIMessageDispatcher } from "utils/api/OpenAIMessageDispatcher";
 import { ConversationSelectedText } from "./ConversationSelectedText";
 import { eventEmitter } from "utils/EventEmitter";
-import { ConversationQuestionsSection } from "./ConversationQuestionsSection";
+import { ConversationSuggestedQuestions } from "./ConversationSuggestedQuestions";
 
 interface ConversationInput {
 	plugin: Weaver;
@@ -100,7 +100,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		}
 
 		// Start finding path from the root message.
-		findPathToCurrentNode(conversation.messages.find(msg => msg.role === "system")?.id || '', []);
+		findPathToCurrentNode(conversation.messages.find(msg => msg.author.role === "system")?.id || '', []);
 
 		// Function to get messages to be rendered.
 		const deriveRenderedMessages = (messageId: string): IChatMessage[] => {
@@ -119,7 +119,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			];
 		};
 
-		const rootMessage = conversation.messages.find((msg) => msg.role === "system");
+		const rootMessage = conversation.messages.find((msg) => msg.author.role === "system");
 
 		return rootMessage ? deriveRenderedMessages(rootMessage.id) : [];
 	};
@@ -177,9 +177,11 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		setConversationSession(newConversation);
 	}
 
+	const lastAssistantMessage = conversation?.messages.slice().reverse().find(message => message.author.role === 'assistant');
+
 	return (
 		<div className="ow-conversation-input-area">
-			<ConversationQuestionsSection plugin={plugin} conversation={conversation} />
+			<ConversationSuggestedQuestions plugin={plugin} conversation={conversation} />
 			{
 				selectedText !== "" ? (
 					<ConversationSelectedText
@@ -193,25 +195,29 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 					/>
 				) : (
 					conversation!?.messages.length >= 2 ? (
-						<div className="ow-input-tool-bar">
-							{isLoading === true ? (
-								<button
-									onClick={onCancelRequest}
-									className="ow-btn-stop-request"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-									<span>STOP</span>
-								</button>
-							) : (
-								<button
-									onClick={handleRegenerateMessage}
-									className="ow-btn-stop-request"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-									<span>REGENERATE</span>
-								</button>
-							)}
-						</div>
+						lastAssistantMessage && lastAssistantMessage.content.content_type === 'question' ? (
+							null
+						) : (
+							<div className="ow-input-tool-bar">
+								{isLoading === true ? (
+									<button
+										onClick={onCancelRequest}
+										className="ow-btn-stop-request"
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+										<span>STOP</span>
+									</button>
+								) : (
+									<button
+										onClick={handleRegenerateMessage}
+										className="ow-btn-stop-request"
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+										<span>REGENERATE</span>
+									</button>
+								)}
+							</div>
+						)
 					) : null
 				)
 			}

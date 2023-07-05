@@ -6,7 +6,7 @@ import { ConversationManager } from "utils/ConversationManager";
 import { ConversationEngineInfo } from "./ConversationEngineInfo";
 import { ConversationRenderer } from "helpers/ConversationRenderer";
 import MessageRenderer from "./ConversationMessageRenderer";
-import { ConversationQuestionsSection } from "./ConversationQuestionsSection";
+import { ConversationSuggestedQuestions } from "./ConversationSuggestedQuestions";
 
 interface ConversationDialogueProps {
 	plugin: Weaver;
@@ -26,7 +26,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const [showConversationEngineInfo, setShowConversationEngineInfo] = useState(plugin.settings.engineInfo);
 
 	const dialogueTimelineRef = useRef<HTMLDivElement>(null);
-	const rootMessage = conversation?.messages.find((msg) => msg.role === "system");
+	const rootMessage = conversation?.messages.find((msg) => msg.author.role === "system");
 	const TIMEOUT_DELAY = 250;
 
 	useEffect(() => {
@@ -77,7 +77,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 				return [];
 			}
 
-			findPathToCurrentNode(conversation.messages.find(msg => msg.role === "system")?.id || '', []);
+			findPathToCurrentNode(conversation.messages.find(msg => msg.author.role === "system")?.id || '', []);
 			setSelectedChildren(initialSelectedChildren);
 		}
 	}, [conversation]);
@@ -98,11 +98,11 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			const findNewestMessage = (messageId: string): string => {
 				const message = conversation?.messages.find((msg) => msg.id === messageId);
 				let newestMessageId = messageId;
-				let newestDate = new Date(message?.creationDate || 0);
+				let newestDate = new Date(message?.create_time || 0);
 
 				message?.children?.forEach((childId) => {
 					const childMessage = conversation?.messages.find((msg) => msg.id === childId);
-					const childDate = new Date(childMessage?.creationDate || 0);
+					const childDate = new Date(childMessage?.create_time || 0);
 					const childNewestMessageId = findNewestMessage(childId);
 
 					if (childDate > newestDate) {
@@ -173,10 +173,10 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			const updatedConversation = { ...conversation, mode: newMode };
 
 			// Update the system message content in the updated conversation
-			const systemPrompt = updatedConversation.messages.find(message => message.role === 'system');
+			const systemPrompt = updatedConversation.messages.find(message => message.author.role === 'system');
 
 			if (systemPrompt) {
-				systemPrompt.content = systemPromptContent; // update to your desired content
+				systemPrompt.content.parts = systemPromptContent;
 			}
 
 			setConversationSession(updatedConversation);

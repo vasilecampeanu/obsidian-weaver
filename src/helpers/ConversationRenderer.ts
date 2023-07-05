@@ -43,11 +43,11 @@ export class ConversationRenderer {
 		const selectedChildIndex = this.selectedChildren[messageId] || 0;
 		const nextMessage = childIds[selectedChildIndex] ? this.deriveRenderedMessages(childIds[selectedChildIndex]) : [];
 
-		return message.role === "system" ? nextMessage : [message, ...nextMessage];
+		return message.author.role === "system" ? nextMessage : [message, ...nextMessage];
 	}
 
 	public getRenderedMessages(): IChatMessage[] {
-		const rootMessage = this.conversation!.messages.find((msg) => msg.role === "system");
+		const rootMessage = this.conversation!.messages.find((msg) => msg.author.role === "system");
 
 		if (!rootMessage) {
 			return [];

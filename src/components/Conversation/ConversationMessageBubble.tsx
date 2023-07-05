@@ -31,7 +31,6 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 	const roleClassNames: { [key: string]: string } = {
 		'user': 'ow-user-bubble',
 		'assistant': 'ow-assistant-bubble',
-		'selected-text': 'ow-selected-text-bubble'
 	};	
 
 	useEffect(() => {
@@ -39,7 +38,7 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 		const context = new Component();
 
 		MarkdownRenderer.renderMarkdown(
-			message.content,
+			message.content.parts,
 			contentWrapper,
 			'',
 			context
@@ -48,10 +47,10 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 		});
 
 		setHtmlDescriptionContent({ __html: contentWrapper.innerHTML });
-	}, [message.content]);
+	}, [message.content.parts]);
 
 	const copyTextWithMarkdown = async () => {
-		await navigator.clipboard.writeText(message.content);
+		await navigator.clipboard.writeText(message.content.parts);
 
 		setShowConfirmation(true);
 
@@ -61,9 +60,9 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 	};
 
 	return (
-		message.role === 'info' ? (
+		message.message_type === 'info' ? (
 			<div className={`ow-message-info-bubble ow-mode-${mode}`}>
-				{((message && message.model) || plugin.settings.engine) === "gpt-3.5-turbo" ? (
+				{((message && message.author.ai_model) || plugin.settings.engine) === "gpt-3.5-turbo" ? (
 					<>
 						<div className="ow-icon">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -81,12 +80,12 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 			</div>
 		) : (
 			<div 
-				className={`ow-message-bubble ${(roleClassNames as { [key: string]: string })[message.role] || ''} ${previousMessage?.children && previousMessage?.children.length > 1 ? 'ow-message-bubble-has-top-bar' : ''} ${contextClass}`} 
+				className={`ow-message-bubble ${(message.content.content_type === 'selected_text' ? 'ow-selected-text-bubble' : (roleClassNames as { [key: string]: string })[message.author.role]) || ''} ${previousMessage?.children && previousMessage?.children.length > 1 ? 'ow-message-bubble-has-top-bar' : ''} ${contextClass}`}
 				key={message.id}
 			>
 				<div className={`ow-message-bubble-content`}>
 					{previousMessage?.children && previousMessage?.children.length > 1 && (
-						<div className={`ow-message-bubble-top-bar ${message.isLoading === true ? "show" : ""}`}>
+						<div className={`ow-message-bubble-top-bar ${message.is_loading === true ? "show" : ""}`}>
 							<div className="ow-branch-selector">
 								<button onClick={() => onSelectedChildChange(-1)}>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -98,18 +97,18 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 							</div>
 						</div>
 					)}
-					{message.role === "selected-text" ? (
+					{message.content.content_type === 'selected_text' ? (
 						<div className="ow-selected-text-info">
 							Selected from note
 						</div>
 					) : null}
 					<div
 						className="ow-content"
-						dangerouslySetInnerHTML={{ __html: `${htmlDescriptionContent?.__html}${message.isLoading && htmlDescriptionContent?.__html.length === 0 ? '<span class="ow-blinking-cursor"></span>' : ''}` }}
+						dangerouslySetInnerHTML={{ __html: `${htmlDescriptionContent?.__html}${message.is_loading && htmlDescriptionContent?.__html.length === 0 ? '<span class="ow-blinking-cursor"></span>' : ''}` }}
 					/>
 				</div>
 				<div className="ow-message-actions">
-					{message.role === 'user' ? (
+					{message.author.role === 'user' ? (
 						<>
 							{/* 
 								<button className="ow-edit-button">

@@ -8,7 +8,7 @@ import { IChatMessage, IConversation } from "interfaces/IThread";
 interface BodyParameters {
 	frequency_penalty: number;
 	max_tokens: number;
-	messages?: { role: string; content: string }[];
+	messages?: any;
 	model: string;
 	temperature: number;
 	stream: boolean;
@@ -34,9 +34,11 @@ export default class OpenAIRequestFormatter {
 				stream: true
 			};
 
-			bodyParameters.messages = conversationHistory.map((message) => {
-				return { role: message.role, content: message.content };
+			bodyParameters.messages = conversationHistory.map((message: IChatMessage) => {
+				return { role: message.author.role, content: message.content.parts };
 			});
+
+			console.log(bodyParameters.messages)
 
 			const mergedBodyParameters = { ...bodyParameters, ...additionalParameters?.bodyParameters };
 
