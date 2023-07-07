@@ -124,10 +124,12 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 		return rootMessage ? deriveRenderedMessages(rootMessage.id) : [];
 	};
 
-	const onSubmit = async (event: React.FormEvent) => {
+	const onSubmit = async (event: React.FormEvent, overrideText?: string) => {
 		event.preventDefault();
 
-		if (inputText.trim() === '') {
+		let textToUse = overrideText ? overrideText : inputText;
+
+		if (textToUse.trim() === '') {
 			return;
 		}
 
@@ -139,10 +141,9 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 			updateConversation
 		);
 
-		// use the ref's current value
 		messageDispatcherRef.current.handleSubmit(
 			getRenderedMessages,
-			inputText,
+			textToUse,
 			setIsLoading
 		);
 
@@ -181,7 +182,7 @@ export const ConversationInput: React.FC<ConversationInput> = ({
 
 	return (
 		<div className="ow-conversation-input-area">
-			<ConversationSuggestedQuestions plugin={plugin} conversation={conversation} />
+			<ConversationSuggestedQuestions plugin={plugin} conversation={conversation} onSubmit={onSubmit} />
 			{
 				selectedText !== "" ? (
 					<ConversationSelectedText
