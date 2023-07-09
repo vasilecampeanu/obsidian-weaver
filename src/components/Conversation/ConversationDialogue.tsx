@@ -184,7 +184,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			await ConversationManager.updateSystemPrompt(plugin, conversation!?.id, systemPromptContent);
 			await ConversationManager.updateConversationMode(plugin, conversation!?.id, newMode);
 		}
-	};	
+	};
 
 	return (
 		<div className={`ow-conversation-dialogue ${conversation?.context === false ? "ow-context" : ""}`} ref={dialogueTimelineRef}>
@@ -265,31 +265,46 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 								<div className="ow-title">
 									Choose a conversation style
 								</div>
-								<div className="ow-mode-list">
-									<button
-										className={`ow-mode-wrapper ow-mode-creative ${activeMode === "creative" ? "active" : ""}`}
-										onClick={() => handleModeChange("creative")}
-									>
-										<span className="ow-more">More</span>
-										<span className="ow-mode">Creative</span>
-									</button>
-									<button
-										className={`ow-mode-wrapper ow-mode-balanced ${activeMode === "balanced" ? "active" : ""}`}
-										onClick={() => handleModeChange("balanced")}
-									>
-										<span className="ow-more">More</span>
-										<span className="ow-mode">Balanced</span>
-									</button>
-									<button
-										className={`ow-mode-wrapper ow-mode-precise ${activeMode === "precise" ? "active" : ""}`}
-										onClick={() => handleModeChange("precise")}
-									>
-										<span className="ow-more">More</span>
-										<span className="ow-mode">Precise</span>
-									</button>
+								<div className="ow-conversation-modes">
+									<div className="ow-pinned-modes">
+										<button
+											className={`ow-mode-wrapper ow-mode-creative ${activeMode === "creative" ? "active" : ""}`}
+											onClick={() => handleModeChange("creative")}
+										>
+											<span className="ow-more">More</span>
+											<span className="ow-mode">Creative</span>
+										</button>
+										<button
+											className={`ow-mode-wrapper ow-mode-balanced ${activeMode === "balanced" ? "active" : ""}`}
+											onClick={() => handleModeChange("balanced")}
+										>
+											<span className="ow-more">More</span>
+											<span className="ow-mode">Balanced</span>
+										</button>
+										<button
+											className={`ow-mode-wrapper ow-mode-precise ${activeMode === "precise" ? "active" : ""}`}
+											onClick={() => handleModeChange("precise")}
+										>
+											<span className="ow-more">More</span>
+											<span className="ow-mode">Precise</span>
+										</button>
+									</div>
+									<div className="ow-custom-mode-selection">
+										<div>
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>
+											<span>Styles</span>
+										</div>
+										<select>
+											<option value="option1">Select a custom style</option>
+											<option value="option2">Option 2</option>
+											<option value="option3">Option 3</option>
+										</select>
+										<button>
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+										</button>
+									</div>
 								</div>
 							</div>
-
 						</div>
 					)
 				)

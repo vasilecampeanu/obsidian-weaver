@@ -312,8 +312,8 @@
 			.ow-change-mode
 			{
 				display: grid;
-				gap: 20px;
-				margin-top: 300px;
+				gap: 10px;
+				margin-top: 200px;
 
 				&.showConversationEngineInfoEnabled
 				{
@@ -326,64 +326,136 @@
 					font-size: 13px;
 				}
 
-				.ow-mode-list
+				.ow-conversation-modes
 				{
 					justify-self: center;
-					display: flex;
-					gap: 5px;
+					display: grid;
+					gap: 10px;
 
-					background-color: var(--interactive-normal);
-					box-shadow: rgb(0 0 0 / 10%) 0px 0px 5px 0px, rgb(0 0 0 / 10%) 0px 0px 1px 0px;
-					padding: 3.5px;
-					border: 1px solid var(--prompt-border-color);
-					border-radius: 5px;
-					
-					.ow-mode-wrapper
+					.ow-pinned-modes
 					{
-						all: unset;
-						display: grid;
-						gap: 2.5px;
-						padding: 7px 20px;
+						justify-self: center;
+						display: flex;
+						gap: 5px;
+	
+						background-color: var(--interactive-normal);
+						box-shadow: rgb(0 0 0 / 10%) 0px 0px 5px 0px, rgb(0 0 0 / 10%) 0px 0px 1px 0px;
+						padding: 3.5px;
+						border: 1px solid var(--prompt-border-color);
 						border-radius: 5px;
-
-						background-color: var(--ui2);
-
-						&.ow-mode-creative
+	
+						.ow-mode-wrapper
 						{
-							&.active
+							all: unset;
+							display: grid;
+							gap: 2.5px;
+							padding: 7px 20px;
+							border-radius: 5px;
+	
+							background-color: var(--ui2);
+	
+							&.ow-mode-creative
 							{
-								background-color: var(--color-pink);
+								&.active
+								{
+									background-color: var(--color-pink);
+								}
+							}
+	
+							&.ow-mode-balanced
+							{
+								&.active
+								{
+									background-color: var(--interactive-accent);
+								}
+							}
+	
+							&.ow-mode-precise
+							{
+								&.active
+								{
+									background-color: var(--color-cyan);
+								}
+							}
+	
+							.ow-more
+							{
+								text-align: center;
+								font-size: 11px;
+								line-height: 1em;
+							}
+	
+							.ow-mode
+							{
+								font-size: 13px;
+								line-height: 1em;
+								font-weight: 500;
+							}
+						}
+					}
+
+					.ow-custom-mode-selection
+					{
+						display: grid;
+						grid-template-columns: auto 1fr auto;
+						gap: 5px;
+
+						div
+						{
+							display: flex;
+							gap: 2.5px;
+							align-self: center;
+							background-color: var(--interactive-normal);
+							padding: 3.5px;
+							border-radius: var(--input-radius);
+							border: 1px solid var(--prompt-border-color);
+							padding-left: 10px;
+							padding-right: 10px;
+
+							svg
+							{
+								align-self: center;
+								width: var(--font-ui-small);
+								height: var(--font-ui-small);
+							}
+							
+							span
+							{
+								align-self: center;
+								font-size: var(--font-ui-small);
 							}
 						}
 
-						&.ow-mode-balanced
+						select
 						{
-							&.active
+							align-self: center;
+							width: 100%;
+							border: 1px solid var(--prompt-border-color);
+							box-shadow: none;
+						}
+
+						select:focus, .dropdown:focus
+						{
+							box-shadow: none;
+						}
+
+						button
+						{
+							all: unset;
+							align-self: center;
+							display: grid;
+							padding: 8px;
+							border-radius: 5px;
+
+							background-color: var(--background-modifier-hover);
+							border: 1px solid var(--prompt-border-color);
+
+							svg
 							{
-								background-color: var(--interactive-accent);
+								align-self: center;
+								width: 16px;
+								height: 16px;
 							}
-						}
-
-						&.ow-mode-precise
-						{
-							&.active
-							{
-								background-color: var(--color-cyan);
-							}
-						}
-
-						.ow-more
-						{
-							text-align: center;
-							font-size: 11px;
-							line-height: 1em;
-						}
-
-						.ow-mode
-						{
-							font-size: 13px;
-							line-height: 1em;
-							font-weight: 500;
 						}
 					}
 				}
