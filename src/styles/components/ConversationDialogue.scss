@@ -406,7 +406,7 @@
 							gap: 2.5px;
 							align-self: center;
 							background-color: var(--interactive-normal);
-							padding: 3.5px;
+							padding: calc((30px - 18.9px) / 2);
 							border-radius: var(--input-radius);
 							border: 1px solid var(--prompt-border-color);
 							padding-left: 10px;
@@ -432,6 +432,7 @@
 							width: 100%;
 							border: 1px solid var(--prompt-border-color);
 							box-shadow: none;
+							font-size: 13px !important;
 						}
 
 						select:focus, .dropdown:focus
@@ -453,8 +454,8 @@
 							svg
 							{
 								align-self: center;
-								width: 16px;
-								height: 16px;
+								width: 13px;
+								height: 13px;
 							}
 						}
 					}
