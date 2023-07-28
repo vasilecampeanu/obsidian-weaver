@@ -1,9 +1,9 @@
 import Weaver from "main";
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React from "react";
 
 interface ConversationEngineInfoProps {
 	plugin: Weaver;
-	activeEngine: "gpt-3.5-turbo" | "gpt-4";
+	activeEngine: "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4";
 }
 
 export const ConversationEngineInfo: React.FC<ConversationEngineInfoProps> = ({
@@ -12,7 +12,7 @@ export const ConversationEngineInfo: React.FC<ConversationEngineInfoProps> = ({
 }) => {
 	return (
 		<>
-			{activeEngine === "gpt-3.5-turbo" ? (
+			{activeEngine === ("gpt-3.5-turbo" || "gpt-3.5-turbo-16k") ? (
 				<div className="ow-engine-info">
 					<div className="ow-info-text">
 						<p>GPT-3.5 can follow complex instructions in natural language and solve difficult problems. This is the fatest model, great for everyday tasks.</p>

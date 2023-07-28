@@ -1,12 +1,9 @@
-import { IChatMessage, IConversation } from "interfaces/IThread";
+import { IConversation } from "interfaces/IThread";
 import Weaver from "main";
-import React, { useEffect, useState, useMemo, useRef } from "react";
-import { ConversationMessageBubble } from "./ConversationMessageBubble";
+import React, { useEffect, useState, useRef } from "react";
 import { ConversationManager } from "utils/ConversationManager";
 import { ConversationEngineInfo } from "./ConversationEngineInfo";
-import { ConversationRenderer } from "helpers/ConversationRenderer";
 import MessageRenderer from "./ConversationMessageRenderer";
-import { ConversationSuggestedQuestions } from "./ConversationSuggestedQuestions";
 
 interface ConversationDialogueProps {
 	plugin: Weaver;
@@ -20,7 +17,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	setConversationSession
 }) => {
 	const [selectedChildren, setSelectedChildren] = useState<{ [key: string]: number }>({});
-	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-4">();
+	const [activeEngine, setActiveEngine] = useState<"gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4">();
 	const [activeMode, setActiveMode] = useState<"creative" | "balanced" | "precise">();
 	const [showEngineInfo, setShowEngineInfo] = useState(false);
 	const [showConversationEngineInfo, setShowConversationEngineInfo] = useState(plugin.settings.engineInfo);
@@ -30,7 +27,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 	const TIMEOUT_DELAY = 250;
 
 	useEffect(() => {
-		setActiveEngine(conversation?.model as "gpt-3.5-turbo" | "gpt-4")
+		setActiveEngine(conversation?.model as "gpt-3.5-turbo" | "gpt-3.5-turbo-16k"  | "gpt-4")
 		setActiveMode(conversation?.mode as "creative" | "balanced" | "precise")
 	}, [conversation?.model, conversation?.mode])
 
@@ -130,7 +127,17 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		if (conversation) {
 			const updatedConversation = { ...conversation, model: "gpt-3.5-turbo" };
 			setConversationSession(updatedConversation)
-			await ConversationManager.updateConversationModel(plugin, conversation!?.id, "gpt-3.5-turbo");
+			await ConversationManager.updateConversationModel(plugin, conversation?.id, "gpt-3.5-turbo");
+		}
+	}
+	
+	const handleSetGPT316K = async () => {
+		setActiveEngine("gpt-3.5-turbo-16k");
+
+		if (conversation) {
+			const updatedConversation = { ...conversation, model: "gpt-3.5-turbo-16k" };
+			setConversationSession(updatedConversation)
+			await ConversationManager.updateConversationModel(plugin, conversation?.id, "gpt-3.5-turbo-16k");
 		}
 	}
 
@@ -140,7 +147,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 		if (conversation) {
 			const updatedConversation = { ...conversation, model: "gpt-4" };
 			setConversationSession(updatedConversation)
-			await ConversationManager.updateConversationModel(plugin, conversation!?.id, "gpt-4");
+			await ConversationManager.updateConversationModel(plugin, conversation?.id, "gpt-4");
 		}
 	}
 
@@ -181,15 +188,15 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 
 			setConversationSession(updatedConversation);
 
-			await ConversationManager.updateSystemPrompt(plugin, conversation!?.id, systemPromptContent);
-			await ConversationManager.updateConversationMode(plugin, conversation!?.id, newMode);
+			await ConversationManager.updateSystemPrompt(plugin, conversation?.id, systemPromptContent);
+			await ConversationManager.updateConversationMode(plugin, conversation?.id, newMode);
 		}
 	};
 
 	return (
 		<div className={`ow-conversation-dialogue ${conversation?.context === false ? "ow-context" : ""}`} ref={dialogueTimelineRef}>
 			{
-				conversation!?.messages.length > 1 ? (
+				conversation?.messages?.length && conversation?.messages.length > 1 ? (
 					rootMessage && (
 						<MessageRenderer
 							messageId={rootMessage.id}
@@ -206,6 +213,34 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 								<div
 									className={`ow-btn-change-model ${activeEngine === "gpt-3.5-turbo" ? "ow-active" : ""}`}
 									onClick={handleSetGPT3}
+								>
+									<div className="ow-icon">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+									</div>
+									<div className="ow-engine-wrapper">
+										<span>
+											GPT-3.5
+										</span>
+										{showConversationEngineInfo === true ? (
+											<button
+												className="ow-btn-show-info"
+												onClick={handleHideInfoClick}
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
+											</button>
+										) : (
+											<button
+												className="ow-btn-show-info"
+												onClick={handleShowInfoClick}
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
+											</button>
+										)}
+									</div>
+								</div>
+								<div
+									className={`ow-btn-change-model ${activeEngine === "gpt-3.5-turbo-16k" ? "ow-active" : ""}`}
+									onClick={handleSetGPT316K}
 								>
 									<div className="ow-icon">
 										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -260,7 +295,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 									</div>
 								</div>
 							</div>
-							{showConversationEngineInfo && <ConversationEngineInfo plugin={plugin} activeEngine={activeEngine as "gpt-3.5-turbo" | "gpt-4"} />}
+							{showConversationEngineInfo && <ConversationEngineInfo plugin={plugin} activeEngine={activeEngine as "gpt-3.5-turbo-16k" | "gpt-4"} />}
 							<div className={`ow-change-mode ${showConversationEngineInfo === true ? "showConversationEngineInfoEnabled" : ""}`}>
 								<div className="ow-title">
 									Choose a conversation style
@@ -291,7 +326,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 									</div>
 									<div className="ow-custom-mode-selection">
 										<div>
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-sparkle"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>
 											<span>Styles</span>
 										</div>
 										<select>
@@ -300,7 +335,7 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 											<option value="option3">Option 3</option>
 										</select>
 										<button>
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
 										</button>
 									</div>
 								</div>
