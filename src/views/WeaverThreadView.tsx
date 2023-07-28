@@ -1,6 +1,6 @@
 // Obsidian
 import Weaver from 'main'
-import { ItemView, Platform, WorkspaceLeaf } from 'obsidian';
+import { ItemView, WorkspaceLeaf } from 'obsidian';
 
 // Third-party modules
 import React from 'react';
@@ -69,6 +69,6 @@ export class WeaverThreadView extends ItemView {
 		this.root = createRoot(viewContent);
 		this.root.render (
 			<ThreadTabsManager plugin={this.plugin} />
- 		);
+		);
 	}
 }

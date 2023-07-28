@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction, useRef } from 'react';
+import React, { Dispatch, SetStateAction, useRef } from 'react';
 import Weaver from "main";
 import { OpenAIMessageDispatcher } from 'utils/api/OpenAIMessageDispatcher';
 import { IChatMessage, IConversation } from 'interfaces/IThread';

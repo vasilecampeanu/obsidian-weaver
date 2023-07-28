@@ -1,9 +1,6 @@
 import { IConversation } from "interfaces/IThread";
 import Weaver from "main";
-import React, { useEffect, useState, useMemo } from "react";
-import { ConversationDialogue } from "./ConversationDialogue";
-import { ConversationHeader } from "./ConversationHeader";
-import { ConversationInput } from "./ConversationInput";
+import React from "react";
 
 interface ConversationSettingsProps {
 	plugin: Weaver;

@@ -1,6 +1,6 @@
 // Obsidian
 import Weaver from 'main';
-import { FileSystemAdapter, normalizePath } from 'obsidian';
+import { FileSystemAdapter } from 'obsidian';
 
 // Third-party modules
 import fs from 'fs';
