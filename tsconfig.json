@@ -21,12 +21,14 @@
 		"moduleResolution": "node",
 		"noImplicitAny": true,
 		"strictNullChecks": true,
-		"target": "ES6"
+		"target": "ES6",
+		"outDir": "./dist"
 	},
 	"include": [
 		"**/*.ts",
 		"**/*.tsx",
 		"src/**/*.ts",
+		"src/**/*",
 		"typings/**/*.ts"
 	]
 }
