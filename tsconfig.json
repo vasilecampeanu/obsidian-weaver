@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"target": "esNext",
 		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
 		"baseUrl": "src",
@@ -20,9 +21,9 @@
 		"module": "ESNext",
 		"moduleResolution": "node",
 		"noImplicitAny": true,
+		"noEmitOnError": false,
 		"strictNullChecks": true,
-		"target": "ES6",
-		"outDir": "./dist"
+		"outDir": "./dist",
 	},
 	"include": [
 		"**/*.ts",
