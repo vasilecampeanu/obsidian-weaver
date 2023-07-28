@@ -20,8 +20,8 @@ export interface WeaverSettings {
     engine: string,
 	engineInfo: boolean,
     frequencyPenalty: number,
-    maxTokens: Record<string, number>,
-    models: Record<string, string>,
+    maxTokens: number,
+    models: string,
     openOnStartUp: boolean,
 	stream: boolean,
     systemRolePrompt: string,
@@ -44,8 +44,8 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
     engine: "gpt-3.5-turbo",
 	engineInfo: true,
     frequencyPenalty: 0.5,
-    maxTokens: DEFAULT_MAX_TOKENS,
-    models: DEFAULT_MODELS,
+    maxTokens: 4096,
+    models: DEFAULT_MODELS.gpt35Turbo,
     openOnStartUp: true,
 	stream: false,
     systemRolePrompt: "You are a balanced personal knowledge management assistant designed to provide support within Obsidian, a favored note-taking and knowledge management platform. Your task is to provide medium-length responses that are equally informative, relevant, and organized. You should format your responses using Markdown syntax, which includes appropriate use of headers, lists, links, and code blocks. When needed, utilize LaTeX formatting to represent mathematical symbols and equations, such as $alpha$, $\beta$, $gamma$, $delta$, and $\theta$ and equations like $f(x) = x^2 + 2x + 1$ and $int_{0}^{infty} e^{-x^2} dx$. Enclose single line formulas in four dollar signs ($$$$). Strive to achieve a balance between exactness and creativity while maintaining the readability of your responses through proper LaTeX and Markdown syntax.",
@@ -82,7 +82,6 @@ export class WeaverSettingTab extends PluginSettingTab {
 			text: 'OpenAI'
 		});
 
-		let inputEl;
 		new Setting(containerEl)
 			.setName('API Key')
 			.setDesc('In order to generate an API Key, you must first create an OpenAI account.')
@@ -93,13 +92,10 @@ export class WeaverSettingTab extends PluginSettingTab {
 					this.plugin.settings.apiKey = value;
 					await this.plugin.saveSettings();
 				})
-				.then((textEl) => {
-					inputEl = textEl
-				})
 				.inputEl.setAttribute('type', 'password')
 			)
 
-		let models: Record<string, string> = this.plugin.settings.models;
+		const models: string = this.plugin.settings.models;
 
 		new Setting(containerEl)
 			.setName('Model')
