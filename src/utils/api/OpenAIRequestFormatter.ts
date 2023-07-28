@@ -6,9 +6,9 @@ import { WeaverSettings } from "settings";
 import { IChatMessage, IConversation } from "interfaces/IThread";
 
 interface BodyParameters {
+	messages: { role: string; content: string; }[];
 	frequency_penalty: number;
 	max_tokens: number;
-	messages?: any;
 	model: string;
 	temperature: number;
 	stream: boolean;
@@ -21,17 +21,30 @@ export default class OpenAIRequestFormatter {
 		this.plugin = plugin;
 	}
 
-	prepareChatRequestParameters(parameters: WeaverSettings, additionalParameters: any = {}, conversation: IConversation, conversationHistory: IChatMessage[] = []) {
+	prepareChatRequestParameters(
+		parameters: WeaverSettings, 
+		additionalParameters: {
+			bodyParameters?: BodyParameters,
+			requestParameters?: {
+				url: string,
+				method: string,
+				body: string,
+				headers: {[
+					key: string
+				]: string}
+			}
+		} = {}, conversation: IConversation, conversationHistory: IChatMessage[] = []) {
 		try {
 			const requestUrlBase = "https://api.openai.com/v1";
-			let requestUrl = `${requestUrlBase}/chat/completions`;
+			const requestUrl = `${requestUrlBase}/chat/completions`;
 
 			const bodyParameters: BodyParameters = {
 				frequency_penalty: parameters.frequencyPenalty,
 				max_tokens: parameters.maxTokens,
 				model: conversation.model ? conversation.model : parameters.engine,
 				temperature: parameters.temperature,
-				stream: true
+				stream: true,
+				messages: []
 			};
 
 			bodyParameters.messages = conversationHistory.map((message: IChatMessage) => {

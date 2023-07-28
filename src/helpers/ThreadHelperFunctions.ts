@@ -17,7 +17,7 @@ export const filterConversations = (
 			return conversation.title.toLowerCase().includes(searchTerm.toLowerCase());
 		} else if (searchField === "messages") {
 			return conversation.messages.some((message) =>
-				message.content.toLowerCase().includes(searchTerm.toLowerCase())
+				(message.content as unknown as string).toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		}
 
@@ -37,4 +37,4 @@ export const getSection = (creationDate: string) => {
 	return "Older";
 };
 
-export const getItemSize = (plugin: Weaver, item: any) => (item.isSectionHeader ? sectionHeaderHeight : plugin.settings.threadViewCompactMode === true ? compactItemHeight : itemHeight);
+export const getItemSize = (plugin: Weaver, item: { isSectionHeader: boolean }) => (item.isSectionHeader ? sectionHeaderHeight : plugin.settings.threadViewCompactMode === true ? compactItemHeight : itemHeight);

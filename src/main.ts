@@ -1,22 +1,19 @@
-import { FileSystemAdapter, Notice, Plugin, Workspace, WorkspaceLeaf } from 'obsidian';
+import { Notice, Plugin, Workspace, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings';
 import { WEAVER_THREAD_VIEW } from './constants';
 import { FileIOManager } from 'utils/FileIOManager';
 import { WeaverThreadView } from 'views/WeaverThreadView';
-import { WeaverImporter } from 'utils/WeaverImporter';
-import { ThreadManager } from 'utils/ThreadManager';
-import { WeaverHealthManager } from 'utils/WeaverHealthManager';
 import { eventEmitter } from 'utils/EventEmitter';
 import LocalJsonModal from 'modals/ImportModal';
 import { MigrationAssistant } from 'utils/MigrationAssistant';
 import { ConversationManager } from 'utils/ConversationManager';
-import { PluginValue, EditorView, ViewPlugin } from "@codemirror/view";
+import { EditorView } from "@codemirror/view";
 import { weaverEditor } from 'utils/editor/WeaverEditor';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
 	public workspace: Workspace;
-	public isRenamingFromInside: boolean = false;
+	public isRenamingFromInside = false;
 
 	async onload() {
 		// Loading message
@@ -111,9 +108,6 @@ export default class Weaver extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('rename', async (item, oldPath) => {
-				// Check if the path has an extension
-				const hasExtension = /\.[^/.]+$/;
-
 				// Check if the path contains "bins/weaver"
 				if (item.path.startsWith(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
 					if (item.path.endsWith(".json")) {
@@ -133,9 +127,6 @@ export default class Weaver extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('delete', async (item) => {
-				// Check if the path has an extension
-				const hasExtension = /\.[^/.]+$/;
-
 				// Check if the path contains "bins/weaver"
 				if (item.path.startsWith(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
 					if (item.path.endsWith(".json")) {
@@ -148,10 +139,10 @@ export default class Weaver extends Plugin {
 	}
 
 	private async openWeaverThreadView() {
-		let leafs = this.app.workspace.getLeavesOfType(WEAVER_THREAD_VIEW);
+		const leafs = this.app.workspace.getLeavesOfType(WEAVER_THREAD_VIEW);
 
 		if (leafs.length == 0) {
-			let leaf = this.app.workspace.getRightLeaf(false);
+			const leaf = this.app.workspace.getRightLeaf(false);
 			await leaf.setViewState({ type: WEAVER_THREAD_VIEW });
 			this.app.workspace.revealLeaf(leaf);
 		} else {

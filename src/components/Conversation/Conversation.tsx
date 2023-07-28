@@ -1,6 +1,6 @@
 import { IConversation } from "interfaces/IThread";
 import Weaver from "main";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { ConversationDialogue } from "./ConversationDialogue";
 import { ConversationHeader } from "./ConversationHeader";
 import { ConversationInput } from "./ConversationInput";
@@ -30,7 +30,7 @@ export const Conversation: React.FC<ConversationProps> = ({
 		<div className="ow-conversation">
 			<ConversationHeader
 				plugin={plugin}
-				conversation={conversationSession}
+				conversation={conversationSession || {} as IConversation}
 				onTabSwitch={onTabSwitch}
 				setConversationSession={setConversationSession}
 				showConversationSettings={showConversationSettings}
@@ -38,12 +38,12 @@ export const Conversation: React.FC<ConversationProps> = ({
 			/>
 			<ConversationDialogue
 				plugin={plugin}
-				conversation={conversationSession}
+				conversation={conversationSession || {} as IConversation}
 				setConversationSession={setConversationSession}
 			/>
 			<ConversationInput
 				plugin={plugin}
-				conversation={conversationSession}
+				conversation={conversationSession || {} as IConversation}
 				setConversationSession={setConversationSession}
 				onConversationLoad={onConversationLoad}
 				onTabSwitch={onTabSwitch}

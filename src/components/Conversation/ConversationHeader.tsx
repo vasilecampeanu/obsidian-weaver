@@ -1,12 +1,12 @@
 import { IConversation } from "interfaces/IThread";
 import Weaver from "main";
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ConversationManager } from "utils/ConversationManager";
 import { ThreadManager } from "utils/ThreadManager";
 
 interface ConversationHeaderProps {
 	plugin: Weaver;
-	conversation: IConversation | undefined;
+	conversation: IConversation;
 	setConversationSession: React.Dispatch<React.SetStateAction<IConversation | undefined>>;
 	onTabSwitch: (tabId: string) => void;
 	showConversationSettings: boolean;
@@ -74,35 +74,38 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 				const allConversations = await ThreadManager.getAllConversations(plugin, plugin.settings.weaverFolderPath + '/threads/base');
 				// Ensure the title is unique
 				const uniqueTitle = ConversationManager.getUniqueTitle(titleInput as string, allConversations);
-				const result = await ConversationManager.updateConversationTitleById(plugin, conversation!?.id, uniqueTitle);
-
-				if (!result.success) {
-					setInputError(true);
-					setErrorMessage(result.errorMessage);
-
-					timeoutRef.current = setTimeout(() => {
-						setInputError(false);
-						setErrorMessage('');
-					}, 1500);
-				} else {
-					setConversationSession(prevConversation => {
-						if (prevConversation) {
-							return { 
-								...prevConversation, 
-								title: uniqueTitle 
-							};
-						} else {
-							return prevConversation;
-						}
-					});
-
-					setTitleInput(uniqueTitle);
+				if (conversation) {
+					await ConversationManager.updateConversationTitleById(plugin, conversation.id, uniqueTitle);
 				}
-			} catch (error) {
-				console.error(error);
-			}
-		}
-	};
+
+							const result = await ConversationManager.updateConversationTitleById(plugin, conversation.id, uniqueTitle);
+							if (!result || !conversation) {
+								setInputError(true);
+								setErrorMessage((result as unknown as Error).message);
+
+								timeoutRef.current = setTimeout(() => {
+									setInputError(false);
+									setErrorMessage('');
+								}, 1500);
+							} else {
+								setConversationSession(prevConversation => {
+									if (prevConversation) {
+										return { 
+											...prevConversation, 
+											title: uniqueTitle 
+										};
+									} else {
+										return prevConversation;
+									}
+								});
+
+								setTitleInput(uniqueTitle);
+							}
+						} catch (error) {
+							console.error(error);
+						}
+					}
+				};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
@@ -141,13 +144,14 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 			if (prevConversation) {
 				return { ...prevConversation, context: newContext };
 			} else {
-				return;
+				return undefined;
 			}
 		});
 
-		conversation!.context = newContext;
-
-		ConversationManager.updateConversation(plugin, conversation as IConversation);
+		if (conversation) {
+			conversation.context = newContext;
+			ConversationManager.updateConversation(plugin, conversation);
+		}
 	}
 
 	const handleToggle = () => setShowConversationSettings(!showConversationSettings);
@@ -178,8 +182,8 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 					</span>
 				)}
 			</div>
-			<div className="ow-user-actions-right">
-				{true ? (
+			<div className="ow-user-actions-right">``
+				{context ? (
 					<button className={`ow-btn-context ${context === true ? 'ow-context-enabled' : 'ow-context-disabled'}`} onClick={handleToggleContext}>
 						{context === true ? (
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><line x1="8" x2="16" y1="12" y2="12"></line></svg>
