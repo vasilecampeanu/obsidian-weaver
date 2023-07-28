@@ -1,8 +1,7 @@
 import { IChatMessage } from 'interfaces/IThread';
 import Weaver from 'main';
 import { Component, MarkdownRenderer } from 'obsidian';
-import React, { useEffect, useRef, useState } from 'react';
-import { ThreeDots } from 'react-loader-spinner';
+import React, { useEffect, useState } from 'react';
 
 interface ConversationMessageBubbleProps {
 	plugin: Weaver;
@@ -62,7 +61,7 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 	return (
 		message.message_type === 'info' ? (
 			<div className={`ow-message-info-bubble ow-mode-${mode}`}>
-				{((message && message.author.ai_model) || plugin.settings.engine) === "gpt-3.5-turbo" ? (
+				{((message && message.author.ai_model) || (plugin.settings.engine) === ("gpt-3.5-turbo" || "gpt-3.5-turbo-16k") ? (
 					<>
 						<div className="ow-icon">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -76,7 +75,7 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 						</div>
 						<span>Using GPT-4</span>
 					</>
-				)}
+				))}
 			</div>
 		) : (
 			<div 
