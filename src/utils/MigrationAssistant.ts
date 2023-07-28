@@ -1,14 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Obsidian
 import Weaver from 'main';
 import { FileSystemAdapter, normalizePath } from 'obsidian';
-import fs from 'fs';
 
 // Third-party modules
-import { BSON, EJSON, ObjectId } from '../js/BsonWrapper';
 import { IChatMessage, IConversation } from 'interfaces/IThread';
 import { v4 as uuidv4 } from 'uuid';
 import { ThreadManager } from './ThreadManager';
-import { ConversationManager } from './ConversationManager';
 import { FileIOManager } from './FileIOManager';
 import { normalize } from 'path';
 
@@ -29,8 +27,8 @@ export class MigrationAssistant {
 		const adapter = plugin.app.vault.adapter as FileSystemAdapter;
 		const filePath = `/${plugin.settings.weaverFolderPath}/conversations.bson`;
 		const arrayBuffer = await adapter.readBinary(filePath);
-		const bsonData = new Uint8Array(arrayBuffer);
-		const deserializedData = BSON.deserialize(bsonData);
+		const jsonData = new Uint8Array(arrayBuffer);
+		const deserializedData = JSON.parse(jsonData.toString());
 
 		return deserializedData;
 	}
@@ -62,16 +60,16 @@ export class MigrationAssistant {
 					}
 				});
 	
-				const conversationsPromises = oldData.threads[0].conversations.map(async (conversation: any) => {
+				const conversationsPromises = oldData.threads[0].conversations.map(async (conversation: { messages: unknown[]; title: string; timestamp: any; }) => {
 					let previousMessageId: string = uuidv4();
 					let previousMessage: IChatMessage | null = null;
-					let nextMessageId: string = "";
+					let nextMessageId = "";
 	
 					const newMessages: IChatMessage[] = conversation.messages.map((message: any, index: number) => {
 						const messageId = uuidv4();
 						const creationTime = new Date(message.timestamp).toISOString();
 	
-						let newMessage: IChatMessage = {
+						const newMessage: IChatMessage = {
 							id: messageId,
 							parent: previousMessageId,
 							children: [],
@@ -104,7 +102,7 @@ export class MigrationAssistant {
 	
 					await FileIOManager.ensureFolderPathExists(plugin, "threads/base");
 	
-					let baseTitle = this.sanitizeTitle(conversation.title);
+					const baseTitle = this.sanitizeTitle(conversation.title);
 					let count = titleCache[baseTitle] || 0;
 					let conversationTitle = count > 0 ? `${baseTitle} ${count}` : baseTitle;
 	
@@ -130,7 +128,7 @@ export class MigrationAssistant {
 						mode: "balanced"
 					};
 	
-					let conversationPath = normalizePath(`${plugin.settings.weaverFolderPath}/threads/base/${conversationTitle}.json`);
+					const conversationPath = normalizePath(`${plugin.settings.weaverFolderPath}/threads/base/${conversationTitle}.json`);
 					await adapter.write(conversationPath, JSON.stringify(newConversation, null, 4));
 	
 					// Return the new conversation
