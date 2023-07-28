@@ -3,7 +3,14 @@ import Weaver from "main";
 
 export const DEFAULT_MODELS: Record<string, string> = {
 	"gpt-3.5-turbo": "gpt-3.5-turbo",
+	"gpt-3.5-turbo-16k": "gpt-3.5-turbo-16k",
 	"gpt-4": "gpt-4"
+};
+
+export const DEFAULT_MAX_TOKENS: Record<string, number> = {
+	"GPT 3.5": 4096,
+	"GPT 3.5 16k": 16000,
+	"GPT 4": 32768
 };
 
 export interface WeaverSettings {
@@ -13,8 +20,8 @@ export interface WeaverSettings {
     engine: string,
 	engineInfo: boolean,
     frequencyPenalty: number,
-    maxTokens: number,
-    models: any,
+    maxTokens: Record<string, number>,
+    models: Record<string, string>,
     openOnStartUp: boolean,
 	stream: boolean,
     systemRolePrompt: string,
@@ -37,7 +44,7 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
     engine: "gpt-3.5-turbo",
 	engineInfo: true,
     frequencyPenalty: 0.5,
-    maxTokens: 512,
+    maxTokens: DEFAULT_MAX_TOKENS,
     models: DEFAULT_MODELS,
     openOnStartUp: true,
 	stream: false,
