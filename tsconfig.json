@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "esNext",
-		"allowJs": true,
+		"allowJs": false,
 		"allowSyntheticDefaultImports": true,
 		"baseUrl": "src",
 		"esModuleInterop": true,
@@ -30,6 +30,7 @@
 		"**/*.tsx",
 		"src/**/*.ts",
 		"src/**/*",
-		"typings/**/*.ts"
+		"typings/**/*.ts", 
+		"./esbuild.config.mjs",
 	]
 }

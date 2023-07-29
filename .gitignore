@@ -1,5 +1,5 @@
 # vscode
-.vscode 
+.vscode
 
 # Intellij
 *.iml
@@ -24,3 +24,6 @@ conversations.json
 
 # Style
 styles.css
+package-lock.json
+
+dist

@@ -5,12 +5,24 @@
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"build": "tsc -noEmit -skipLibCheck && node ./esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
 	"author": "Vasile Câmpeanu",
 	"license": "MIT",
+	"dependencies": {
+		"esbuild": "^0.18.17",
+		"esbuild-sass-plugin": "^2.10.0",
+		"lodash": "^4.17.21",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-loader-spinner": "^5.3.4",
+		"react-resize-observer": "^1.1.1",
+		"react-virtualized": "^9.22.5",
+		"safe-await": "^2.0.0",
+		"uuid": "^9.0.0"
+	},
 	"devDependencies": {
 		"@types/lodash": "^4.14.194",
 		"@types/node": "^16.11.6",
@@ -24,16 +36,5 @@
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
-	},
-	"dependencies": {
-		"esbuild-sass-plugin": "^2.9.0",
-		"lodash": "^4.17.21",
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0",
-		"react-loader-spinner": "^5.3.4",
-		"react-resize-observer": "^1.1.1",
-		"react-virtualized": "^9.22.5",
-		"safe-await": "^2.0.0",
-		"uuid": "^9.0.0"
 	}
 }
