@@ -1,4 +1,4 @@
-import { FuzzyMatch, FuzzySuggestModal, MetadataCache, Notice, TFile, TFolder, Vault } from 'obsidian';
+import { FuzzyMatch, FuzzySuggestModal, MetadataCache, TFile, Vault } from 'obsidian';
 
 import WeaverPlugin from 'main';
 import { WeaverImporter } from 'utils/WeaverImporter';

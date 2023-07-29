@@ -1,6 +1,6 @@
 import { IConversation } from 'interfaces/IThread';
 import Weaver from 'main';
-import { FileSystemAdapter, normalizePath } from 'obsidian';
+import { FileSystemAdapter } from 'obsidian';
 
 export class ThreadManager {
 	static async getAllConversations(plugin: Weaver, folderPath: string): Promise<IConversation[]> {
