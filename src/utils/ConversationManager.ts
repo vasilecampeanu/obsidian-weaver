@@ -1,4 +1,4 @@
-import { IChatMessage, IConversation } from 'interfaces/IThread';
+import { IChatMessage, IConversation, IMessagePart } from 'interfaces/IThread';
 import Weaver from 'main';
 import { FileSystemAdapter, normalizePath } from 'obsidian';
 import { ThreadManager } from './ThreadManager';
@@ -53,7 +53,10 @@ export class ConversationManager {
 					},
 					content: {
 						content_type: 'text',
-						parts: `${plugin.settings.systemRolePrompt}`,
+						parts: [{
+							content: `${plugin.settings.systemRolePrompt}`, 
+							isVisible: true
+						}],
 					},
 				}				
 			],
@@ -356,7 +359,10 @@ export class ConversationManager {
 				}
 	
 				// Update the content of the system prompt
-				systemPrompt.content.parts = newPrompt;
+				systemPrompt.content.parts = [{
+					content: newPrompt,
+					isVisible: true
+				}];
 	
 				// Update lastModified
 				conversation.lastModified = new Date().toISOString();
@@ -370,5 +376,14 @@ export class ConversationManager {
 	
 		console.error(`Conversation with ID: ${id} not found`);
 		return false;
-	}	
+	}
+
+	static getVisiblePartsContent (parts: Array<IMessagePart>): string {
+		const visiblePartsContent = parts
+			.filter(part => part.isVisible)
+			.map(part => part.content)
+			.join('\n');
+
+		return visiblePartsContent;
+	}
 }

@@ -1,8 +1,9 @@
-import { IChatMessage } from 'interfaces/IThread';
+import { IChatMessage, IMessagePart } from 'interfaces/IThread';
 import Weaver from 'main';
 import { Component, MarkdownRenderer } from 'obsidian';
 import React, { useEffect, useRef, useState } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
+import { ConversationManager } from 'utils/ConversationManager';
 
 interface ConversationMessageBubbleProps {
 	plugin: Weaver;
@@ -36,27 +37,33 @@ export const ConversationMessageBubble: React.FC<ConversationMessageBubbleProps>
 	useEffect(() => {
 		const contentWrapper = document.createElement('div');
 		const context = new Component();
-
+	
 		MarkdownRenderer.renderMarkdown(
-			message.content.parts,
+			ConversationManager.getVisiblePartsContent(message.content.parts),
 			contentWrapper,
 			'',
 			context
 		).then(() => {
 			context.unload();
+			setTimeout(() => {
+				setHtmlDescriptionContent({ __html: contentWrapper.innerHTML });
+			}, 0);
 		});
-
-		setHtmlDescriptionContent({ __html: contentWrapper.innerHTML });
 	}, [message.content.parts]);
 
-	const copyTextWithMarkdown = async () => {
-		await navigator.clipboard.writeText(message.content.parts);
-
-		setShowConfirmation(true);
-
-		setTimeout(() => {
-			setShowConfirmation(false);
-		}, 1000);
+	const copyTextWithMarkdown = () => {
+		try {
+			navigator.clipboard.writeText(
+				ConversationManager.getVisiblePartsContent(message.content.parts)
+			);
+			setShowConfirmation(true);
+		} catch (error) {
+			console.error('Failed to copy text: ', error);
+		} finally {
+			setTimeout(() => {
+				setShowConfirmation(false);
+			}, 1000);
+		}
 	};
 
 	return (

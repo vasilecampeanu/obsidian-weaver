@@ -176,7 +176,10 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({
 			const systemPrompt = updatedConversation.messages.find(message => message.author.role === 'system');
 
 			if (systemPrompt) {
-				systemPrompt.content.parts = systemPromptContent;
+				systemPrompt.content.parts = [{
+					content: systemPromptContent,
+					isVisible: true
+				}];
 			}
 
 			setConversationSession(updatedConversation);

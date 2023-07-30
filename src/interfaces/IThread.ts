@@ -1,3 +1,8 @@
+export interface IMessagePart {
+	content: string;
+	isVisible: boolean;
+}
+
 export interface IChatMessage {
 	id: string;
 	parent: string;
@@ -15,7 +20,7 @@ export interface IChatMessage {
 	};
 	content: {
 		content_type: string;
-		parts: string;
+		parts: Array<IMessagePart>;
 	};
 }
 

@@ -4,6 +4,7 @@ import { WeaverSettings } from "settings";
 
 // Interfaces
 import { IChatMessage, IConversation } from "interfaces/IThread";
+import { ConversationManager } from "utils/ConversationManager";
 
 interface BodyParameters {
 	frequency_penalty: number;
@@ -35,7 +36,10 @@ export default class OpenAIRequestFormatter {
 			};
 
 			bodyParameters.messages = conversationHistory.map((message: IChatMessage) => {
-				return { role: message.author.role, content: message.content.parts };
+				return { 
+					role: message.author.role, 
+					content: ConversationManager.getVisiblePartsContent(message.content.parts)
+				};
 			});
 
 			console.log(bodyParameters.messages)

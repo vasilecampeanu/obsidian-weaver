@@ -40,7 +40,10 @@ export class OpenAIRequestManager {
 			},
 			content: {
 				content_type: 'text',
-				parts: content
+				parts: [{
+					content: content,
+					isVisible: true
+				}]
 			},
 		};		
 	}

@@ -59,7 +59,10 @@ export class OpenAIMessageDispatcher {
 			},
 			content: {
 				content_type: 'text',
-				parts: inputText
+				parts: [{
+					content: inputText,
+					isVisible: true
+				}]
 			},
 		};
 
@@ -84,7 +87,10 @@ export class OpenAIMessageDispatcher {
 			},
 			content: {
 				content_type: 'text',
-				parts: ''
+				parts: [{
+					content: '',
+					isVisible: true
+				}]
 			},
 		};
 
@@ -112,7 +118,10 @@ export class OpenAIMessageDispatcher {
 			},
 			content: {
 				content_type: contentType,
-				parts: contentMessage
+				parts: [{
+					content: contentMessage,
+					isVisible: true
+				}]
 			},
 		};
 
@@ -137,7 +146,10 @@ export class OpenAIMessageDispatcher {
 			},
 			content: {
 				content_type: 'text',
-				parts: ''
+				parts: [{
+					content: '',
+					isVisible: true
+				}]
 			},
 		};
 
@@ -161,7 +173,16 @@ export class OpenAIMessageDispatcher {
 			},
 			content: {
 				content_type: 'selected_text',
-				parts: selectedText
+				parts: [
+					{
+						content: 'Selected text from note:',
+						isVisible: false
+					},
+					{
+						content: selectedText,
+						isVisible: true
+					}
+				]
 			},
 		};
 
@@ -202,7 +223,10 @@ export class OpenAIMessageDispatcher {
 				throw new Error('loadingAssistantMessage is not properly defined');
 			}
 
-			this.loadingAssistantMessage.content.parts = newContent;
+			this.loadingAssistantMessage.content.parts = [{
+				content: newContent, 
+				isVisible: true
+			}];
 
 			contextMessages.splice(userMessageIndex as number, 1, this.userMessage as IChatMessage);
 

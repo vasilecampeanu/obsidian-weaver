@@ -87,7 +87,10 @@ export class MigrationAssistant {
 							},
 							content: {
 								content_type: 'text',
-								parts: message.content
+								parts: [{
+									content: message.content,
+									isVisible: true
+								}]
 							}
 						};
 	
