@@ -54,6 +54,7 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({
 
 	const handleConversationLoad = () => {
 		onTabSwitch("conversation-page");
+		console.log("Hello world: ", conversation);
 		onConversationLoad(conversation);
 	};
 
