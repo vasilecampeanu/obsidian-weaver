@@ -1,43 +1,34 @@
 {
 	"name": "obsidian-weaver",
-	"version": "0.5.3",
+	"version": "1.0.0",
 	"description": "Weaver is a useful Obsidian plugin that integrates ChatGPT/GPT-3 into your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.",
 	"main": "main.js",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"dev": "node scripts/development.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node scripts/development.mjs production && node scripts/versioning.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
 	"author": "Vasile Câmpeanu",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/lodash": "^4.14.194",
 		"@types/node": "^16.11.6",
-		"@types/react": "^18.2.6",
-		"@types/react-dom": "^18.2.4",
-		"@types/react-window": "^1.8.5",
-		"@types/uuid": "^9.0.1",
+		"@types/react": "^18.2.21",
+		"@types/react-dom": "^18.2.7",
+		"@types/uuid": "^9.0.4",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
-		"esbuild": "^0.17.17",
+		"esbuild": "0.19.2",
+		"esbuild-sass-plugin": "2.14.0",
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
-		"bson": "^5.3.0",
-		"esbuild-sass-plugin": "^2.9.0",
-		"lodash": "^4.17.21",
+		"framer-motion": "^10.16.4",
+		"js-tiktoken": "^1.0.7",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-loader-spinner": "^5.3.4",
-		"react-resize-observer": "^1.1.1",
-		"react-virtualized-auto-sizer": "^1.0.15",
-		"react-window": "^1.8.9",
-		"safe-await": "^2.0.0",
-		"use-resize-observer": "^9.1.0",
-		"uuid": "^9.0.0"
+		"uuid": "^9.0.1"
 	}
 }

@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
-		"allowJs": true,
+		"target": "esNext",
+		"allowJs": false,
 		"allowSyntheticDefaultImports": true,
 		"baseUrl": "src",
 		"esModuleInterop": true,
@@ -8,6 +9,7 @@
 		"inlineSourceMap": true,
 		"inlineSources": true,
 		"isolatedModules": true,
+		"resolveJsonModule": true,
 		"jsx": "react",
 		"lib": [
 			"DOM",
@@ -19,14 +21,21 @@
 		],
 		"module": "ESNext",
 		"moduleResolution": "node",
-		"noImplicitAny": true,
+		"noImplicitAny": false,
+		"noEmitOnError": false,
 		"strictNullChecks": true,
-		"target": "ES6"
+		"typeRoots": [
+			"node_modules/@types",
+			"typings"
+		],
+		"types": [
+			"node",
+			"react",
+			"react-dom",
+		]
 	},
 	"include": [
 		"**/*.ts",
-		"**/*.tsx",
-		"src/**/*.ts",
-		"typings/**/*.ts"
+		"**/*.tsx"
 	]
 }

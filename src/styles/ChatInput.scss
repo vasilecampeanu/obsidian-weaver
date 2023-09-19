@@ -1,0 +1,217 @@
+.ow-chat-input
+{
+	display: grid;
+	grid-template-rows: auto 1fr;
+
+	.ow-input-wrapper
+	{
+		display: grid;
+		grid-template-columns: auto 1fr;
+		width: 100%;
+		min-height: 52px;
+		overflow: hidden;
+		position: relative;
+		gap: 10px;
+
+		.ow-input-left
+		{
+			display: flex;
+			align-items: end;
+			justify-content: end;
+			justify-self: end;
+
+			.ow-new-chat
+			{
+				all: unset;
+				display: grid;
+				align-self: end !important;
+				height: 34px;
+				width: 34px;
+				border-radius: 50%;
+				background-image: linear-gradient(to right, var(--interactive-accent), hsla(var(--interactive-accent-hsl), 0.6),);
+				box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+				color: #ffffff;
+				cursor: var(--cursor);
+				
+				svg
+				{
+					place-self: center;
+					width:  22px;
+					height: 22px;
+				}
+
+				grid-column: 1;
+				grid-row: 1;
+				z-index: 1;
+			}
+		}
+
+		.ow-expandable-input 
+		{
+			position: absolute;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			z-index: 1;
+			border: 1px solid var(--prompt-border-color);
+			background-color: var(--interactive-normal);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+
+			.ow-expandable-input-inner-wrapper
+			{
+				width: 100%;
+				height: 100%;
+				padding: 16px;
+				box-sizing: border-box;
+
+				.ow-textarea-wrapper
+				{
+					height: 100%;
+					display: grid;
+					grid-template-rows: 1fr auto;
+					gap: 10px;
+					
+					.ow-textarea-inner-wrapper
+					{
+						width: 100%;
+						height: 100%;
+						display: grid;
+						gap: 10px;
+						grid-template-columns: 1fr auto;
+
+						textarea
+						{
+							all: unset;
+							font-size: 14px;
+							width: 100%;
+							height: 100%;
+							resize: none;
+							white-space: pre-wrap;
+							overflow-wrap: break-word;
+							word-wrap: break-word;
+						}
+
+						.ow-user-actions
+						{
+							display: flex;
+							align-items: start;
+							gap: 10px;
+
+							.ow-add-note-as-context-btn
+							{
+								all: unset;
+								cursor: var(--cursor);
+								display: grid;
+			
+								svg
+								{
+									place-self: center;
+									width: 18px;
+									height: 18px;
+									color: var(--icon-color);
+									opacity: .5;
+								}
+			
+								&:hover
+								{
+									svg
+									{
+										opacity: .75;
+									}
+								}
+							}
+
+							.ow-submit
+							{
+								all: unset;
+								cursor: var(--cursor);
+								display: grid;
+
+								svg
+								{
+									place-self: center;
+									width: 18px;
+									height: 18px;
+									color: var(--interactive-accent);
+									opacity: .75;
+								}
+			
+								&:hover
+								{
+									svg
+									{
+										opacity: 1;
+									}
+								}
+							}
+						}
+					}
+
+					.ow-chracters-count
+					{
+						display: grid;
+						grid-template-columns: 1fr auto;
+
+						.ow-count
+						{
+							font-size: 14px;
+							display: flex;
+							gap: 5px;
+
+							.ow-chat-count
+							{
+								padding: 2px 5px;
+								border-radius: 5px;
+								background-color: var(--background-secondary);
+								color: var(--text-muted);
+								box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+							}
+
+							.ow-token-count
+							{
+								padding: 2px 5px;
+								border-radius: 5px;
+								background-color: hsla(130, 91%, 78%, .4);; 
+								color: var(--text-muted);
+								box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+							}
+						}
+
+						.ow-pin-input-btn
+						{
+							all: unset;
+							cursor: var(--cursor);
+							display: grid;
+		
+							svg
+							{
+								place-self: center;
+								transform: rotate(45deg);
+								width: 18px;
+								height: 18px;
+								color: var(--icon-color);
+								opacity: .5;
+							}
+		
+							&:hover
+							{
+								svg
+								{
+									opacity: .75;
+								}
+							}
+		
+							&.pinned
+							{
+								svg
+								{
+									opacity: 1 !important;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

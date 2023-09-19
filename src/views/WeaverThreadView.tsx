@@ -1,14 +1,8 @@
-// Obsidian
-import Weaver from 'main'
-import { ItemView, Platform, WorkspaceLeaf } from 'obsidian';
-
-// Third-party modules
+import { TabsManager } from 'components/TabsManager';
+import Weaver from 'main';
+import { ItemView, WorkspaceLeaf } from 'obsidian';
 import React from 'react';
 import { createRoot, Root } from "react-dom/client";
-
-// Constants
-import { WEAVER_THREAD_VIEW } from '../constants';
-import { ThreadTabsManager } from 'components/Thread/ThreadTabsManager';
 
 export class WeaverThreadView extends ItemView {
 	private readonly plugin: Weaver;
@@ -29,7 +23,7 @@ export class WeaverThreadView extends ItemView {
 	}
 
 	destroy() {
-		if (this.root){
+		if (this.root) {
 			this.root.unmount();
 		}
 	}
@@ -39,7 +33,7 @@ export class WeaverThreadView extends ItemView {
 	}
 
 	getIcon(): string {
-		return 'git-branch-plus';
+		return 'needle';
 	}
 
 	getDisplayText(): string {
@@ -47,28 +41,28 @@ export class WeaverThreadView extends ItemView {
 	}
 
 	getViewType(): string {
-		return WEAVER_THREAD_VIEW;
+		return 'weaver-thread-view';
 	}
 
 	constructWeaverThreadView() {
 		this.destroy();
 
 		const viewContent = this.containerEl.querySelector(
-			".view-content"
+			'.view-content'
 		) as HTMLElement;
 
 		if (viewContent) {
-			viewContent.classList.add("ow-view");
+			viewContent.classList.add('ow-view');
 			this.appendWeaver(viewContent);
 		} else {
-			console.error("Could not find view content!");
+			console.error('Could not find view content!');
 		}
 	}
 
 	private appendWeaver(viewContent: HTMLElement) {
 		this.root = createRoot(viewContent);
-		this.root.render (
-			<ThreadTabsManager plugin={this.plugin} />
- 		);
+		this.root.render(
+			<TabsManager plugin={this.plugin} />
+		);
 	}
 }

@@ -1,0 +1,22 @@
+.ow-interactive-questions
+{
+	display: flex;
+	justify-content: end;
+	margin-bottom: 10px;
+
+	.ow-question
+	{
+		border: 1px solid var(--interactive-accent);
+		background-color: var(--interactive-normal);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+		padding: 5px 10px;
+		border-radius: 10px;
+		color: var(--text-muted);
+		font-size: 13px;
+
+		&:hover
+		{
+			background-color: var(--interactive-hover);
+		}
+	}
+}
