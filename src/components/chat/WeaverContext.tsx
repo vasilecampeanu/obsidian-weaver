@@ -13,6 +13,8 @@ const initialChatState: ChatState = {
     conversation: null,
 };
 
+type Actions = ChatActions | ThreadActions;
+
 interface ThreadState {}
 
 const initialThreadState: ThreadState = {};
@@ -32,13 +34,16 @@ interface ChatActions {
     payload: Conversation;
 }
 
-const chatReducer = (state: ChatState, action: ChatActions): ChatState => {
-    switch (action.type) {
-        case ChatActionTypes.CREATE_CONVERSATION:
-            return { ...state, conversation: action.payload };
-        default:
-            return state;
+const chatReducer = (state: ChatState, action: Actions): ChatState => {
+    if (action.type in ChatActionTypes) {
+        switch (action.type) {
+            case ChatActionTypes.CREATE_CONVERSATION:
+                return { ...state, conversation: action.payload };
+            default:
+                return state;
+        }
     }
+    return state;
 };
 
 interface ThreadActions {
@@ -46,34 +51,24 @@ interface ThreadActions {
     payload: Thread;
 }
 
-const threadReducer = (state: ThreadState, action: ThreadActions): ThreadState => {
+const threadReducer = (state: ThreadState, action: Actions): ThreadState => {
+    if (action.type in ThreadActionTypes) {
+        switch (action.type) {
+            case ThreadActionTypes.LOAD_CONVERSATION:
+                // loading logic here...
+                return state;
+            default:
+                return state;
+        }
+    }
     return state;
 };
 
-type Actions = ChatActions | ThreadActions;
-
-const weaverReducer = (
-    state: WeaverState,
-    action: Actions
-): WeaverState => {
-    switch(action.type) {
-        case ChatActionTypes.CREATE_CONVERSATION:
-            return {
-                ...state,
-                chat: chatReducer(state.chat, action),
-                thread: state.thread,
-            };
-
-        case ThreadActionTypes.LOAD_CONVERSATION:
-            return {
-                ...state,
-                chat: state.chat,
-                thread: threadReducer(state.thread, action),
-            };
-
-        default:
-            return state;
-    }
+const weaverReducer = (state: WeaverState, action: Actions): WeaverState => {
+    return {
+        chat: chatReducer(state.chat, action),
+        thread: threadReducer(state.thread, action),
+    };
 };
 
 type WeaverContextType = [WeaverState, Dispatch<Actions>, ConversationManager];
