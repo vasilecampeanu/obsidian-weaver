@@ -10,7 +10,7 @@ export const useChatOperations = () => {
     };
 
     return {
-        ...state,
+        ...state.chat,
         createNewConversation,
     };
 };
