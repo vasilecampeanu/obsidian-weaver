@@ -1,6 +1,6 @@
 import React from 'react';
 import Weaver from 'main';
-import { ChatInput } from './ChatInput';
+import { ChatInput } from './input/ChatInput';
 import { TabId } from 'types/GeneralTypes';
 import { useChatOperations } from 'hooks/useChatOperations';
 
