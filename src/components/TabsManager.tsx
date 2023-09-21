@@ -1,7 +1,7 @@
 import Weaver from "main";
 import React, { useCallback, useState } from "react";
 
-import { Thread } from "./Thread";
+import { Thread } from "./thread/Thread";
 import { Chat } from "./chat/Chat";
 
 import { TabId } from "types/GeneralTypes";
