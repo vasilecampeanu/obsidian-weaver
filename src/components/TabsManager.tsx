@@ -5,7 +5,7 @@ import { Thread } from "./Thread";
 import { Chat } from "./chat/Chat";
 
 import { TabId } from "types/GeneralTypes";
-import { WeaverProvider } from "./chat/WeaverContext";
+import { WeaverProvider } from "../core/WeaverContext";
 
 interface TabsManagerProps {
 	plugin: Weaver

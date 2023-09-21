@@ -1,4 +1,4 @@
-import { useWeaver } from "components/chat/WeaverContext";
+import { useWeaver } from "core/WeaverContext";
 import { ChatActionTypes } from "types/ActionTypes";
 
 export const useChatOperations = () => {
