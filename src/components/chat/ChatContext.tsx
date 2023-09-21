@@ -1,7 +1,8 @@
-import React, { createContext, useReducer, ReactNode, useContext } from 'react';
+import Weaver from 'main';
+import React, { createContext, useReducer, ReactNode, useContext, FC, Dispatch } from 'react';
 import { Conversation } from 'interfaces/Conversation';
 import { ConversationManager } from 'utils/ConversationManager';
-import Weaver from 'main';
+import { ActionTypes } from 'types/ActionTypes';
 
 interface State {
     activeConversation: Conversation | null;
@@ -11,22 +12,22 @@ const initialState: State = {
     activeConversation: null
 };
 
-interface Action { type: 'CREATE_CONVERSATION'; payload: Conversation }
+interface Action { type: ActionTypes.CREATE_CONVERSATION; payload: Conversation }
 
-type ChatContextType = [State, React.Dispatch<Action>, ConversationManager];
+type ChatContextType = [State, Dispatch<Action>, ConversationManager];
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);	
 
 const chatReducer = (state: State, action: Action): State => {
     switch (action.type) {
-        case 'CREATE_CONVERSATION':
+        case ActionTypes.CREATE_CONVERSATION:
             return { ...state, activeConversation: action.payload };
         default:
             return state;
     }
 };
 
-export const ChatProvider: React.FC<{ children: ReactNode; plugin: Weaver }> = ({ children, plugin }) => {
+export const ChatProvider: FC<{ children: ReactNode; plugin: Weaver }> = ({ children, plugin }) => {
     const [state, dispatch] = useReducer(chatReducer, initialState);
     const manager = new ConversationManager(plugin);
 

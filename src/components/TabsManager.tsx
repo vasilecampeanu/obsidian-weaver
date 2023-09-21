@@ -5,7 +5,6 @@ import { Thread } from "./Thread";
 import { Chat } from "./chat/Chat";
 
 import { TabId } from "types/GeneralTypes";
-import { ConversationManager } from "utils/ConversationManager";
 import { ChatProvider } from "./chat/ChatContext";
 
 interface TabsManagerProps {
@@ -14,7 +13,6 @@ interface TabsManagerProps {
 
 export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 	const [activeTab, setActiveTab] = useState<TabId>('THREAD');
-	const conversationManager = new ConversationManager(plugin);
 
 	const handleTabSwitcher = useCallback((tabId: TabId) => {
 		setActiveTab(tabId);
@@ -26,14 +24,12 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 				{activeTab === 'THREAD' ? (
 					<Thread
 						plugin={plugin}
-						conversationManager={conversationManager}
 						handleTabSwitcher={handleTabSwitcher}
 
 					/>
 				) : (
 					<Chat
 						plugin={plugin}
-						conversationManager={conversationManager}
 						handleTabSwitcher={handleTabSwitcher}
 					/>
 				)}

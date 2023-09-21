@@ -1,9 +1,8 @@
-import { useChatOperations } from "hooks/useChatOperations";
 import Weaver from "main";
-import React, { useEffect } from "react";
+import React from "react";
 
+import { useChatOperations } from "hooks/useChatOperations";
 import { TabId } from "types/GeneralTypes";
-import { ConversationManager } from "utils/ConversationManager";
 
 interface ThreadHeaderProps {
 	plugin: Weaver,
@@ -14,8 +13,8 @@ export const ThreadHeader: React.FC<ThreadHeaderProps> = ({ plugin, handleTabSwi
     const { createNewConversation } = useChatOperations();
 
     const handleCreateNewChat = () => {
-        handleTabSwitcher('CHAT');
         createNewConversation();
+        handleTabSwitcher('CHAT');
     };
 	
 	return(
