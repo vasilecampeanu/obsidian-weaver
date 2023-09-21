@@ -12,7 +12,7 @@ interface ThreadProps {
 }
 
 export const Thread: React.FC<ThreadProps> = ({ plugin, handleTabSwitcher }) => {
-	return(
+	return (
 		<div className="ow-thread">
 			<ThreadHeader plugin={plugin} handleTabSwitcher={handleTabSwitcher} />
 			<div className="ow-chat-list">
