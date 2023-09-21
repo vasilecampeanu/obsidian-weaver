@@ -5,7 +5,7 @@ import { Thread } from "./Thread";
 import { Chat } from "./chat/Chat";
 
 import { TabId } from "types/GeneralTypes";
-import { ChatProvider } from "./chat/ChatContext";
+import { WeaverProvider } from "./chat/WeaverContext";
 
 interface TabsManagerProps {
 	plugin: Weaver
@@ -19,7 +19,7 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 	}, []);
 
 	return (
-		<ChatProvider plugin={plugin}>
+		<WeaverProvider plugin={plugin}>
 			<div className="ow-tabs-manager">
 				{activeTab === 'THREAD' ? (
 					<Thread
@@ -34,6 +34,6 @@ export const TabsManager: React.FC<TabsManagerProps> = ({ plugin }) => {
 					/>
 				)}
 			</div>
-		</ChatProvider>
+		</WeaverProvider>
 	)
 }

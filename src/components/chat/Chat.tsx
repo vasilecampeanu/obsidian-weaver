@@ -10,7 +10,7 @@ interface ChatProps {
 }
 
 export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
-	const { activeConversation } = useChatOperations();
+	const { conversation } = useChatOperations();
 
 	return (
 		<div className="ow-chat">
@@ -21,7 +21,7 @@ export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 					BACK TO THREAD VIEW
 				</button>
 				<div className="ow-chat-title">
-					{activeConversation?.title}
+					{conversation?.title}
 				</div>
 			</div>
 			<div className="ow-chat-dialogue"></div>
