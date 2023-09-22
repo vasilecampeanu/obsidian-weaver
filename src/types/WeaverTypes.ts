@@ -1,5 +1,4 @@
 import { Conversation } from "interfaces/Conversation";
-import { Thread } from "interfaces/Thread";
 import { ChatActionTypes, ThreadActionTypes } from "types/ActionTypes";
 import { ConversationManager } from "utils/ConversationManager";
 import { Dispatch } from "react";
@@ -16,11 +15,13 @@ export type ChatActions = {
     payload: Conversation;
 };
 
-export interface ThreadState {}
+export interface ThreadState {
+	thread: Conversation[] | null;
+}
 
 export type ThreadActions = {
-    type: ThreadActionTypes.LOAD_CONVERSATION;
-    payload: Thread;
+    type: ThreadActionTypes.LOAD_CONVERSATIONS;
+    payload: Conversation[];
 };
 
 export type Actions = ChatActions | ThreadActions;

@@ -1,29 +1,13 @@
 import { Conversation, ConversationNode, Message } from 'interfaces/Conversation';
 import Weaver from 'main';
-import { FileSystemAdapter } from 'obsidian';
 import { v4 as uuidv4 } from 'uuid';
 import { WeaverFileManager } from './WeaverFileManager';
 
 export class ConversationManager {
 	private plugin: Weaver;
-	private adapter: FileSystemAdapter;
 
 	constructor(plugin: Weaver) {
 		this.plugin = plugin;
-		this.adapter = plugin.app.vault.adapter as FileSystemAdapter;
-	}
-
-	async listFilesInFolder(folderPath: string): Promise<string[]> {
-		const folderContent = await this.adapter.list(folderPath);
-		return folderContent.files.filter(filePath => filePath.endsWith('.json'));
-	}
-
-	async readFile(filePath: string): Promise<string> {
-		return this.adapter.read(filePath);
-	}
-
-	async writeFile(filePath: string, content: string): Promise<void> {
-		await this.adapter.write(filePath, content);
 	}
 
 	generateNewConversation(title: string): Conversation {
@@ -90,10 +74,10 @@ export class ConversationManager {
 
 	async createNewConversation(): Promise<Conversation> {
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
-		const filesInFolder = await this.listFilesInFolder(folderPath);
+		const filesInFolder = await WeaverFileManager.listFilesInFolder(this.plugin, folderPath);
 
 		const conversations: Conversation[] = await Promise.all(filesInFolder.map(async filePath => {
-			const fileContent = await this.readFile(filePath);
+			const fileContent = await WeaverFileManager.readFile(this.plugin, filePath);
 			return JSON.parse(fileContent) as Conversation;
 		}));
 
@@ -104,7 +88,7 @@ export class ConversationManager {
 		await WeaverFileManager.ensureFolderPathExists(this.plugin, "threads/default");
 
 		const newFilePath = `${folderPath}/${uniqueTitle}.json`;
-		await this.writeFile(newFilePath, JSON.stringify(newConversation, null, 4));
+		await WeaverFileManager.writeFile(this.plugin, newFilePath, JSON.stringify(newConversation, null, 4));
 
 		return newConversation;
 	}
@@ -154,7 +138,7 @@ export class ConversationManager {
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
 		const filePath = `${folderPath}/${conversation.title}.json`;
 
-		await this.writeFile(filePath, JSON.stringify(conversation, null, 4));
+		await WeaverFileManager.writeFile(this.plugin, filePath, JSON.stringify(conversation, null, 4));
 
 		return conversation;
 	}
@@ -183,4 +167,16 @@ export class ConversationManager {
 		
 		return messages;
 	};
+
+	async getAllConversations(): Promise<Conversation[]> {
+		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
+		const filesInFolder = await WeaverFileManager.listFilesInFolder(this.plugin, folderPath);
+	
+		const conversations: Conversation[] = await Promise.all(filesInFolder.map(async filePath => {
+			const fileContent = await WeaverFileManager.readFile(this.plugin, filePath);
+			return JSON.parse(fileContent) as Conversation;
+		}));
+	
+		return conversations;
+	}	
 }

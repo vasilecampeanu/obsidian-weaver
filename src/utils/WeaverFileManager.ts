@@ -3,6 +3,7 @@ import { FileSystemAdapter } from 'obsidian';
 import fs from 'fs';
 
 export class WeaverFileManager {
+
     private static getAdapter(plugin: Weaver): FileSystemAdapter {
         return plugin.app.vault.adapter as FileSystemAdapter;
     }
@@ -10,6 +11,22 @@ export class WeaverFileManager {
     private static folderExists(adapter: FileSystemAdapter, path: string): boolean {
         return fs.existsSync(adapter.getFullPath(path));
     }
+
+	static async listFilesInFolder(plugin: Weaver, folderPath: string): Promise<string[]> {
+		const adapter = this.getAdapter(plugin);
+		const folderContent = await adapter.list(folderPath);
+		return folderContent.files.filter(filePath => filePath.endsWith('.json'));
+	}
+	
+	static async readFile(plugin: Weaver, filePath: string): Promise<string> {
+		const adapter = this.getAdapter(plugin);
+		return adapter.read(filePath);
+	}
+	
+	static async writeFile(plugin: Weaver, filePath: string, content: string): Promise<void> {
+		const adapter = this.getAdapter(plugin);
+		await adapter.write(filePath, content);
+	}	
 
     private static async createFolderIfNotExists(plugin: Weaver, path: string): Promise<void> {
         const adapter = this.getAdapter(plugin);

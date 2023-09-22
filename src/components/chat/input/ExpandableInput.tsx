@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, useAnimation } from 'framer-motion';
 import { TokenEncoder } from 'utils/TokenEncoder';
 import Weaver from 'main';
-import { useChatOperations } from 'hooks/useChatOperations';
+import { useChat } from 'hooks/useChat';
 
 interface ExpandableInputProps {
 	plugin: Weaver,
@@ -18,7 +18,7 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 	const [textValue, setTextValue] = useState('');
 	const [isPinned, setIsPinned] = useState(false);
 
-	const { addNewMessageToConversation } = useChatOperations();
+	const { addNewMessageToConversation } = useChat();
 
 	const borderRadiusControls = useAnimation();
 

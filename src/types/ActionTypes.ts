@@ -4,5 +4,5 @@ export enum ChatActionTypes {
 }
 
 export enum ThreadActionTypes {
-    LOAD_CONVERSATION = 'LOAD_CONVERSATIONS',
+    LOAD_CONVERSATIONS = 'LOAD_CONVERSATIONS',
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import Weaver from 'main';
 import { ChatInput } from './input/ChatInput';
 import { TabId } from 'types/GeneralTypes';
-import { useChatOperations } from 'hooks/useChatOperations';
+import { useChat } from 'hooks/useChat';
 
 interface ChatProps {
 	plugin: Weaver,
@@ -10,7 +10,7 @@ interface ChatProps {
 }
 
 export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
-	const { conversation, getRenderedMessages } = useChatOperations();
+	const { conversation, getRenderedMessages } = useChat();
 	const messages = getRenderedMessages();
 
 	return (

@@ -2,7 +2,7 @@ import { useWeaver } from "core/WeaverContext";
 import { Conversation, Message } from "interfaces/Conversation";
 import { ChatActionTypes } from "types/ActionTypes";
 
-export const useChatOperations = () => {
+export const useChat = () => {
     const [state, dispatch, manager] = useWeaver();
 
     const createNewConversation = async () => {
@@ -21,7 +21,6 @@ export const useChatOperations = () => {
 
     return {
         ...state.chat,
-		manager,
         createNewConversation,
 		addNewMessageToConversation,
 		getRenderedMessages
