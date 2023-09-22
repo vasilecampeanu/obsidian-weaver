@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, useAnimation } from 'framer-motion';
 import { TokenEncoder } from 'utils/TokenEncoder';
 import Weaver from 'main';
+import { useChatOperations } from 'hooks/useChatOperations';
 
 interface ExpandableInputProps {
 	plugin: Weaver,
@@ -16,6 +17,8 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 	const [tokenCount, setTokenCount] = useState(0);
 	const [textValue, setTextValue] = useState('');
 	const [isPinned, setIsPinned] = useState(false);
+
+	const { addNewMessageToConversation } = useChatOperations();
 
 	const borderRadiusControls = useAnimation();
 
@@ -120,6 +123,7 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 							) : (
 								<button
 									className="ow-submit"
+									onClick={addNewMessageToConversation}
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
 								</button>

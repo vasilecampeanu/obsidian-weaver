@@ -11,6 +11,9 @@ export interface ChatState {
 export type ChatActions = {
     type: ChatActionTypes.CREATE_CONVERSATION;
     payload: Conversation;
+} | {
+    type: ChatActionTypes.ADD_MESSAGE;
+    payload: Conversation;
 };
 
 export interface ThreadState {}
