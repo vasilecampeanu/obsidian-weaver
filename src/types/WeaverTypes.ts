@@ -13,6 +13,9 @@ export type ChatActions = {
 } | {
     type: ChatActionTypes.ADD_MESSAGE;
     payload: Conversation;
+} | {
+    type: ChatActionTypes.LOAD_CONVERSATION;
+    payload: Conversation | null;
 };
 
 export interface ThreadState {

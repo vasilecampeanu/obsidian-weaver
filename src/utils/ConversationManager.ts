@@ -56,8 +56,9 @@ export class ConversationManager {
 			conversation_template_id: null,
 			id: conversationId
 		};
-	}
+	}	
 
+	// TODO: The file name should also be unqiue
 	getUniqueTitle(baseTitle: string, conversations: Conversation[]): string {
 		let index = 1;
 		let proposedTitle = baseTitle;
@@ -178,5 +179,21 @@ export class ConversationManager {
 		}));
 	
 		return conversations;
+	}
+
+	async getConversationById(conversationId: string): Promise<Conversation | null> {
+		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
+		const filesInFolder = await WeaverFileManager.listFilesInFolder(this.plugin, folderPath);
+	
+		for (const filePath of filesInFolder) {
+			const fileContent = await WeaverFileManager.readFile(this.plugin, filePath);
+			const conversation = JSON.parse(fileContent) as Conversation;
+	
+			if (conversation.id === conversationId) {
+				return conversation;
+			}
+		}
+	
+		return null;
 	}	
 }

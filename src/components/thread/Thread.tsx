@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { TabId } from "types/GeneralTypes";
 import { ThreadHeader } from "./ThreadHeader";
 import { useThread } from "hooks/useThread";
+import { useChat } from "hooks/useChat";
 
 interface ThreadProps {
 	plugin: Weaver,
@@ -12,6 +13,7 @@ interface ThreadProps {
 
 export const Thread: React.FC<ThreadProps> = ({ plugin, handleTabSwitcher }) => {
 	const { thread, getAllConversations } = useThread();
+	const { loadConversation } = useChat();
 
 	useEffect(() => {
 		getAllConversations();
@@ -28,6 +30,14 @@ export const Thread: React.FC<ThreadProps> = ({ plugin, handleTabSwitcher }) => 
 							className="ow-list-item"
 						>
 							{conversation.title}
+							<button
+								onClick={() => {
+									loadConversation(conversation.id);
+									handleTabSwitcher('CHAT')
+								}}
+							>
+								Load Conversation
+							</button>
 						</div>
 					)
 				})}

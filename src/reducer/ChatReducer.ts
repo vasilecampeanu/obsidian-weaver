@@ -13,6 +13,8 @@ export const chatReducer = (state: ChatState, action: Actions): ChatState => {
                 return { ...state, conversation: action.payload };
             case ChatActionTypes.ADD_MESSAGE:
                 return { ...state, conversation: action.payload };
+            case ChatActionTypes.LOAD_CONVERSATION:
+                return { ...state, conversation: action.payload };
             default:
                 return state;
         }

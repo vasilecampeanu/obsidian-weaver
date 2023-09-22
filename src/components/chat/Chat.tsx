@@ -12,7 +12,7 @@ interface ChatProps {
 export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 	const { conversation, getRenderedMessages } = useChat();
 	const messages = getRenderedMessages();
-
+	console.log(conversation)
 	return (
 		<div className="ow-chat">
 			<div className="ow-chat-header">

@@ -10,11 +10,18 @@ export const useChat = () => {
         dispatch({ type: ChatActionTypes.CREATE_CONVERSATION, payload: newConversation });
     };
 
+    const loadConversation = async (conversationId: string) => {
+        const conversation = await manager.getConversationById(conversationId);
+		console.log(conversation);
+        dispatch({ type: ChatActionTypes.LOAD_CONVERSATION, payload: conversation });
+    };
+
     const addNewMessageToConversation = async () => {
         const newConversation = await manager.addNewMessageToConversation(state.chat.conversation as Conversation, 'Hello world!');
         dispatch({ type: ChatActionTypes.CREATE_CONVERSATION, payload: newConversation });
     };
 
+	// TODO: This should probably be async
 	const getRenderedMessages = () : Message[] => {
 		return manager.getRenderedMessages(state.chat.conversation);
 	}
@@ -22,6 +29,7 @@ export const useChat = () => {
     return {
         ...state.chat,
         createNewConversation,
+		loadConversation,
 		addNewMessageToConversation,
 		getRenderedMessages
     };
