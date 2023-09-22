@@ -19,8 +19,10 @@ export const WeaverProvider: FC<{ children: ReactNode; plugin: Weaver }> = ({ ch
 
 export const useWeaver = (): WeaverContextType => {
     const context = useContext(WeaverContext);
-    if (!context) {
+
+	if (!context) {
         throw new Error("useWeaver must be used within a WeaverProvider");
     }
+
     return context;
 };

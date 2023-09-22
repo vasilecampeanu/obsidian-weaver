@@ -10,7 +10,8 @@ interface ChatProps {
 }
 
 export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
-	const { conversation } = useChatOperations();
+	const { conversation, getRenderedMessages } = useChatOperations();
+	const messages = getRenderedMessages();
 
 	return (
 		<div className="ow-chat">
@@ -24,7 +25,11 @@ export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 					{conversation?.title}
 				</div>
 			</div>
-			<div className="ow-chat-dialogue"></div>
+			<div className="ow-chat-dialogue">
+				{messages.map(message => (
+					<div key={message.id}>{message.content.parts}</div>
+				))}
+			</div>
 			<ChatInput plugin={plugin} />
 		</div>
 	);

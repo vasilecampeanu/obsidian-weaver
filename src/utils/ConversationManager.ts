@@ -158,4 +158,29 @@ export class ConversationManager {
 
 		return conversation;
 	}
+
+	getRenderedMessages(conversation: Conversation | null): Message[] {
+		let messages: Message[] = [];
+	
+		if (!conversation) {
+			return messages;
+		}
+		
+		const traverseNode = (nodeId: string) => {
+			const node = conversation?.mapping[nodeId];
+		
+			if (node && node.message) {
+				messages.push(node.message);
+			}
+	
+			if (node && node.children && node.children.length > 0) {
+				node.children.forEach(childId => traverseNode(childId));
+			}
+		};
+	
+		const rootNodeIds = Object.keys(conversation.mapping).filter(nodeId => !conversation.mapping[nodeId].parent);
+		rootNodeIds.forEach(rootNodeId => traverseNode(rootNodeId));
+		
+		return messages;
+	};
 }

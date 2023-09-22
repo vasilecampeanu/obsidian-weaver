@@ -1,5 +1,5 @@
 import { useWeaver } from "core/WeaverContext";
-import { Conversation } from "interfaces/Conversation";
+import { Conversation, Message } from "interfaces/Conversation";
 import { ChatActionTypes } from "types/ActionTypes";
 
 export const useChatOperations = () => {
@@ -15,9 +15,15 @@ export const useChatOperations = () => {
         dispatch({ type: ChatActionTypes.CREATE_CONVERSATION, payload: newConversation });
     };
 
+	const getRenderedMessages = () : Message[] => {
+		return manager.getRenderedMessages(state.chat.conversation);
+	}
+
     return {
         ...state.chat,
+		manager,
         createNewConversation,
-		addNewMessageToConversation
+		addNewMessageToConversation,
+		getRenderedMessages
     };
 };
