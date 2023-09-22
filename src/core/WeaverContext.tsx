@@ -1,21 +1,8 @@
 import React, { createContext, useReducer, ReactNode, useContext, FC, Dispatch } from "react";
 import { ConversationManager } from "utils/ConversationManager";
 import Weaver from "main";
-import { Actions, WeaverContextType, WeaverState } from "types/WeaverTypes";
-import { initialChatState, chatReducer } from "reducer/ChatReducer";
-import { initialThreadState, threadReducer } from "reducer/ThreadReducer";
-
-const initialState: WeaverState = {
-    chat: initialChatState,
-    thread: initialThreadState,
-};
-
-const weaverReducer = (state: WeaverState, action: Actions): WeaverState => {
-    return {
-        chat: chatReducer(state.chat, action),
-        thread: threadReducer(state.thread, action),
-    };
-};
+import { WeaverContextType } from "types/WeaverTypes";
+import { initialState, weaverReducer } from "reducer/WeaverReducer";
 
 const WeaverContext = createContext<WeaverContextType | undefined>(undefined);
 
