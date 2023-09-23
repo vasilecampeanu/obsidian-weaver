@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Weaver from 'main';
 import { ChatInput } from './input/ChatInput';
 import { TabId } from 'types/GeneralTypes';
 import { useChat } from 'hooks/useChat';
+import { ConversationDialogue } from 'components/ChatDialogue';
 
 interface ChatProps {
 	plugin: Weaver,
@@ -10,9 +11,8 @@ interface ChatProps {
 }
 
 export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
-	const { conversation, getRenderedMessages } = useChat();
-	const messages = getRenderedMessages();
-	console.log(conversation)
+	const { conversation } = useChat();
+
 	return (
 		<div className="ow-chat">
 			<div className="ow-chat-header">
@@ -26,9 +26,7 @@ export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 				</div>
 			</div>
 			<div className="ow-chat-dialogue">
-				{messages.map(message => (
-					<div key={message.id}>{message.content.parts}</div>
-				))}
+				<ConversationDialogue conversation={conversation} />
 			</div>
 			<ChatInput plugin={plugin} />
 		</div>
