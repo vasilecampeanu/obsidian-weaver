@@ -5,9 +5,9 @@ import { ChatActionTypes } from "types/ActionTypes";
 export const useChat = () => {
     const [state, dispatch, manager] = useWeaver();
 
-    const createNewConversation = async () => {
-        const newConversation = await manager.createNewConversation();
-        dispatch({ type: ChatActionTypes.CREATE_CONVERSATION, payload: newConversation });
+    const createConversation = async () => {
+        const conversation = await manager.createConversation();
+        dispatch({ type: ChatActionTypes.CREATE_CONVERSATION, payload: conversation });
     };
 
     const loadConversation = async (conversationId: string) => {
@@ -17,20 +17,14 @@ export const useChat = () => {
     };
 
     const addNewMessageToConversation = async () => {
-        const newConversation = await manager.addNewMessageToConversation(state.chat.conversation as Conversation, 'Hello world!');
-        dispatch({ type: ChatActionTypes.CREATE_CONVERSATION, payload: newConversation });
+        const conversation = await manager.addNewMessageToConversation(state.chat.conversation as Conversation, 'Hello world!');
+        dispatch({ type: ChatActionTypes.ADD_MESSAGE, payload: conversation });
     };
-
-	// TODO: This should probably be async
-	const getRenderedMessages = () : Message[] => {
-		return manager.getRenderedMessages(state.chat.conversation);
-	}
 
     return {
         ...state.chat,
-        createNewConversation,
+        createConversation,
 		loadConversation,
-		addNewMessageToConversation,
-		getRenderedMessages
+		addNewMessageToConversation
     };
 };

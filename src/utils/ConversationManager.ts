@@ -73,7 +73,7 @@ export class ConversationManager {
 		return proposedTitle;
 	}
 
-	async createNewConversation(): Promise<Conversation> {
+	async createConversation(): Promise<Conversation> {
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
 		const filesInFolder = await WeaverFileManager.listFilesInFolder(this.plugin, folderPath);
 
@@ -101,7 +101,7 @@ export class ConversationManager {
 			id: newNodeId,
 			author: {
 				role: 'user',
-				name: 'John',
+				name: null,
 				metadata: null
 			},
 			create_time: Date.now(),
@@ -133,7 +133,6 @@ export class ConversationManager {
 		}
 
 		conversation.current_node = newNodeId;
-
 		conversation.update_time = Date.now();
 
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
@@ -143,31 +142,6 @@ export class ConversationManager {
 
 		return conversation;
 	}
-
-	getRenderedMessages(conversation: Conversation | null): Message[] {
-		let messages: Message[] = [];
-	
-		if (!conversation) {
-			return messages;
-		}
-		
-		const traverseNode = (nodeId: string) => {
-			const node = conversation?.mapping[nodeId];
-		
-			if (node && node.message) {
-				messages.push(node.message);
-			}
-	
-			if (node && node.children && node.children.length > 0) {
-				node.children.forEach(childId => traverseNode(childId));
-			}
-		};
-	
-		const rootNodeIds = Object.keys(conversation.mapping).filter(nodeId => !conversation.mapping[nodeId].parent);
-		rootNodeIds.forEach(rootNodeId => traverseNode(rootNodeId));
-		
-		return messages;
-	};
 
 	async getAllConversations(): Promise<Conversation[]> {
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;

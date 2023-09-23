@@ -10,10 +10,10 @@ interface ThreadHeaderProps {
 }
 
 export const ThreadHeader: React.FC<ThreadHeaderProps> = ({ plugin, handleTabSwitcher }) => {
-    const { createNewConversation } = useChat();
+    const { createConversation } = useChat();
 
     const handleCreateNewChat = () => {
-        createNewConversation();
+        createConversation();
         handleTabSwitcher('CHAT');
     };
 	
