@@ -56,11 +56,10 @@ export class ConversationManager {
 			conversation_template_id: null,
 			id: conversationId
 		};
-	}	
+	}
 
-	// TODO: The file name should also be unqiue
 	getUniqueTitle(baseTitle: string, conversations: Conversation[]): string {
-		let index = 1;
+		let index = 0;
 		let proposedTitle = baseTitle;
 
 		const existingTitles = conversations.map(conversation => conversation.title);
@@ -83,12 +82,21 @@ export class ConversationManager {
 		}));
 
 		const uniqueTitle = this.getUniqueTitle("Untitled", conversations);
-		const newConversation = this.generateNewConversation(uniqueTitle);
+
+		let title = uniqueTitle;
+		let index = 1;
+
+		while (filesInFolder.includes(`${folderPath}/${title}.json`)) {
+			title = `${uniqueTitle} ${index}`;
+			index += 1;
+		}
+
+		const newConversation = this.generateNewConversation(title);
 
 		await WeaverFileManager.ensureWeaverFolderPathExists(this.plugin);
 		await WeaverFileManager.ensureFolderPathExists(this.plugin, "threads/default");
 
-		const newFilePath = `${folderPath}/${uniqueTitle}.json`;
+		const newFilePath = `${folderPath}/${title}.json`;
 		await WeaverFileManager.writeFile(this.plugin, newFilePath, JSON.stringify(newConversation, null, 4));
 
 		return newConversation;
@@ -146,28 +154,28 @@ export class ConversationManager {
 	async getAllConversations(): Promise<Conversation[]> {
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
 		const filesInFolder = await WeaverFileManager.listFilesInFolder(this.plugin, folderPath);
-	
+
 		const conversations: Conversation[] = await Promise.all(filesInFolder.map(async filePath => {
 			const fileContent = await WeaverFileManager.readFile(this.plugin, filePath);
 			return JSON.parse(fileContent) as Conversation;
 		}));
-	
+
 		return conversations;
 	}
 
 	async getConversationById(conversationId: string): Promise<Conversation | null> {
 		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
 		const filesInFolder = await WeaverFileManager.listFilesInFolder(this.plugin, folderPath);
-	
+
 		for (const filePath of filesInFolder) {
 			const fileContent = await WeaverFileManager.readFile(this.plugin, filePath);
 			const conversation = JSON.parse(fileContent) as Conversation;
-	
+
 			if (conversation.id === conversationId) {
 				return conversation;
 			}
 		}
-	
+
 		return null;
-	}	
+	}
 }
