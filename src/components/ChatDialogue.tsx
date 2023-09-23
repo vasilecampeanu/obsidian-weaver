@@ -1,29 +1,44 @@
 import { Conversation } from 'interfaces/Conversation';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import BranchSelector from './BranchSelector';
 import MessageComponent from './MessageComponent';
 
-interface ConversationDialogueProps {
+const SYSTEM_ROLE = 'system';
+
+interface ChatDialogueProps {
 	conversation: Conversation | null;
 }
 
-export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({ conversation }) => {
+export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	const [selectedBranches, setSelectedBranches] = useState<Record<string, number>>({});
-	const cache = useMemo(() => new Map<string, number>(), []);
 
-	if (!conversation) {
+	const cache = useRef(new Map<string, number>());
+
+	const handleLeft = useCallback((nodeId: string, currentIndex: number) => {
+		setSelectedBranches(prev => ({ ...prev, [nodeId]: Math.max(0, currentIndex - 1) }));
+	}, []);
+
+	const handleRight = useCallback((nodeId: string, currentIndex: number, childrenLength: number) => {
+		setSelectedBranches(prev => ({ ...prev, [nodeId]: Math.min(childrenLength - 1, currentIndex + 1) }));
+	}, []);
+
+	useEffect(() => {
+		cache.current.clear();
+	}, [conversation, cache]);
+
+	if (!conversation || !conversation.mapping) {
 		return null;
 	}
 
 	const getMostRecentMessageTime = (nodeId: string): number => {
-		if (cache.has(nodeId)) {
-			return cache.get(nodeId)!;
+		if (cache.current.has(nodeId)) {
+			return cache.current.get(nodeId)!;
 		}
 
 		const node = conversation.mapping?.[nodeId];
 		const time = node?.message?.create_time ?? 0;
 
-		cache.set(nodeId, time);
+		cache.current.set(nodeId, time);
 
 		return time;
 	};
@@ -50,20 +65,20 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({ conv
 	const renderNode = (nodeId: string): JSX.Element[] => {
 		const node = conversation.mapping?.[nodeId];
 
-		if (!node || !node.message) return [];
+		if (!node?.message) return [];
 
-		const elements = [<MessageComponent key={node.id} message={node.message} />];
+		const elements: JSX.Element[] = [<MessageComponent key={node.id} message={node.message} />];
 
 		if (node.children.length > 1) {
-			const currentIndex = selectedBranches[node.id] ?? selectBranch(node.id);
+			const currentIndex = selectedBranches[node.id] ?? selectBranch(nodeId);
 
 			elements.push(
 				<BranchSelector
 					key={`selector-${node.id}`}
 					currentIndex={currentIndex}
 					totalBranches={node.children.length}
-					onLeft={() => setSelectedBranches(prev => ({ ...prev, [node.id]: Math.max(0, currentIndex - 1) }))}
-					onRight={() => setSelectedBranches(prev => ({ ...prev, [node.id]: Math.min(node.children.length - 1, currentIndex + 1) }))}
+					onLeft={() => handleLeft(node.id, currentIndex)}
+					onRight={() => handleRight(node.id, currentIndex, node.children.length)}
 				/>
 			);
 
@@ -75,15 +90,9 @@ export const ConversationDialogue: React.FC<ConversationDialogueProps> = ({ conv
 		return elements;
 	};
 
-	const systemNode = Object.values(conversation.mapping ?? {}).find(node => node?.message?.author?.role === 'system');
+	const systemNode = Object.values(conversation.mapping ?? {}).find(node => node?.message?.author?.role === SYSTEM_ROLE);
 
-	if (!systemNode) {
-		return null;
-	}
+	if (!systemNode) return null;
 
-	return (
-		<div>
-			{renderNode(systemNode.id)}
-		</div>
-	);
+	return <div>{renderNode(systemNode.id)}</div>;
 };

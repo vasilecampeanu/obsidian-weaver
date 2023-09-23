@@ -3,7 +3,7 @@ import Weaver from 'main';
 import { ChatInput } from './input/ChatInput';
 import { TabId } from 'types/GeneralTypes';
 import { useChat } from 'hooks/useChat';
-import { ConversationDialogue } from 'components/ChatDialogue';
+import { ChatDialogue } from 'components/ChatDialogue';
 
 interface ChatProps {
 	plugin: Weaver,
@@ -26,7 +26,7 @@ export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 				</div>
 			</div>
 			<div className="ow-chat-dialogue">
-				<ConversationDialogue conversation={conversation} />
+				<ChatDialogue conversation={conversation} />
 			</div>
 			<ChatInput plugin={plugin} />
 		</div>
