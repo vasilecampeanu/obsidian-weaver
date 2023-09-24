@@ -178,4 +178,26 @@ export class ConversationManager {
 
 		return null;
 	}
+
+	async updateCurrentNodeOfConversation(conversationId: string, newNodeId: string): Promise<Conversation | null> {
+		const conversation = await this.getConversationById(conversationId);
+	
+		if (!conversation) {
+			throw new Error(`Conversation with ID ${conversationId} not found.`);
+		}
+	
+		if (!conversation.mapping[newNodeId]) {
+			throw new Error(`Node with ID ${newNodeId} not found in the conversation.`);
+		}
+	
+		conversation.current_node = newNodeId;
+		conversation.update_time = Date.now();
+	
+		const folderPath = `${this.plugin.settings.weaverFolderPath}/threads/default`;
+		const filePath = `${folderPath}/${conversation.title}.json`;
+	
+		await WeaverFileManager.writeFile(this.plugin, filePath, JSON.stringify(conversation, null, 4));
+	
+		return conversation;
+	}
 }

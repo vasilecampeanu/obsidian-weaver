@@ -2,6 +2,7 @@ import { Conversation } from 'interfaces/Conversation';
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import BranchSelector from './BranchSelector';
 import MessageComponent from './MessageComponent';
+import { useChat } from 'hooks/useChat';
 
 const SYSTEM_ROLE = 'system';
 
@@ -11,6 +12,7 @@ interface ChatDialogueProps {
 
 export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	const [selectedBranches, setSelectedBranches] = useState<Record<string, number>>({});
+	const { updateCurrentNode } = useChat();
 	const cache = useRef(new Map<string, number>());
 
 	const handleLeft = useCallback((nodeId: string, currentIndex: number) => {
@@ -21,6 +23,7 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 
 		if (newSelectedNodeId) {
 			const lastNodeId = getLastNodeIdInBranch(newSelectedNodeId);
+			updateCurrentNode(conversation?.id, lastNodeId);
 			console.log("Last node ID in selected branch:", lastNodeId);
 		}
 	}, [conversation]);
@@ -33,13 +36,14 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 
 		if (newSelectedNodeId) {
 			const lastNodeId = getLastNodeIdInBranch(newSelectedNodeId);
+			updateCurrentNode(conversation?.id, lastNodeId);
 			console.log("Last node ID in selected branch:", lastNodeId);
 		}
 	}, [conversation]);
 
 	useEffect(() => {
 		cache.current.clear();
-	}, [conversation, cache]);
+	}, [conversation]);
 
 	if (!conversation || !conversation.mapping) {
 		return null;
@@ -55,6 +59,7 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 
 			for (const childId of conversation.mapping[currentNodeId].children) {
 				const childTime = getMostRecentMessageTime(childId);
+
 				if (childTime > selectedChildTime) {
 					selectedChildId = childId;
 					selectedChildTime = childTime;
@@ -62,6 +67,7 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 			}
 
 			currentNodeId = selectedChildId;
+
 			if (selectedChildTime > maxTime) {
 				maxTime = selectedChildTime;
 			}
@@ -106,6 +112,7 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 		if (nodeId === targetNodeId) return [nodeId];
 
 		const node = conversation?.mapping?.[nodeId];
+
 		if (!node || !node.children) return null;
 
 		for (const childId of node.children) {
@@ -118,9 +125,10 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 
 	const renderNodeByPath = (nodeId: string, path: string[], userSelections: Record<string, number>): JSX.Element[] => {
 		const node = conversation?.mapping?.[nodeId];
+	
 		if (!node || !node.message) return [];
 	
-		const elements: JSX.Element[] = [<MessageComponent key={node.id} message={node.message} />];
+		const elements: JSX.Element[] = [<MessageComponent key={`node-${node.id}`} message={node.message} />];
 	
 		const nextNodeId = path.length > 1 ? path[1] : null;
 		const currentIndex = userSelections[node.id] ?? (nextNodeId ? node.children.indexOf(nextNodeId) : selectBranch(nodeId));
@@ -137,14 +145,17 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 					/>
 				);
 			}
+	
 			const nextNode = node.children[currentIndex];
+	
 			if (nextNode) {
-				elements.push(...renderNodeByPath(nextNode, path.slice(1), userSelections));
+				const newPath = nextNodeId === nextNode ? path.slice(1) : [];
+				elements.push(...renderNodeByPath(nextNode, newPath, userSelections));
 			}
 		}
 	
 		return elements;
-	};
+	};	
 	
 	if (!conversation || !conversation.mapping || !conversation.current_node) {
 		return null;

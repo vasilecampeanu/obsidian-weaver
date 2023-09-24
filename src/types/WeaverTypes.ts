@@ -16,6 +16,9 @@ export type ChatActions = {
 } | {
     type: ChatActionTypes.LOAD_CONVERSATION;
     payload: Conversation | null;
+} | {
+    type: ChatActionTypes.UPDATE_CURRENT_NODE;
+    payload: Conversation | null;
 };
 
 export interface ThreadState {

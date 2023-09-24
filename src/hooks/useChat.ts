@@ -12,7 +12,6 @@ export const useChat = () => {
 
     const loadConversation = async (conversationId: string) => {
         const conversation = await manager.getConversationById(conversationId);
-		console.log(conversation);
         dispatch({ type: ChatActionTypes.LOAD_CONVERSATION, payload: conversation });
     };
 
@@ -21,10 +20,16 @@ export const useChat = () => {
         dispatch({ type: ChatActionTypes.ADD_MESSAGE, payload: conversation });
     };
 
+	const updateCurrentNode = async (conversationId: string, newNodeId: string) => {
+        const conversation = await manager.updateCurrentNodeOfConversation(conversationId, newNodeId);
+        dispatch({ type: ChatActionTypes.UPDATE_CURRENT_NODE, payload: conversation });
+    };
+
     return {
         ...state.chat,
         createConversation,
 		loadConversation,
-		addNewMessageToConversation
+		addNewMessageToConversation,
+		updateCurrentNode
     };
 };
