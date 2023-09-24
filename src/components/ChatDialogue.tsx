@@ -122,7 +122,7 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 		return null;
 	};
 
-	const renderNodeByPath = (nodeId: string, path: string[], userSelections: Record<string, number>): JSX.Element[] => {
+	const renderNodeByPath = (nodeId: string, path: string[], userSelections: Record<string, number>, parentNodeId?: string, parentIndex?: number, parentChildrenLength?: number): JSX.Element[] => {
 		const node = conversation?.mapping?.[nodeId];
 	
 		if (!node || !node.message) return [];
@@ -134,11 +134,11 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 			<MessageBubble
 				key={`node-${node.id}`}
 				message={node.message}
-				childrenLength={node.children.length}
-				currentIndex={currentIndex}
+				parentNodeId={parentNodeId}
+				parentIndex={parentIndex}
+				parentChildrenLength={parentChildrenLength}
 				handleLeft={handleLeft}
 				handleRight={handleRight}
-				nodeId={node.id}
 			/>
 		];
 	
@@ -146,11 +146,11 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	
 		if (nextNode) {
 			const newPath = nextNodeId === nextNode ? path.slice(1) : [];
-			elements.push(...renderNodeByPath(nextNode, newPath, userSelections));
+			elements.push(...renderNodeByPath(nextNode, newPath, userSelections, nodeId, currentIndex, node.children.length));
 		}
 	
 		return elements;
-	};	
+	};
 	
 	if (!conversation || !conversation.mapping || !conversation.current_node) {
 		return null;
