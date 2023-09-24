@@ -1,8 +1,7 @@
 import { Conversation } from 'interfaces/Conversation';
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import BranchSelector from './BranchSelector';
-import MessageComponent from './MessageComponent';
 import { useChat } from 'hooks/useChat';
+import { MessageBubble } from './MessageBubble';
 
 const SYSTEM_ROLE = 'system';
 
@@ -128,30 +127,26 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	
 		if (!node || !node.message) return [];
 	
-		const elements: JSX.Element[] = [<MessageComponent key={`node-${node.id}`} message={node.message} />];
-	
 		const nextNodeId = path.length > 1 ? path[1] : null;
 		const currentIndex = userSelections[node.id] ?? (nextNodeId ? node.children.indexOf(nextNodeId) : selectBranch(nodeId));
 	
-		if (node.children.length) {
-			if (node.children.length > 1) {
-				elements.push(
-					<BranchSelector
-						key={`selector-${node.id}`}
-						currentIndex={currentIndex}
-						totalBranches={node.children.length}
-						onLeft={() => handleLeft(node.id, currentIndex)}
-						onRight={() => handleRight(node.id, currentIndex, node.children.length)}
-					/>
-				);
-			}
+		const elements: JSX.Element[] = [
+			<MessageBubble
+				key={`node-${node.id}`}
+				message={node.message}
+				childrenLength={node.children.length}
+				currentIndex={currentIndex}
+				handleLeft={handleLeft}
+				handleRight={handleRight}
+				nodeId={node.id}
+			/>
+		];
 	
-			const nextNode = node.children[currentIndex];
+		const nextNode = node.children[currentIndex];
 	
-			if (nextNode) {
-				const newPath = nextNodeId === nextNode ? path.slice(1) : [];
-				elements.push(...renderNodeByPath(nextNode, newPath, userSelections));
-			}
+		if (nextNode) {
+			const newPath = nextNodeId === nextNode ? path.slice(1) : [];
+			elements.push(...renderNodeByPath(nextNode, newPath, userSelections));
 		}
 	
 		return elements;
@@ -169,5 +164,9 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 
 	if (!pathToCurrent) return null;
 	
-	return <div>{renderNodeByPath(systemNode.id, pathToCurrent, selectedBranches)}</div>;
+	return (
+		<div className="ow-chat-dialogue">
+			{renderNodeByPath(systemNode.id, pathToCurrent, selectedBranches)}
+		</div>
+	);
 };

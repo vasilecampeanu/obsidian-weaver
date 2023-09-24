@@ -25,9 +25,7 @@ export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 					{conversation?.title}
 				</div>
 			</div>
-			<div className="ow-chat-dialogue">
-				<ChatDialogue conversation={conversation} />
-			</div>
+			<ChatDialogue conversation={conversation} />
 			<ChatInput plugin={plugin} />
 		</div>
 	);

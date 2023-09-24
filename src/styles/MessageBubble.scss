@@ -1,0 +1,38 @@
+.ow-message-bubble
+{
+	display: flex;
+
+	.ow-message-bubble-inner-wrapper
+	{
+		padding: 10px;
+		border: 1px solid var(--prompt-border-color);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+		max-width: 85%;
+		
+		.ow-message-content
+		{
+		}
+	}
+
+	&.ow-user
+	{
+		justify-content: end;
+
+		.ow-message-bubble-inner-wrapper
+		{
+			background-color: var(--interactive-accent);
+			border-radius: 15px 15px 5px 15px;	
+		}
+	}
+	
+	&.ow-assistant
+	{
+		justify-content: start;
+
+		.ow-message-bubble-inner-wrapper
+		{
+			background-color: var(--interactive-normal);
+			border-radius: 15px 15px 15px 5px;
+		}
+	}
+}
