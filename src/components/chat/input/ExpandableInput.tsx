@@ -11,7 +11,7 @@ interface ExpandableInputProps {
 	setShowContextFinder: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDivWidth, heightControls, setShowContextFinder }) => {
+export const ExpandableInput: React.FC<ExpandableInputProps> = ({ plugin, leftDivWidth, heightControls, setShowContextFinder }) => {
 	const [showCount, setShowCount] = useState(false);
 	const [charCount, setCharCount] = useState(0);
 	const [tokenCount, setTokenCount] = useState(0);
@@ -96,6 +96,13 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 							placeholder="Ask me anything..."
 							value={textValue}
 							onChange={handleTextChange}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && !e.shiftKey) {
+									e.preventDefault();
+									addNewMessageToConversation(conversation!.id, textValue);
+									setTextValue(''); 
+								}
+							}}
 							onFocus={() => {
 								isFocused.current = true;
 							}}
@@ -111,6 +118,7 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 								}
 							}}
 						/>
+
 						<div className="ow-user-actions">
 							<button
 								className="ow-add-note-as-context-btn"
@@ -123,7 +131,10 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 							) : (
 								<button
 									className="ow-submit"
-									onClick={() => addNewMessageToConversation(conversation!.id, textValue)}
+									onClick={() => {
+										addNewMessageToConversation(conversation!.id, textValue);
+										setTextValue('');
+									}}
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
 								</button>
