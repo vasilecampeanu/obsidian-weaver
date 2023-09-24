@@ -1,5 +1,5 @@
 import { Conversation } from 'interfaces/Conversation';
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useChat } from 'hooks/useChat';
 import { MessageBubble } from './MessageBubble';
 
@@ -14,35 +14,31 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	const { updateCurrentNode } = useChat();
 	const cache = useRef(new Map<string, number>());
 
-	const handleLeft = useCallback((nodeId: string, currentIndex: number) => {
+	const handleLeft = useCallback(async (nodeId: string, currentIndex: number) => { // 1. Mark the function as async
 		setSelectedBranches(prev => ({ ...prev, [nodeId]: Math.max(0, currentIndex - 1) }));
-
+	
 		const newSelectedIndex = Math.max(0, currentIndex - 1);
 		const newSelectedNodeId = conversation?.mapping?.[nodeId]?.children?.[newSelectedIndex];
-
+	
 		if (newSelectedNodeId) {
 			const lastNodeId = getLastNodeIdInBranch(newSelectedNodeId);
-			updateCurrentNode(conversation?.id, lastNodeId);
+			await updateCurrentNode(conversation?.id, lastNodeId);
 			console.log("Last node ID in selected branch:", lastNodeId);
 		}
 	}, [conversation]);
 
-	const handleRight = useCallback((nodeId: string, currentIndex: number, childrenLength: number) => {
+	const handleRight = useCallback(async (nodeId: string, currentIndex: number, childrenLength: number) => {  // 1. Mark the function as async
 		setSelectedBranches(prev => ({ ...prev, [nodeId]: Math.min(childrenLength - 1, currentIndex + 1) }));
-
+	
 		const newSelectedIndex = Math.min(childrenLength - 1, currentIndex + 1);
 		const newSelectedNodeId = conversation?.mapping?.[nodeId]?.children?.[newSelectedIndex];
-
+	
 		if (newSelectedNodeId) {
 			const lastNodeId = getLastNodeIdInBranch(newSelectedNodeId);
-			updateCurrentNode(conversation?.id, lastNodeId);
+			await updateCurrentNode(conversation?.id, lastNodeId); // 2. Use await before the function call
 			console.log("Last node ID in selected branch:", lastNodeId);
 		}
-	}, [conversation]);
-
-	useEffect(() => {
-		cache.current.clear();
-	}, [conversation]);
+	}, [conversation]);	
 
 	if (!conversation || !conversation.mapping) {
 		return null;

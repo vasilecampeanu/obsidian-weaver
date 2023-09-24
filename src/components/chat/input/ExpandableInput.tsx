@@ -18,7 +18,7 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 	const [textValue, setTextValue] = useState('');
 	const [isPinned, setIsPinned] = useState(false);
 
-	const { addNewMessageToConversation } = useChat();
+	const { conversation, addNewMessageToConversation } = useChat();
 
 	const borderRadiusControls = useAnimation();
 
@@ -123,7 +123,7 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 							) : (
 								<button
 									className="ow-submit"
-									onClick={addNewMessageToConversation}
+									onClick={() => addNewMessageToConversation(conversation!.id, textValue)}
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
 								</button>
@@ -147,6 +147,7 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({plugin, leftDiv
 									className={`ow-pin-input-btn ${isPinned ? 'pinned' : ''}`}
 									onClick={() => {
 										setIsPinned(!isPinned);
+
 										if (!isPinned) {
 											heightControls.start({ height: "300px" });
 										} else {

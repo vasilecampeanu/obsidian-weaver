@@ -15,13 +15,15 @@ export const useChat = () => {
         dispatch({ type: ChatActionTypes.LOAD_CONVERSATION, payload: conversation });
     };
 
-    const addNewMessageToConversation = async () => {
-        const conversation = await manager.addNewMessageToConversation(state.chat.conversation as Conversation, 'Hello world!');
+    const addNewMessageToConversation = async (conversationId: string, content: string) => {
+		const conversation = await manager.addNewMessageToConversation(conversationId, content);
+		console.log("updateCurrentNode:", conversation);
         dispatch({ type: ChatActionTypes.ADD_MESSAGE, payload: conversation });
     };
 
 	const updateCurrentNode = async (conversationId: string, newNodeId: string) => {
         const conversation = await manager.updateCurrentNodeOfConversation(conversationId, newNodeId);
+		console.log("updateCurrentNode:", conversation);
         dispatch({ type: ChatActionTypes.UPDATE_CURRENT_NODE, payload: conversation });
     };
 

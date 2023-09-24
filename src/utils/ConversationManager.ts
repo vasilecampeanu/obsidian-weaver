@@ -102,9 +102,14 @@ export class ConversationManager {
 		return newConversation;
 	}
 
-	async addNewMessageToConversation(conversation: Conversation, content: string): Promise<Conversation> {
+	async addNewMessageToConversation(conversationId: string, content: string): Promise<Conversation> {
+		const conversation = await this.getConversationById(conversationId);
 		const newNodeId = uuidv4();
 
+		if (!conversation) {
+			throw new Error(`Conversation with ID ${conversationId} not found.`);
+		}
+	
 		const newMessage: Message = {
 			id: newNodeId,
 			author: {
