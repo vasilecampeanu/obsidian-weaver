@@ -4,6 +4,7 @@ import { useChat } from 'hooks/useChat';
 import { MessageBubble } from './MessageBubble';
 
 const SYSTEM_ROLE = 'system';
+const MAX_CACHE_SIZE = 99;
 
 interface ChatDialogueProps {
 	conversation: Conversation | null;
@@ -12,9 +13,15 @@ interface ChatDialogueProps {
 export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	const [selectedBranches, setSelectedBranches] = useState<Record<string, number>>({});
 	const { updateCurrentNode } = useChat();
-	const cache = useRef(new Map<string, number>());
 
-	const handleLeft = useCallback(async (nodeId: string, currentIndex: number) => { // 1. Mark the function as async
+	const cache = useRef(new Map<string, number>());
+	const keysInOrder = useRef<string[]>([]);
+
+	useEffect(() => {
+		cache.current.clear();
+	}, [conversation]);
+
+	const handleLeft = useCallback(async (nodeId: string, currentIndex: number) => {
 		setSelectedBranches(prev => ({ ...prev, [nodeId]: Math.max(0, currentIndex - 1) }));
 	
 		const newSelectedIndex = Math.max(0, currentIndex - 1);
@@ -27,7 +34,7 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 		}
 	}, [conversation]);
 
-	const handleRight = useCallback(async (nodeId: string, currentIndex: number, childrenLength: number) => {  // 1. Mark the function as async
+	const handleRight = useCallback(async (nodeId: string, currentIndex: number, childrenLength: number) => {
 		setSelectedBranches(prev => ({ ...prev, [nodeId]: Math.min(childrenLength - 1, currentIndex + 1) }));
 	
 		const newSelectedIndex = Math.min(childrenLength - 1, currentIndex + 1);
@@ -35,10 +42,10 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 	
 		if (newSelectedNodeId) {
 			const lastNodeId = getLastNodeIdInBranch(newSelectedNodeId);
-			await updateCurrentNode(conversation?.id, lastNodeId); // 2. Use await before the function call
+			await updateCurrentNode(conversation?.id, lastNodeId);
 			console.log("Last node ID in selected branch:", lastNodeId);
 		}
-	}, [conversation]);	
+	}, [conversation]);		
 
 	if (!conversation || !conversation.mapping) {
 		return null;
@@ -73,16 +80,30 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 
 	const getMostRecentMessageTime = (nodeId: string): number => {
 		if (cache.current.has(nodeId)) {
+			const index = keysInOrder.current.indexOf(nodeId);
+
+			if (index > -1) {
+				keysInOrder.current.splice(index, 1);
+				keysInOrder.current.push(nodeId);
+			}
+
 			return cache.current.get(nodeId)!;
 		}
-
+	
 		const node = conversation.mapping?.[nodeId];
 		const time = node?.message?.create_time ?? 0;
-
+	
+		if (cache.current.size >= MAX_CACHE_SIZE) {
+			const leastRecentlyUsedKey = keysInOrder.current.shift()!;
+			cache.current.delete(leastRecentlyUsedKey);
+		}
+	
 		cache.current.set(nodeId, time);
+		keysInOrder.current.push(nodeId);
 
 		return time;
 	};
+	
 
 	const selectBranch = (nodeId: string): number => {
 		const children = conversation.mapping?.[nodeId]?.children ?? [];
