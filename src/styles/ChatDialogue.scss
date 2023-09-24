@@ -1,0 +1,9 @@
+.ow-chat-dialogue
+{
+	flex-grow: 1;
+	flex-shrink: 1;
+	overflow: auto;
+	height: 0px;
+	display: grid;
+	grid-auto-rows: min-content;
+}

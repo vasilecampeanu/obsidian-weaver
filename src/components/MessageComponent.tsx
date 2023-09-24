@@ -10,7 +10,7 @@ export const MessageComponent: React.FC<Props> = ({ message }) => {
 		<div className={message.author.role}>
 			<p>{message.author.name || message.author.role}: {message.content.parts.join(' ')}</p>
 		</div>
-	)
+	);
 };
 
 export default MessageComponent;

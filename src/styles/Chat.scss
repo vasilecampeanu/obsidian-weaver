@@ -1,7 +1,7 @@
 .ow-chat
 {
-	display: grid;
-	grid-template-rows: auto 1fr auto;
+	display: flex;
+	flex-direction: column;
 	height: 100%;
-	gap: 20px;
+	gap: 10px;
 }
