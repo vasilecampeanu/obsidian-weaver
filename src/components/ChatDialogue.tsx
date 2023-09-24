@@ -122,7 +122,14 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 		return null;
 	};
 
-	const renderNodeByPath = (nodeId: string, path: string[], userSelections: Record<string, number>, parentNodeId?: string, parentIndex?: number, parentChildrenLength?: number): JSX.Element[] => {
+	const renderNodeByPath = (
+		nodeId: string, 
+		path: string[], 
+		userSelections: Record<string, number>, 
+		parentNodeId?: string, 
+		parentIndex?: number, 
+		parentChildrenLength?: number
+	): JSX.Element[] => {
 		const node = conversation?.mapping?.[nodeId];
 	
 		if (!node || !node.message) return [];
@@ -130,23 +137,34 @@ export const ChatDialogue: React.FC<ChatDialogueProps> = ({ conversation }) => {
 		const nextNodeId = path.length > 1 ? path[1] : null;
 		const currentIndex = userSelections[node.id] ?? (nextNodeId ? node.children.indexOf(nextNodeId) : selectBranch(nodeId));
 	
-		const elements: JSX.Element[] = [
-			<MessageBubble
-				key={`node-${node.id}`}
-				message={node.message}
-				parentNodeId={parentNodeId}
-				parentIndex={parentIndex}
-				parentChildrenLength={parentChildrenLength}
-				handleLeft={handleLeft}
-				handleRight={handleRight}
-			/>
-		];
+		const elements: JSX.Element[] = [];
+
+		if (node.message.author.role !== SYSTEM_ROLE) {
+			elements.push(
+				<MessageBubble
+					key={`node-${node.id}`}
+					message={node.message}
+					parentNodeId={parentNodeId}
+					parentIndex={parentIndex}
+					parentChildrenLength={parentChildrenLength}
+					handleLeft={handleLeft}
+					handleRight={handleRight}
+				/>
+			);
+		}
 	
 		const nextNode = node.children[currentIndex];
 	
 		if (nextNode) {
 			const newPath = nextNodeId === nextNode ? path.slice(1) : [];
-			elements.push(...renderNodeByPath(nextNode, newPath, userSelections, nodeId, currentIndex, node.children.length));
+			elements.push(...renderNodeByPath(
+				nextNode, 
+				newPath, 
+				userSelections, 
+				nodeId, 
+				currentIndex, 
+				node.children.length
+			));
 		}
 	
 		return elements;
