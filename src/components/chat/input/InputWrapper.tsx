@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, useAnimation } from 'framer-motion';
 import { ExpandableInput } from './ExpandableInput';
 import Weaver from 'main';
+import { useChat } from 'hooks/useChat';
 
 interface InputWrapper {
 	plugin: Weaver,
@@ -11,6 +12,8 @@ interface InputWrapper {
 export const InputWrapper: React.FC<InputWrapper> = ({ plugin, setShowContextFinder }) => {
 	const [leftDivWidth, setLeftDivWidth] = useState<number | null>(null);
 	const leftDivRef = useRef<HTMLDivElement | null>(null);
+	
+	const { createConversation } = useChat();
 
 	const heightControls = useAnimation();
 
@@ -32,7 +35,12 @@ export const InputWrapper: React.FC<InputWrapper> = ({ plugin, setShowContextFin
 			className="ow-input-wrapper"
 		>
 			<div ref={leftDivRef} className="ow-input-left">
-				<button className="ow-new-chat">
+				<button 
+					className="ow-new-chat"
+					onClick={() => {
+						createConversation();
+					}}
+				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-plus"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
 				</button>
 			</div>

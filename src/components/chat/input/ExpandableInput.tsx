@@ -11,7 +11,12 @@ interface ExpandableInputProps {
 	setShowContextFinder: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const ExpandableInput: React.FC<ExpandableInputProps> = ({ plugin, leftDivWidth, heightControls, setShowContextFinder }) => {
+export const ExpandableInput: React.FC<ExpandableInputProps> = ({ 
+	plugin, 
+	leftDivWidth, 
+	heightControls, 
+	setShowContextFinder
+}) => {
 	const [showCount, setShowCount] = useState(false);
 	const [charCount, setCharCount] = useState(0);
 	const [tokenCount, setTokenCount] = useState(0);

@@ -28,7 +28,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                     ) : null}
                 </div>
                 <div className="ow-message-content">
-                    {message.author.name || message.author.role}: {message.content.parts.join(' ')}
+                    {message.content.parts.join(' ')}
                 </div>
             </div>
         </div>

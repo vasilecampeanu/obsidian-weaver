@@ -1,0 +1,79 @@
+.ow-context-finder
+{
+	margin-bottom: 10px;
+
+	.ow-context-list
+	{
+		display: grid;
+		gap: 5px;
+		margin-bottom: 10px;
+
+		padding: 16px;
+		box-sizing: border-box;
+		border: 1px solid var(--interactive-accent);
+		background-color: var(--interactive-normal);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+		border-radius: 10px;
+
+		.ow-context-item
+		{
+			.ow-file-name
+			{
+				font-size: 14px;
+				color: var(--link-color);
+				text-decoration-line: var(--link-decoration);
+    			text-decoration-thickness: var(--link-decoration-thickness);
+				font-weight: bold;
+			}
+
+			.ow-file-path
+			{
+				font-size: 9px;
+				color: var(--text-muted);
+			}
+		}
+	}
+
+	.ow-searchbox-wrapper
+	{
+		display: flex;
+		gap: 10px;
+
+		padding: 10px 16px;
+		box-sizing: border-box;
+		border: 1px solid var(--interactive-accent);
+		background-color: var(--interactive-normal);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+		border-radius: 10px;
+		width: 100%;
+		font-size: 13px;
+
+		.ow-searchbox
+		{
+			all: unset;
+			width: 100%;
+
+		}
+
+		.ow-submit
+		{
+			all: unset;
+			display: grid;
+			align-self: center;
+
+			svg
+			{
+				place-self: center;
+				width:  18px;
+				height: 18px;
+				color: var(--icon-color);
+				opacity: .5;
+
+				&:hover
+				{
+					opacity: .75;
+				}
+			}
+		}
+	}
+}
