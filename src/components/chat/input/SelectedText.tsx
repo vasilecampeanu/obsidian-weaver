@@ -10,6 +10,19 @@ interface SelectedTextProps {
 }
 
 export const SelectedText: React.FC<SelectedTextProps> = ({ plugin, textSelectedData }) => {
+	
+	useEffect(() => {
+		const handleAddedNoteAsContext = (data: TextSelectedData) => {
+			eventEmitter.emit('textSelected', { text: undefined });
+		};
+
+		eventEmitter.on("addedNoteAsContext", handleAddedNoteAsContext);
+
+		return () => {
+			eventEmitter.off("addedNoteAsContext", handleAddedNoteAsContext);
+		};
+	}, []);
+
 	return (
 		<div className="ow-selected-text">
 			<div className="ow-title">
@@ -36,14 +49,18 @@ export const SelectedText: React.FC<SelectedTextProps> = ({ plugin, textSelected
 			<div className="ow-user-actions">
 				<button
 					className="ow-send-to-caht-btn"
-					onClick={() => { eventEmitter.emit('textSelected', { text: undefined }); }}
+					onClick={() => { 
+						eventEmitter.emit('textSelected', { text: undefined }); 
+					}}
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
 					<span>Send</span>
 				</button>
 				<button
 					className="ow-ignore-btn"
-					onClick={() => { eventEmitter.emit('textSelected', { text: undefined }); }}
+					onClick={() => { 
+						eventEmitter.emit('textSelected', { text: undefined }); 
+					}}
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-ban"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
 					<span>Ignore</span>

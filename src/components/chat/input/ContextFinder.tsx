@@ -34,7 +34,10 @@ export const ContextFinder: React.FC<ContextFinderProps> = ({ plugin }) => {
             {searchQuery.length > 0 && (
 				<div className="ow-context-list">
                     {filteredFiles.map(file => (
-						<div className="ow-context-item">
+						<div 
+							key={file.path}
+							className="ow-context-item"
+						>
 							<div className="ow-file-name">
 								{file.name}
 							</div>

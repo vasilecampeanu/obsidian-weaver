@@ -12,9 +12,7 @@ interface InputWrapper {
 export const InputWrapper: React.FC<InputWrapper> = ({ plugin, setShowContextFinder }) => {
 	const [leftDivWidth, setLeftDivWidth] = useState<number | null>(null);
 	const leftDivRef = useRef<HTMLDivElement | null>(null);
-	
 	const { createConversation } = useChat();
-
 	const heightControls = useAnimation();
 
 	useEffect(() => {

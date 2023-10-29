@@ -27,7 +27,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ plugin }) => {
 
 	return (
 		<div className="ow-chat-input">
-			<InputActionBar plugin={plugin} textSelectedData={textSelectedData} showContextFinder={showContextFinder} />
+			<InputActionBar 
+				plugin={plugin} 
+				textSelectedData={textSelectedData} 
+				showContextFinder={showContextFinder} 
+			/>
 			<InputWrapper plugin={plugin} setShowContextFinder={setShowContextFinder} />
 		</div>
 	);

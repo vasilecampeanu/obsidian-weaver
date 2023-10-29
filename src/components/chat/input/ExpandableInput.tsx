@@ -3,6 +3,7 @@ import { motion, useAnimation } from 'framer-motion';
 import { TokenEncoder } from 'utils/TokenEncoder';
 import Weaver from 'main';
 import { useChat } from 'hooks/useChat';
+import { eventEmitter } from 'utils/EventEmitter';
 
 interface ExpandableInputProps {
 	plugin: Weaver,
@@ -31,6 +32,18 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({
 	const isFocused = useRef(false);
 
 	const encoder = useMemo(() => new TokenEncoder("gpt-3.5-turbo"), []);
+
+	useEffect(() => {
+		const handleTextSelected = () => {
+			setShowContextFinder(prevState => !prevState);
+		};
+
+		eventEmitter.on("textSelected", handleTextSelected);
+
+		return () => {
+			eventEmitter.off("textSelected", handleTextSelected);
+		};
+	}, []);
 
 	const debounce = <T extends (...args: any[]) => any>(fn: T, delay: number): (...funcArgs: Parameters<T>) => void => {
 		let timerId: NodeJS.Timeout | null = null;
@@ -123,11 +136,13 @@ export const ExpandableInput: React.FC<ExpandableInputProps> = ({
 								}
 							}}
 						/>
-
 						<div className="ow-user-actions">
 							<button
 								className="ow-add-note-as-context-btn"
-								onClick={() => setShowContextFinder(prevState => !prevState)}
+								onClick={() => {
+									setShowContextFinder(prevState => !prevState);
+									eventEmitter.emit('addedNoteAsContext');
+								}}
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-plus"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="12" x2="12" y1="18" y2="12" /><line x1="9" x2="15" y1="15" y2="15" /></svg>
 							</button>
