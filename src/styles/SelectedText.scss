@@ -46,9 +46,51 @@
 		}
 	}
 
+	.ow-source-file-info
+	{
+		display: grid;
+
+		.ow-file-name-btn
+		{
+			all: unset;
+			display: flex;
+			gap: 5px;
+			background-color: var(--background-secondary);
+			padding: 5px 10px;
+			border-radius: 5px;
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+			color: var(--text-muted);
+
+			&:hover
+			{
+				// box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+			}
+
+			svg
+			{
+				align-self: center;
+				width: 16px;
+				height: 16px;
+			}
+
+			span
+			{
+				align-self: center;
+				text-overflow: ellipsis;
+
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				font-size: 14px;
+			}
+		}
+	}
+
 	.ow-selected-text-content
 	{
-		max-height: 200px;
+		max-height: 198px;
 		overflow-y: scroll;
 		color: var(--text-muted);
 	}
@@ -56,7 +98,63 @@
 	.ow-user-actions
 	{
 		display: grid;
-		gap: 20px;
+		gap: 5px;
 		grid-template-columns: repeat(2, 1fr);
+
+		.ow-send-to-caht-btn
+		{
+			all: unset;
+			display: flex;
+			gap: 5px;
+			background-color: var(--background-secondary);
+			padding: 5px 10px;
+			border-radius: 5px;
+			color: var(--text-muted);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+
+			&:hover
+			{
+			}
+
+			svg
+			{
+				align-self: center;
+				width: 16px;
+				height: 16px;
+			}
+
+			span
+			{
+				align-self: center;
+			}
+		}
+
+		.ow-ignore-btn
+		{
+			all: unset;
+			display: flex;
+			gap: 5px;
+			background-color: var(--background-secondary);
+			padding: 5px 10px;
+			border-radius: 5px;
+			color: var(--text-muted);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+
+			&:hover
+			{
+			}
+
+			svg
+			{
+				align-self: center;
+				width: 16px;
+				height: 16px;
+			}
+
+			span
+			{
+				align-self: center;
+			}
+		}
 	}
 }
