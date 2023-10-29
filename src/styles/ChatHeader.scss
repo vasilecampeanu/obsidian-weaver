@@ -1,4 +1,58 @@
 .ow-chat-header
 {
 	display: flex;
+	gap: 5px;
+
+	.ow-back-btn
+	{
+		all: unset;
+		display: flex;
+		cursor: var(--cursor);
+		padding: 5px;
+		border-radius: 5px;
+		
+		svg
+		{
+			place-self: center;
+			width: 16px;
+			height: 16px;
+			color: var(--icon-color);
+		}
+
+		&:hover
+		{
+			background-color: var(--interactive-hover);
+		}
+	}
+
+	.ow-chat-title
+	{
+		display: flex;
+		width: 100%;
+
+		input
+		{
+			all: unset;
+			font-size: 14px;
+			width: 100%;
+		}
+
+		.ow-title
+		{
+			align-self: center;
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			cursor: text;
+			font-size: 14px;
+			color: var(--text-normal);
+
+			&.ow-error-messaje
+			{
+				color: var(--color-red);
+			}
+		}
+	}
 }

@@ -17,7 +17,7 @@ export const Thread: React.FC<ThreadProps> = ({ plugin, handleTabSwitcher }) => 
 
 	useEffect(() => {
 		getAllConversations();
-	})
+	}, [])
 
 	return (
 		<div className="ow-thread">

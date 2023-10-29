@@ -4,6 +4,7 @@ import { ChatInput } from './input/ChatInput';
 import { TabId } from 'types/GeneralTypes';
 import { useChat } from 'hooks/useChat';
 import { ChatDialogue } from 'components/ChatDialogue';
+import { ChatHeader } from './ChatHeader';
 
 interface ChatProps {
 	plugin: Weaver,
@@ -15,16 +16,7 @@ export const Chat: React.FC<ChatProps> = ({ plugin, handleTabSwitcher }) => {
 
 	return (
 		<div className="ow-chat">
-			<div className="ow-chat-header">
-				<button
-					onClick={() => {handleTabSwitcher('THREAD')}}
-				>
-					BACK TO THREAD VIEW
-				</button>
-				<div className="ow-chat-title">
-					{conversation?.title}
-				</div>
-			</div>
+			<ChatHeader plugin={plugin} handleTabSwitcher={handleTabSwitcher} />
 			<ChatDialogue conversation={conversation} />
 			<ChatInput plugin={plugin} />
 		</div>
