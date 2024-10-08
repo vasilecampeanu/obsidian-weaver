@@ -1,0 +1,18 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "editor.formatOnSave": false,
+    "[css]": {
+        "editor.formatOnSave": false,
+    },
+    "[html]": {
+        "editor.formatOnSave": false,
+    },
+    "[scss]": {
+        "editor.formatOnSave": false,
+    },
+    "[typescript]": {
+        "editor.formatOnSave": false,
+    }
+}
