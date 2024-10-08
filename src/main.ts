@@ -1,6 +1,6 @@
-import { VIEW_WEAVER, WeaverView } from 'core/WeaverView';
 import { Plugin, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from 'settings';
+import { VIEW_WEAVER, WeaverView } from 'views/WeaverView';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;

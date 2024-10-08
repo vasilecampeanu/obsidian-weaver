@@ -1,3 +1,5 @@
+import { AppContext } from "components/AppContext";
+import { Plugin } from "components/Plugin";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { StrictMode } from "react";
 import { Root, createRoot } from "react-dom/client";
@@ -27,9 +29,9 @@ export class WeaverView extends ItemView {
 		this.root = createRoot(this.containerEl.children[1]);
 		this.root.render(
 			<StrictMode>
-				<div>
-					Hello world!
-				</div>
+				<AppContext.Provider value={this.app}>
+					<Plugin />
+				</AppContext.Provider>
 			</StrictMode>
 		);
 	}
