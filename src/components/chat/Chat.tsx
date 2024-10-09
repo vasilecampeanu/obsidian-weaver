@@ -1,6 +1,6 @@
 import { ChatDialogueFeed } from "./ChatDialogueFeed";
 import { ChatHeader } from "./ChatHeader";
-import { ChatInput } from "./ChatInput";
+import { ChatUserInput } from "./ChatUserInput";
 
 interface ChatProps {
 }
@@ -10,7 +10,7 @@ export const Chat: React.FC<ChatProps> = () => {
 		<div className="ow-chat">
 			<ChatHeader />
 			<ChatDialogueFeed />
-			<ChatInput />
+			<ChatUserInput />
 		</div>
 	)
 };
