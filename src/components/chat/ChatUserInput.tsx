@@ -4,13 +4,13 @@ import { ChangeEvent, ClipboardEvent, useState } from "react";
 
 const MAX_CHARACTERS = 2000;
 
-interface ChatUserInputProps {}
-
 const buttonVariants = {
-	hidden: { opacity: 0 },
+	hidden:  { opacity: 0 },
 	visible: { opacity: 1 },
-	exit: { opacity: 0 },
+	exit:    { opacity: 0 },
 };
+
+interface ChatUserInputProps {}
 
 export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [userInputMessage, setUserInputMessage] = useState<string>("");
