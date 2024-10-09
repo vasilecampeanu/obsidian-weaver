@@ -1,4 +1,3 @@
-import { AppContext } from "components/AppContext";
 import { Plugin } from "components/Plugin";
 import { PluginContext } from "components/PluginContext";
 import Weaver from "main";
@@ -35,11 +34,9 @@ export class WeaverView extends ItemView {
 		this.root = createRoot(this.containerEl.children[1]);
 		this.root.render(
 			<StrictMode>
-				<AppContext.Provider value={this.app}>
-					<PluginContext.Provider value={this.plugin}>
-						<Plugin />
-					</PluginContext.Provider>
-				</AppContext.Provider>
+				<PluginContext.Provider value={this.plugin}>
+					<Plugin />
+				</PluginContext.Provider>
 			</StrictMode>
 		);
 	}
