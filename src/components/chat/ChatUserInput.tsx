@@ -1,5 +1,7 @@
 import { Icon } from "components/primitives/Icon";
+import { usePlugin } from "components/usePlugin";
 import { AnimatePresence, motion } from "framer-motion";
+import { OpenAI } from 'openai';
 import { ChangeEvent, ClipboardEvent, useState } from "react";
 
 const MAX_CHARACTERS = 2000;
@@ -18,11 +20,29 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isFocused, setIsFocused] = useState<boolean>(false);
 
+	const plugin = usePlugin();
+
 	// Determine if the input area should be expanded
 	const isExpanded = isHovered || isFocused || userInputMessage.length > 0;
 
-	const handleSubmit = (event: React.FormEvent) => {
+	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
+
+		const client = new OpenAI({
+			apiKey: plugin?.settings.apiKey,
+			dangerouslyAllowBrowser: true
+		});
+		
+		const stream = await client.chat.completions.create({
+			model: 'gpt-4o',
+			messages: [{ role: 'user', content: 'Say this is a test!' }],
+			stream: true,
+		});
+
+		for await (const chunk of stream) {
+			console.log(chunk.choices[0]?.delta?.content || '');
+		}
+
 		setUserInputMessage("");
 		setCharCount(0);
 	};

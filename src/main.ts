@@ -11,7 +11,7 @@ export default class Weaver extends Plugin {
 
 		this.registerView(
 			VIEW_WEAVER,
-			(leaf) => new WeaverView(leaf)
+			(leaf) => new WeaverView(leaf, this)
 		);
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
