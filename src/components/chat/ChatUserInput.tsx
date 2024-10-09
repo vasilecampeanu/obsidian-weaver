@@ -57,72 +57,84 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 	return (
 		<div className="ow-chat-user-input">
-			<div className="ow-user-actions">
-				<AnimatePresence>
-					{!isHovered && (
-						<motion.button
-							className="ow-btn create-new-chat"
-							type="button"
-							variants={buttonVariants}
-							initial="hidden"
-							animate="visible"
-							exit="exit"
-							transition={{ duration: 0.2, ease: "easeInOut" }}
-						>
-							<Icon iconId="plus" />
-						</motion.button>
-					)}
-				</AnimatePresence>
+			<div className="ow-chat-user-input-sugestions">
 			</div>
-			<motion.div
-				className="ow-chat-user-input-form-wrapper"
-				onHoverStart={() => setIsHovered(true)}
-				onHoverEnd={() => setIsHovered(false)}
-				initial={{ marginLeft: 0, width: "calc(100% - 50px)" }}
-				animate={{
-					marginLeft: isHovered ? -50 : 0,
-					width: isHovered ? "100%" : "calc(100% - 50px)",
-				}}
-				transition={{ duration: 0.3, ease: "easeInOut" }}
-			>
-				<form onSubmit={handleSubmit}>
-					<motion.textarea
-						placeholder="Ask me anything..."
-						value={userInputMessage}
-						onChange={handleChange}
-						onPaste={handlePaste}
-						maxLength={MAX_CHARACTERS}
-						className="ow-textarea"
-						onFocus={() => setIsFocused(true)}
-						onBlur={() => setIsFocused(false)}
-						animate={{ height: isExpanded ? "6em" : "2em" }}
-						transition={{ duration: 0.3, ease: "easeInOut" }}
-					/>
-					{userInputMessage.length > 0 && (
-						<button
-							className="ow-btn submit"
-							type="submit"
-							disabled={userInputMessage.trim().length === 0}
-						>
-							<Icon iconId="send" />
-						</button>
-					)}
-				</form>
-				<div className="ow-inline-input-utilities">
-					<div
-						className={`ow-input-character-counter ${
-							charCount > MAX_CHARACTERS
-								? "ow-character-limit-exceeded"
-								: ""
-						}`}
-					>
-						{charCount}/{MAX_CHARACTERS}
-					</div>
-					<button className="ow-btn pin-input" type="button">
-						<Icon iconId="pin" />
-					</button>
+			<div className="ow-chat-user-input-toolbar">
+				<button className="ow-btn assistant-response-stop">
+					<Icon iconId="circle-off" />
+				</button>
+				<button className="ow-btn assistant-response-regenarte">
+					<Icon iconId="refresh-cw" />
+				</button>
+			</div>	
+			<div className="ow-chat-user-input-inner-wrapper">
+				<div className="ow-user-actions">
+					<AnimatePresence>
+						{!isHovered && (
+							<motion.button
+								className="ow-btn create-new-chat"
+								type="button"
+								variants={buttonVariants}
+								initial="hidden"
+								animate="visible"
+								exit="exit"
+								transition={{ duration: 0.2, ease: "easeInOut" }}
+							>
+								<Icon iconId="plus" />
+							</motion.button>
+						)}
+					</AnimatePresence>
 				</div>
-			</motion.div>
+				<motion.div
+					className="ow-chat-user-input-form-wrapper"
+					onHoverStart={() => setIsHovered(true)}
+					onHoverEnd={() => setIsHovered(false)}
+					initial={{ marginLeft: 0, width: "calc(100% - 50px)" }}
+					animate={{
+						marginLeft: isHovered ? -50 : 0,
+						width: isHovered ? "100%" : "calc(100% - 50px)",
+					}}
+					transition={{ duration: 0.3, ease: "easeInOut" }}
+				>
+					<form onSubmit={handleSubmit}>
+						<motion.textarea
+							placeholder="Ask me anything..."
+							value={userInputMessage}
+							onChange={handleChange}
+							onPaste={handlePaste}
+							maxLength={MAX_CHARACTERS}
+							className="ow-textarea"
+							onFocus={() => setIsFocused(true)}
+							onBlur={() => setIsFocused(false)}
+							animate={{ height: isExpanded ? "6em" : "2em" }}
+							transition={{ duration: 0.3, ease: "easeInOut" }}
+						/>
+						{userInputMessage.length > 0 && (
+							<button
+								className="ow-btn submit"
+								type="submit"
+								disabled={userInputMessage.trim().length === 0}
+							>
+								<Icon iconId="send" />
+							</button>
+						)}
+					</form>
+					<div className="ow-inline-input-utilities">
+						<div
+							className={`ow-input-character-counter ${
+								charCount > MAX_CHARACTERS
+									? "ow-character-limit-exceeded"
+									: ""
+							}`}
+						>
+							{charCount}/{MAX_CHARACTERS}
+						</div>
+						<button className="ow-btn pin-input" type="button">
+							<Icon iconId="pin" />
+						</button>
+					</div>
+				</motion.div>
+			</div>
 		</div>
 	);
 };
