@@ -1,6 +1,5 @@
-import { useApp } from "./useApp";
+import { Chat } from "./chat/Chat";
 
 export const Plugin = () => {
-	const { vault } = useApp()!;
-	return <h4>{vault.getName()}</h4>;
+	return <Chat />;
 };
