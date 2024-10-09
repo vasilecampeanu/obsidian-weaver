@@ -1,2 +1,9 @@
-// Component styles
-@import url('./components/chatInput.scss');
+// Styles core
+@import url('./core/general.scss');
+
+// Styles components
+// Chat
+@import url('./components/chat.scss');
+@import url('./components/chatHeader.scss');
+@import url('./components/chatDialogueFeed.scss');
+@import url('./components/chatUserInput.scss');

@@ -1,0 +1,17 @@
+.workspace-leaf-content[data-type="weaver-view"]
+{
+	.view-content
+	{
+		padding: 10px;
+
+		.obsidian-weaver
+		{
+			height: 100%;
+		
+			.ow-btn
+			{
+				all: unset;
+			}
+		}		
+	}
+}

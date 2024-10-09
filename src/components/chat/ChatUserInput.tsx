@@ -46,7 +46,10 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	return (
 		<div className="ow-chat-user-input">
 			<div className="ow-user-actions">
-				<button type="button">
+				<button
+					className="ow-btn create-new-chat"
+					type="button"
+				>
 					<Icon iconId="plus" />
 				</button>
 			</div>
@@ -61,6 +64,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 						className="ow-textarea"
 					/>
 					<button
+						className="ow-btn submit"
 						type="submit"
 						disabled={userInputMessage.trim().length === 0}
 					>
@@ -77,8 +81,11 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 					>
 						{charCount}/{MAX_CHARACTERS}
 					</div>
-					<button type="button">
-						<Icon iconId="pin" className="ow-icon-pin-input" />
+					<button
+						className="ow-btn pin-input"
+						type="button"
+					>
+						<Icon iconId="pin" />
 					</button>
 				</div>
 			</div>
