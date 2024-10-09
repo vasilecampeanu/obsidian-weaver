@@ -2,17 +2,24 @@ import { IconName, setIcon } from "obsidian";
 import React, { useEffect, useRef } from "react";
 
 interface IconProps extends React.HTMLAttributes<HTMLDivElement> {
-	iconId: IconName;
+    iconId: IconName;
 }
 
-export const Icon: React.FC<IconProps> = ({ iconId, ...props }) => {
-	const ref = useRef<HTMLDivElement>(null);
+export const Icon: React.FC<IconProps> = ({ iconId, className, ...props }) => {
+    const ref = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		if (ref.current) {
-			setIcon(ref.current, iconId);
-		}
-	}, [iconId]);
+    useEffect(() => {
+        if (ref.current) {
+            setIcon(ref.current, iconId);
+        }
+    }, [iconId]);
 
-	return <div ref={ref} {...props} />;
+    // Combine the default 'ow-icon' class with any additional classes
+    const combinedClassName = ['ow-icon', className].filter(Boolean).join(' ');
+
+    return <div 
+		ref={ref} 
+		className={combinedClassName} 
+		{...props} 
+	/>;
 };
