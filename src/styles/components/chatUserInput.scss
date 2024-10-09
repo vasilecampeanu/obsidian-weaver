@@ -1,11 +1,43 @@
 .ow-chat-user-input 
 {
+	display: flex;
 	flex: 0 0 auto;
+	gap: 10px;
 
+	.ow-user-actions 
+	{
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+	
+	.ow-btn.create-new-chat 
+	{
+		all: unset;
+		height: 40px;
+		width: 40px;
+		border-radius: 50%;
+		background-color: var(--interactive-accent);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+		margin-top: auto;
+	}
+	
 	.ow-chat-user-input-form-wrapper
-	{		
+	{
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+		background-color: var(--interactive-normal);
+		border: 1px solid var(--prompt-border-color);
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;	
+		border-radius: 20px;
+		padding: 14px;
+
 		form
 		{
+			display: flex;
+
 			textarea
 			{
 				all: unset;
@@ -19,7 +51,24 @@
 
 			.ow-btn.submit
 			{
+				all: unset;
 			}
+		}
+
+		.ow-inline-input-utilities
+		{
+			display: flex;
+			justify-content: space-between;
+
+			.ow-btn.pin-input
+			{
+				all: unset;
+
+				svg
+				{
+					transform: rotate(45deg);
+				}
+			}	
 		}
 	}	
 }
