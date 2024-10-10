@@ -1,5 +1,5 @@
 import { Icon } from "components/primitives/Icon";
-import { usePlugin } from "components/usePlugin";
+import { usePlugin } from "components/providers/plugin/usePlugin";
 import { AnimatePresence, motion } from "framer-motion";
 import { OpenAI } from 'openai';
 import { ChangeEvent, ClipboardEvent, useState } from "react";

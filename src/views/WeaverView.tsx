@@ -1,5 +1,5 @@
 import { Plugin } from "components/Plugin";
-import { PluginContext } from "components/PluginContext";
+import { PluginContext } from "components/providers/plugin/PluginContext";
 import Weaver from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { StrictMode } from "react";
