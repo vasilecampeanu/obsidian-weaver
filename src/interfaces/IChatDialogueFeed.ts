@@ -1,5 +1,5 @@
 // Interface representing the entire conversation
-interface IConversation {
+export interface IConversation {
 	title: string;
 	create_time: number;
 	update_time: number;
@@ -20,7 +20,7 @@ interface IConversation {
 }
 
 // Interface for each node in the conversation mapping
-interface IMessageNode {
+export interface IMessageNode {
 	id: string;
 	message: IMessage | null;
 	parent: string | null;
@@ -28,7 +28,7 @@ interface IMessageNode {
 }
 
 // Interface representing a message
-interface IMessage {
+export interface IMessage {
 	id: string;
 	author: IAuthor;
 	create_time: number | null;
@@ -43,20 +43,20 @@ interface IMessage {
 }
 
 // Interface for the author of a message
-interface IAuthor {
-	role: 'system' | 'user' | 'assistant' | 'tool';
+export interface IAuthor {
+	role: 'system' | 'user' | 'assistant';
 	name: string | null;
 	metadata: any;
 }
 
 // Interface for the content of a message
-interface IContent {
+export interface IContent {
 	content_type: 'text';
 	parts: string[];
 }
 
 // Interface for metadata associated with a message
-interface IMetadata {
+export interface IMetadata {
 	is_visually_hidden_from_conversation?: boolean;
 	is_user_system_message?: boolean;
 	user_context_message_data?: {
