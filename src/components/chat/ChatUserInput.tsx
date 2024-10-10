@@ -1,9 +1,18 @@
+import { ConversationManager } from "api/ConversationManager";
+import { OpenAIManager } from "api/OpenAIManager";
 import { Icon } from "components/primitives/Icon";
 import { usePlugin } from "components/providers/plugin/usePlugin";
 import { AnimatePresence, motion } from "framer-motion";
+import { IMessage, IMessageNode } from "interfaces/IChatDialogueFeed";
 import { IUserSelection } from "interfaces/IChatInput";
-import { OpenAI } from "openai";
-import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";
+import {
+	ChangeEvent,
+	ClipboardEvent,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
+import { v4 as uuidv4 } from "uuid";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
 const MAX_CHARACTERS = 2000;
@@ -21,14 +30,28 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [charCount, setCharCount] = useState<number>(0);
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isFocused, setIsFocused] = useState<boolean>(false);
-
-	// State for selected text and modal visibility
 	const [userSelection, setUserSelection] = useState<IUserSelection>();
+	const [conversationId, setConversationId] = useState<string | null>(null);
 
 	const plugin = usePlugin();
 
+	// Initialize ConversationManager and OpenAIManager
+	const conversationManager = useMemo(() => {
+		if (plugin) {
+			return new ConversationManager(plugin.app);
+		}
+		return null;
+	}, [plugin]);
+
+	const openAIManager = useMemo(() => {
+		if (plugin) {
+			return OpenAIManager.getInstance(plugin.settings.apiKey);
+		}
+		return null;
+	}, [plugin]);
+
 	useEffect(() => {
-		if (!plugin) return;
+		if (!plugin || !conversationManager) return;
 
 		const handleSelectionChanged = (event: IUserSelection) => {
 			setUserSelection(event);
@@ -36,10 +59,19 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 		plugin.events.on("selection-changed", handleSelectionChanged);
 
+		// Initialize a new conversation
+		const initConversation = async () => {
+			const conversation = await conversationManager.createConversation(
+				"New Conversation"
+			);
+			setConversationId(conversation.id);
+		};
+		initConversation();
+
 		return () => {
 			plugin.events.off("selection-changed", handleSelectionChanged);
 		};
-	}, [plugin]);
+	}, [plugin, conversationManager]);
 
 	// Determine if the input area should be expanded
 	const isExpanded = isHovered || isFocused || userInputMessage.length > 0;
@@ -47,21 +79,117 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
-		const client = new OpenAI({
-			apiKey: plugin?.settings.apiKey,
-			dangerouslyAllowBrowser: true,
-		});
-
-		const stream = await client.chat.completions.create({
-			model: "gpt-4",
-			messages: [{ role: "user", content: userInputMessage }],
-			stream: true,
-		});
-
-		for await (const chunk of stream) {
-			console.log(chunk.choices[0]?.delta?.content || "");
+		if (!conversationManager || !openAIManager || !conversationId) {
+			console.log("TODO: Error 1")
+			// Handle error or prompt user to set up API key
+			return;
+		}
+		
+		const conversation = await conversationManager.getConversation(
+			conversationId
+		);
+		
+		if (!conversation) {
+			// Handle error
+			console.log("TODO: Error 2")
+			return;
 		}
 
+		// Prepare the user's message
+		const userMessageId = uuidv4();
+		const currentTime = Date.now() / 1000;
+
+		const userMessage: IMessage = {
+			id: userMessageId,
+			author: {
+				role: "user",
+				name: null,
+				metadata: undefined
+			},
+			create_time: currentTime,
+			update_time: currentTime,
+			content: {
+				content_type: "text",
+				parts: [userInputMessage],
+			},
+			status: "finished_successfully",
+			end_turn: true,
+			weight: 1.0,
+			metadata: {},
+			recipient: "all",
+			channel: null,
+		};
+
+		const userMessageNode: IMessageNode = {
+			id: userMessageId,
+			message: userMessage,
+			parent: conversation.current_node,
+			children: [],
+		};
+
+		// Add the user's message to the conversation
+		await conversationManager.addMessageToConversation(
+			conversationId,
+			userMessageNode
+		);
+
+		// Get the conversation path to send to OpenAI
+		const conversationPath = await conversationManager.getConversationPath(
+			conversationId
+		);
+
+		// Prepare messages for OpenAI
+		const messagesToSend = conversationPath
+			.filter((node) => node.message !== null)
+			.map((node) => node.message!);
+
+		// Send messages to OpenAI and get the response
+		const response = await openAIManager.sendMessage(
+			messagesToSend,
+			conversation.default_model_slug
+		);
+
+		const assistantReplyContent = response.choices[0]?.message?.content;
+
+		if (assistantReplyContent) {
+			// Prepare the assistant's message
+			const assistantMessageId = uuidv4();
+			const assistantMessage: IMessage = {
+				id: assistantMessageId,
+				author: {
+					role: "assistant",
+					name: null,
+					metadata: undefined
+				},
+				create_time: Date.now() / 1000,
+				update_time: Date.now() / 1000,
+				content: {
+					content_type: "text",
+					parts: [assistantReplyContent],
+				},
+				status: "finished_successfully",
+				end_turn: true,
+				weight: 1.0,
+				metadata: {},
+				recipient: "all",
+				channel: null,
+			};
+
+			const assistantMessageNode: IMessageNode = {
+				id: assistantMessageId,
+				message: assistantMessage,
+				parent: userMessageId,
+				children: [],
+			};
+
+			// Add the assistant's message to the conversation
+			await conversationManager.addMessageToConversation(
+				conversationId,
+				assistantMessageNode
+			);
+		}
+
+		// Clear the user input
 		setUserInputMessage("");
 		setCharCount(0);
 	};

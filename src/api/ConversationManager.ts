@@ -57,7 +57,7 @@ export class ConversationManager {
 		conversation.current_node = systemNodeId;
 
 		const conversationPath = `${ConversationManager.WEAVER_FOLDER}/${conversationId}.json`;
-		await this.app.vault.create(conversationPath, JSON.stringify(conversation, null, 2));
+		await this.app.vault.create(conversationPath, JSON.stringify(conversation, null, 4));
 
 		return conversation;
 	}
@@ -82,7 +82,7 @@ export class ConversationManager {
 			throw new Error('Conversation file not found');
 		}
 
-		await this.app.vault.modify(conversationFile, JSON.stringify(conversation, null, 2));
+		await this.app.vault.modify(conversationFile, JSON.stringify(conversation, null, 4));
 	}
 
 	public async addMessageToConversation(
