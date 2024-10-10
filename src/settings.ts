@@ -3,10 +3,12 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 
 export interface WeaverSettings {
 	apiKey: string,
+	weaverFolder: string
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
 	apiKey: "",
+	weaverFolder: ".weaver"
 }
 
 export class WeaverSettingTab extends PluginSettingTab {

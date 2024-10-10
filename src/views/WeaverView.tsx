@@ -1,9 +1,13 @@
+import { ConversationManager } from "apis/ConversationManager";
+import { OpenAIManager } from "apis/OpenAIManager";
 import { Plugin } from "components/Plugin";
-import { PluginContext } from "components/providers/plugin/PluginContext";
 import Weaver from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ChatServiceContext } from "providers/chatservice/ChatServiceContext";
+import { PluginContext } from "providers/plugin/PluginContext";
 import { StrictMode } from "react";
 import { Root, createRoot } from "react-dom/client";
+import { ChatService } from "services/ChatService";
 
 export const VIEW_WEAVER = "weaver-view";
 
@@ -31,11 +35,25 @@ export class WeaverView extends ItemView {
 	}
 
 	async onOpen() {
+		// Initialize managers
+		const openAIManager = OpenAIManager.getInstance(this.plugin);
+		const conversationManager = new ConversationManager(this.plugin);
+
+		// Create new conversation
+		await conversationManager.ensureWeaverFolderExists();
+		await conversationManager.createConversation('Untitled');
+
+		// Services
+		const chatService = new ChatService(openAIManager, conversationManager);
+
+		// Render root
 		this.root = createRoot(this.containerEl.children[1]);
 		this.root.render(
 			<StrictMode>
 				<PluginContext.Provider value={this.plugin}>
-					<Plugin />
+					<ChatServiceContext.Provider value={chatService}>
+						<Plugin />
+					</ChatServiceContext.Provider>
 				</PluginContext.Provider>
 			</StrictMode>
 		);

@@ -1,4 +1,5 @@
 import { IMessage } from "interfaces/IChatDialogueFeed";
+import Weaver from "main";
 import OpenAI from "openai";
 import { ChatCompletion, ChatCompletionChunk } from "openai/resources/chat/completions";
 import { Stream } from "openai/streaming";
@@ -7,17 +8,18 @@ export class OpenAIManager {
 	private static instance: OpenAIManager;
 	private client: OpenAI;
 
-	private constructor(apiKey: string) {
+	private constructor(plugin: Weaver) {
 		this.client = new OpenAI({
-			apiKey: apiKey,
+			apiKey: plugin.settings.apiKey,
 			dangerouslyAllowBrowser: true,
 		});
 	}
 
-	public static getInstance(apiKey: string): OpenAIManager {
+	public static getInstance(plugin: Weaver): OpenAIManager {
 		if (!OpenAIManager.instance) {
-			OpenAIManager.instance = new OpenAIManager(apiKey);
+			OpenAIManager.instance = new OpenAIManager(plugin);
 		}
+
 		return OpenAIManager.instance;
 	}
 
