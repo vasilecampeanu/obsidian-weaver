@@ -1,11 +1,7 @@
 import { EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
+import { IUserSelection } from 'interfaces/IChatInput';
 import Weaver from 'main';
-import { debounce, TFile } from 'obsidian';
-
-export interface SelectionChangedEventData {
-	selectedText: string;
-	sourceFile: TFile | null;
-}
+import { debounce } from 'obsidian';
 
 export class WeaverViewPlugin implements PluginValue {
 	private plugin: Weaver;
@@ -29,10 +25,10 @@ export class WeaverViewPlugin implements PluginValue {
 
 		if (!this.lastSelection || this.lastSelection.from !== from || this.lastSelection.to !== to) {
 			if (from !== to) {
-				const selectedText = state.doc.sliceString(from, to);
-				const sourceFile = this.plugin.app.workspace.getActiveFile();
+				const text = state.doc.sliceString(from, to);
+				const file = this.plugin.app.workspace.getActiveFile();
 
-				const eventData: SelectionChangedEventData = { selectedText, sourceFile };
+				const eventData: IUserSelection = { text, file };
 				this.plugin.events.trigger('selection-changed', eventData);
 			}
 

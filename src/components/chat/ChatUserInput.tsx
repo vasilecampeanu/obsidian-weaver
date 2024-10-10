@@ -1,15 +1,17 @@
 import { Icon } from "components/primitives/Icon";
 import { usePlugin } from "components/providers/plugin/usePlugin";
 import { AnimatePresence, motion } from "framer-motion";
-import { OpenAI } from 'openai';
-import { ChangeEvent, ClipboardEvent, useState } from "react";
+import { IUserSelection } from "interfaces/IChatInput";
+import { OpenAI } from "openai";
+import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";
+import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
 const MAX_CHARACTERS = 2000;
 
 const buttonVariants = {
 	hidden:  { opacity: 0 },
 	visible: { opacity: 1 },
-	exit:    { opacity: 0 },
+	exit:    { opacity: 0 }
 };
 
 interface ChatUserInputProps {}
@@ -20,7 +22,24 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isFocused, setIsFocused] = useState<boolean>(false);
 
+	// State for selected text and modal visibility
+	const [userSelection, setUserSelection] = useState<IUserSelection>();
+
 	const plugin = usePlugin();
+
+	useEffect(() => {
+		if (!plugin) return;
+
+		const handleSelectionChanged = (event: IUserSelection) => {
+			setUserSelection(event);
+		};
+
+		plugin.events.on("selection-changed", handleSelectionChanged);
+
+		return () => {
+			plugin.events.off("selection-changed", handleSelectionChanged);
+		};
+	}, [plugin]);
 
 	// Determine if the input area should be expanded
 	const isExpanded = isHovered || isFocused || userInputMessage.length > 0;
@@ -30,17 +49,17 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 		const client = new OpenAI({
 			apiKey: plugin?.settings.apiKey,
-			dangerouslyAllowBrowser: true
+			dangerouslyAllowBrowser: true,
 		});
-		
+
 		const stream = await client.chat.completions.create({
-			model: 'gpt-4o',
-			messages: [{ role: 'user', content: 'Say this is a test!' }],
+			model: "gpt-4",
+			messages: [{ role: "user", content: userInputMessage }],
 			stream: true,
 		});
 
 		for await (const chunk of stream) {
-			console.log(chunk.choices[0]?.delta?.content || '');
+			console.log(chunk.choices[0]?.delta?.content || "");
 		}
 
 		setUserInputMessage("");
@@ -77,16 +96,17 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 	return (
 		<div className="ow-chat-user-input">
-			<div className="ow-chat-user-input-sugestions">
-			</div>
+			{userSelection && (
+				<ChatSelectedTextModal userSelection={userSelection} />
+			)}
 			<div className="ow-chat-user-input-toolbar">
 				<button className="ow-btn assistant-response-stop">
 					<Icon iconId="circle-off" />
 				</button>
-				<button className="ow-btn assistant-response-regenarte">
+				<button className="ow-btn assistant-response-regenerate">
 					<Icon iconId="refresh-cw" />
 				</button>
-			</div>	
+			</div>
 			<div className="ow-chat-user-input-inner-wrapper">
 				<div className="ow-user-actions">
 					<AnimatePresence>
@@ -98,7 +118,10 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 								initial="hidden"
 								animate="visible"
 								exit="exit"
-								transition={{ duration: 0.2, ease: "easeInOut" }}
+								transition={{
+									duration: 0.2,
+									ease: "easeInOut",
+								}}
 							>
 								<Icon iconId="plus" />
 							</motion.button>

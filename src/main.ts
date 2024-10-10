@@ -1,14 +1,11 @@
-import { createWeaverViewPlugin, SelectionChangedEventData } from 'editor/plugins/WeaverViewPlugin';
-import { EventRef, Events, Plugin, WorkspaceLeaf } from 'obsidian';
+import { createWeaverViewPlugin } from 'editor/plugins/WeaverViewPlugin';
+import { Events, Plugin, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from 'settings';
 import { VIEW_WEAVER, WeaverView } from 'views/WeaverView';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
 	public events: Events;
-
-	// Event refs
-	private selectionChangedEventRef: EventRef | null = null;
 
 	public async onload() {
 		// Load settings early
@@ -35,11 +32,6 @@ export default class Weaver extends Plugin {
 	}
 
 	public async onunload() {
-		// Cleanup custom event listeners
-		if (this.selectionChangedEventRef) {
-			this.events.offref(this.selectionChangedEventRef);
-		}
-
 		// Detach all Weaver views
 		this.app.workspace.detachLeavesOfType(VIEW_WEAVER);
 	}
@@ -53,17 +45,8 @@ export default class Weaver extends Plugin {
 	}
 
 	private registerEventListeners(): void {
-		// Listen to the 'selection-changed' custom event emitted by WeaverViewPlugin
-		this.selectionChangedEventRef = this.events.on('selection-changed', this.handleSelectionChanged);
+		// TODO: Register events
 	}
-
-	private handleSelectionChanged = (event: SelectionChangedEventData) => {
-		const { selectedText, sourceFile } = event;
-		console.log('Selection changed:', selectedText, sourceFile);
-
-		// TODO: Implement your logic here, e.g., update Weaver view or process the selected text
-		// this.updateWeaverView(selectedText, sourceFile);
-	};
 
 	private registerCommands() {
 		this.addCommand({
