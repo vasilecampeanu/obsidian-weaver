@@ -1,8 +1,8 @@
-import { IMessage } from "interfaces/IChatDialogueFeed";
-import Weaver from "main";
-import OpenAI from "openai";
-import { ChatCompletion, ChatCompletionChunk } from "openai/resources/chat/completions";
-import { Stream } from "openai/streaming";
+import { IMessage } from 'interfaces/IChatDialogueFeed';
+import Weaver from 'main';
+import OpenAI from 'openai';
+import { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions';
+import { Stream } from 'openai/streaming';
 
 export class OpenAIManager {
 	private static instance: OpenAIManager;
@@ -23,7 +23,9 @@ export class OpenAIManager {
 		return OpenAIManager.instance;
 	}
 
-	// Streaming method
+	/**
+	 * Sends a message stream to the OpenAI API and returns an async iterable.
+	 */
 	public async sendMessageStream(
 		messages: IMessage[],
 		model: string = 'gpt-4'
@@ -33,16 +35,23 @@ export class OpenAIManager {
 			content: msg.content.parts.join(''),
 		}));
 
-		const response = await this.client.chat.completions.create({
-			model: model,
-			messages: apiMessages,
-			stream: true,
-		});
+		try {
+			const response = await this.client.chat.completions.create({
+				model: model,
+				messages: apiMessages,
+				stream: true,
+			});
 
-		return response as AsyncIterable<Stream<ChatCompletionChunk>>;
+			return response as AsyncIterable<Stream<ChatCompletionChunk>>;
+		} catch (error) {
+			console.error('Error in sendMessageStream:', error);
+			throw error;
+		}
 	}
 
-	// Non-streaming method
+	/**
+	 * Sends a message to the OpenAI API and returns the completion.
+	 */
 	public async sendMessage(
 		messages: IMessage[],
 		model: string = 'gpt-4'
@@ -52,12 +61,17 @@ export class OpenAIManager {
 			content: msg.content.parts.join(''),
 		}));
 
-		const response = await this.client.chat.completions.create({
-			model: model,
-			messages: apiMessages,
-			stream: false,
-		});
+		try {
+			const response = await this.client.chat.completions.create({
+				model: model,
+				messages: apiMessages,
+				stream: false,
+			});
 
-		return response as ChatCompletion;
+			return response as ChatCompletion;
+		} catch (error) {
+			console.error('Error in sendMessage:', error);
+			throw error;
+		}
 	}
 }

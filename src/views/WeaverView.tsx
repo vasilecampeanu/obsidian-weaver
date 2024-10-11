@@ -41,6 +41,7 @@ export class WeaverView extends ItemView {
 
 		// Services
 		const chatService = new ChatService(openAIManager, conversationManager);
+		chatService.initConversation();
 
 		// Render root
 		this.root = createRoot(this.containerEl.children[1]);
