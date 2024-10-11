@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ChatService } from "services/chat/ChatService";
+import { ChatService } from "services/chat/ConversationService";
 import { ChatServiceContext } from "./ChatServiceContext";
 
 export const useChatService = (): ChatService | undefined => {
