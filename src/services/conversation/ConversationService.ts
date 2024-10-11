@@ -1,9 +1,9 @@
 import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
-import { ConversationManager } from 'services/chat/ConversationManager';
-import { OpenAIManager } from 'services/chat/OpenAIManager';
+import { OpenAIManager } from 'services/assistant/OpenAIManager';
+import { ConversationManager } from 'services/conversation/ConversationManager';
 import { v4 as uuidv4 } from 'uuid';
 
-export class ChatService {
+export class ConversationService {
 	private currentConversation: IConversation | null = null;
 
 	constructor(private openAIManager: OpenAIManager, private conversationManager: ConversationManager) { }
