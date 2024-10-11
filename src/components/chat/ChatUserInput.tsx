@@ -1,7 +1,7 @@
 import { Icon } from "components/primitives/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { IUserSelection } from "interfaces/IUserEvents";
-import { useConversationService } from "providers/conversationservice/useConversationService"; // Adjust the import path accordingly
+import { useConversation } from "providers/conversation/useConversation";
 import { usePlugin } from "providers/plugin/usePlugin";
 import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
@@ -26,7 +26,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [userSelection, setUserSelection] = useState<IUserSelection>();
 
 	const plugin = usePlugin();
-	const conversationService = useConversationService();
+	const conversation = useConversation();
 
 	useEffect(() => {
 		if (!plugin) return;
@@ -54,7 +54,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 			setCharCount(0);
 
 			// Generate assistant response
-			await conversationService?.sendMessage(userInputMessage);
+			await conversation?.sendMessage(userInputMessage);
 		} catch (error) {
 			console.error("Error sending message:", error);
 		}

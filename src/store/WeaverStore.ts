@@ -1,9 +1,10 @@
 import { createStore } from 'zustand';
 import { createConversationSlice } from './slices/store.slice.conversation';
-import { WeaverStoreSession } from './slices/store.slicemaster';
+import { WeaverStoreProps, WeaverStoreSession } from './slices/store.slicemaster';
 
-export const createWeaverStore = () => {
+export const createWeaverStore = (hydration: Partial<WeaverStoreProps>) => {
 	return createStore<WeaverStoreSession>()((...args) => ({
-		...createConversationSlice()
+		...createConversationSlice(),
+        ...hydration
 	}));
 }
