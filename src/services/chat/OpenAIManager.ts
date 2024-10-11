@@ -1,4 +1,4 @@
-import { IMessage } from 'interfaces/IChatDialogueFeed';
+import { IMessage } from 'interfaces/IConversation';
 import Weaver from 'main';
 import OpenAI from 'openai';
 import { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions';

@@ -1,5 +1,5 @@
 import { EditorView, PluginValue, ViewPlugin } from '@codemirror/view';
-import { IUserSelection } from 'interfaces/IChatInput';
+import { IUserSelection } from 'interfaces/IChat';
 import Weaver from 'main';
 import { debounce } from 'obsidian';
 

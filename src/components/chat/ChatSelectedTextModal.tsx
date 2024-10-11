@@ -1,4 +1,4 @@
-import { IUserSelection } from "interfaces/IChatInput";
+import { IUserSelection } from "interfaces/IChat";
 
 interface ChatSelectedTextProps {
 	userSelection: IUserSelection

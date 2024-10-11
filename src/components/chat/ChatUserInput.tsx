@@ -1,6 +1,6 @@
 import { Icon } from "components/primitives/Icon";
 import { AnimatePresence, motion } from "framer-motion";
-import { IUserSelection } from "interfaces/IChatInput";
+import { IUserSelection } from "interfaces/IChat";
 import { useChatService } from "providers/chatservice/useChatService"; // Adjust the import path accordingly
 import { usePlugin } from "providers/plugin/usePlugin";
 import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";

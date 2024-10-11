@@ -1,5 +1,3 @@
-import { ConversationManager } from "apis/ConversationManager";
-import { OpenAIManager } from "apis/OpenAIManager";
 import { Plugin } from "components/Plugin";
 import Weaver from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
@@ -7,7 +5,9 @@ import { ChatServiceContext } from "providers/chatservice/ChatServiceContext";
 import { PluginContext } from "providers/plugin/PluginContext";
 import { StrictMode } from "react";
 import { Root, createRoot } from "react-dom/client";
-import { ChatService } from "services/ChatService";
+import { ChatService } from "services/chat/ChatService";
+import { ConversationManager } from "services/chat/ConversationManager";
+import { OpenAIManager } from "services/chat/OpenAIManager";
 
 export const VIEW_WEAVER = "weaver-view";
 

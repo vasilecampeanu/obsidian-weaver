@@ -1,4 +1,4 @@
-import { IConversation, IMessage, IMessageNode } from 'interfaces/IChatDialogueFeed';
+import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
 import Weaver from 'main';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';

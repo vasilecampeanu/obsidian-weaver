@@ -1,6 +1,6 @@
-import { ConversationManager } from 'apis/ConversationManager';
-import { OpenAIManager } from 'apis/OpenAIManager';
-import { IConversation, IMessage, IMessageNode } from 'interfaces/IChatDialogueFeed';
+import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
+import { ConversationManager } from 'services/chat/ConversationManager';
+import { OpenAIManager } from 'services/chat/OpenAIManager';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ChatService {
