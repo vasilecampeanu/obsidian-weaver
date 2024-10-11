@@ -1,7 +1,7 @@
 import { Icon } from "components/primitives/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { IUserSelection } from "interfaces/IChatInput";
-import { OpenAI } from "openai";
+import { useChatService } from "providers/chatservice/useChatService"; // Adjust the import path accordingly
 import { usePlugin } from "providers/plugin/usePlugin";
 import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
@@ -26,6 +26,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [userSelection, setUserSelection] = useState<IUserSelection>();
 
 	const plugin = usePlugin();
+	const chatService = useChatService();
 
 	useEffect(() => {
 		if (!plugin) return;
@@ -47,23 +48,16 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
-		const client = new OpenAI({
-			apiKey: plugin?.settings.apiKey,
-			dangerouslyAllowBrowser: true,
-		});
+		try {
+			// Do this early
+			setUserInputMessage("");
+			setCharCount(0);
 
-		const stream = await client.chat.completions.create({
-			model: "gpt-4",
-			messages: [{ role: "user", content: userInputMessage }],
-			stream: true,
-		});
-
-		for await (const chunk of stream) {
-			console.log(chunk.choices[0]?.delta?.content || "");
+			// Generate assistant response
+			await chatService?.sendMessage(userInputMessage);
+		} catch (error) {
+			console.error("Error sending message:", error);
 		}
-
-		setUserInputMessage("");
-		setCharCount(0);
 	};
 
 	const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {

@@ -39,10 +39,6 @@ export class WeaverView extends ItemView {
 		const openAIManager = OpenAIManager.getInstance(this.plugin);
 		const conversationManager = new ConversationManager(this.plugin);
 
-		// Create new conversation
-		await conversationManager.ensureWeaverFolderExists();
-		await conversationManager.createConversation('Untitled');
-
 		// Services
 		const chatService = new ChatService(openAIManager, conversationManager);
 

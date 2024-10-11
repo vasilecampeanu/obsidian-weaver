@@ -1,13 +1,17 @@
 import { IConversation, IMessage, IMessageNode } from 'interfaces/IChatDialogueFeed';
 import Weaver from 'main';
-import { TFile } from 'obsidian';
+import { FileSystemAdapter } from 'obsidian';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ConversationManager {
-	constructor(private plugin: Weaver) { }
+	private adapter: FileSystemAdapter;
 
-	public async ensureWeaverFolderExists() {
-		// TODO:
+	constructor(private plugin: Weaver) {
+		this.adapter = plugin.app.vault.adapter as FileSystemAdapter;
+	}
+
+	public async ensureWeaverFolderExists(): Promise<void> {
+		// TODO: 
 	}
 
 	public async createConversation(title: string): Promise<IConversation> {
@@ -46,32 +50,53 @@ export class ConversationManager {
 		conversation.current_node = systemNodeId;
 
 		const conversationPath = `${this.plugin.settings.weaverFolder}/${conversationId}.json`;
-		await this.plugin.app.vault.create(conversationPath, JSON.stringify(conversation, null, 4));
+		await this.adapter.write(conversationPath, JSON.stringify(conversation, null, 4));
 
 		return conversation;
 	}
 
 	public async getConversation(conversationId: string): Promise<IConversation | null> {
 		const conversationPath = `${this.plugin.settings.weaverFolder}/${conversationId}.json`;
-		const conversationFile = this.plugin.app.vault.getAbstractFileByPath(conversationPath) as TFile;
-
-		if (!conversationFile) {
-			return null;
+		try {
+			const data = await this.adapter.read(conversationPath);
+			return JSON.parse(data) as IConversation;
+		} catch (error) {
+			if (error.message.includes('ENOENT')) {
+				return null;
+			}
+			throw error;
 		}
-
-		const data = await this.plugin.app.vault.read(conversationFile);
-		return JSON.parse(data) as IConversation;
 	}
 
-	public async updateConversation(conversation: IConversation): Promise<void> {
-		const conversationPath = `${this.plugin.settings.weaverFolder}/${conversation.id}.json`;
-		const conversationFile = this.plugin.app.vault.getAbstractFileByPath(conversationPath) as TFile;
+	public async updateConversation(conversation: IConversation): Promise<boolean> {
+		const folderPath = this.plugin.settings.weaverFolder;
+		const files = await this.adapter.list(folderPath);
+		const jsonFiles = files.files.filter(filePath => filePath.endsWith('.json'));
 
-		if (!conversationFile) {
-			throw new Error('Conversation file not found');
+		for (const filePath of jsonFiles) {
+			try {
+				const fileContent = await this.adapter.read(filePath);
+				const existingConversation = JSON.parse(fileContent) as IConversation;
+
+				if (existingConversation.id === conversation.id) {
+					if (!conversation.id || !conversation.current_node || !conversation.mapping) {
+						console.error('The updated conversation is missing required fields.');
+						throw new Error('The updated conversation is missing required fields.');
+					}
+
+					await this.adapter.write(filePath, JSON.stringify(conversation, null, 4));
+
+					return true;
+				}
+			} catch (error) {
+				console.error(`Error reading or parsing file ${filePath}:`, error);
+				continue;
+			}
 		}
 
-		await this.plugin.app.vault.modify(conversationFile, JSON.stringify(conversation, null, 4));
+		console.error(`Conversation with ID: ${conversation.id} not found`);
+
+		return false;
 	}
 
 	public async addMessageToConversation(
@@ -168,11 +193,13 @@ export class ConversationManager {
 		messageNodeId: string
 	): Promise<void> {
 		const conversation = await this.getConversation(conversationId);
+
 		if (!conversation) {
 			throw new Error('Conversation not found');
 		}
 
 		const originalNode = conversation.mapping[messageNodeId];
+
 		if (!originalNode || !originalNode.message) {
 			throw new Error('Message node not found or has no message');
 		}
