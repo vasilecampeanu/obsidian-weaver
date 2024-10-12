@@ -1,7 +1,7 @@
 import { useContext } from "react";
-import { WeaverStoreProps } from "store/slices/store.slicemaster";
+import { WeaverStore } from "services/store/Store";
 import { StoreContext } from "./StoreContext";
 
-export const useStore = (): WeaverStoreProps | undefined => {
+export const useStore = (): WeaverStore | undefined => {
 	return useContext(StoreContext);
 };

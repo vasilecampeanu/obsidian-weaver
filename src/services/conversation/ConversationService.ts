@@ -1,25 +1,32 @@
-import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
+import { IMessage, IMessageNode } from 'interfaces/IConversation';
 import { OpenAIRequestManager } from 'services/api/providers/OpenAIRequestManager';
 import { ConversationIOManager } from 'services/conversation/ConversationIOManager';
+import { WeaverStoreSession } from 'services/store/slices/store.slicemaster';
 import { v4 as uuidv4 } from 'uuid';
+import { StoreApi } from 'zustand';
 
 export class ConversationService {
-	private currentConversation: IConversation | null = null;
-
-	constructor(private openAIManager: OpenAIRequestManager, private conversationIOManager: ConversationIOManager) { }
+	constructor(
+		private openAIManager: OpenAIRequestManager,
+		private conversationIOManager: ConversationIOManager,
+		private store: StoreApi<WeaverStoreSession>
+	) { }
 
 	/**
 	 * Initializes a new conversation.
 	 */
 	public async initConversation(title: string = 'Untitled'): Promise<void> {
-		this.currentConversation = await this.conversationIOManager.createConversation(title);
+		const conversation = await this.conversationIOManager.createConversation(title);
+		this.store.getState().setCurrentConversation(conversation);
 	}
 
 	/**
 	 * Sends a message and updates the conversation with the assistant's reply.
 	 */
 	public async generateAssistantMessage(userMessage: string): Promise<void> {
-		if (!this.currentConversation) {
+		const { currentConversation, setCurrentConversation } = this.store.getState();
+
+		if (!currentConversation) {
 			throw new Error('No conversation initialized');
 		}
 
@@ -44,23 +51,25 @@ export class ConversationService {
 				recipient: 'all',
 				channel: null,
 			},
-			parent: this.currentConversation.current_node,
+			parent: currentConversation.current_node,
 			children: [],
 		};
 
 		await this.conversationIOManager.addMessageToConversation(
-			this.currentConversation.id,
+			currentConversation.id,
 			userMessageNode
 		);
 
-		this.currentConversation.current_node = userMessageNode.id;
+		currentConversation.current_node = userMessageNode.id;
 
 		const conversationPath = await this.conversationIOManager.getConversationPath(
-			this.currentConversation.id
+			currentConversation.id
 		);
 
 		// Prepare messages for OpenAI API
-		const messages: IMessage[] = conversationPath.filter((node) => node.message).map((node) => node.message!);
+		const messages: IMessage[] = conversationPath
+			.filter((node) => node.message)
+			.map((node) => node.message!);
 
 		// Send message to OpenAI API
 		const response = await this.openAIManager.sendMessage(messages);
@@ -94,11 +103,14 @@ export class ConversationService {
 		};
 
 		await this.conversationIOManager.addMessageToConversation(
-			this.currentConversation.id,
+			currentConversation.id,
 			assistantMessageNode
 		);
 
-		this.currentConversation.current_node = assistantMessageNodeId;
+		currentConversation.current_node = assistantMessageNodeId;
+
+		// Update the current conversation in the store
+		setCurrentConversation(currentConversation);
 	}
 
 	/**
@@ -111,6 +123,6 @@ export class ConversationService {
 			throw new Error(`Conversation with ID ${conversationId} not found`);
 		}
 
-		this.currentConversation = conversation;
+		this.store.getState().setCurrentConversation(conversation);
 	}
 }

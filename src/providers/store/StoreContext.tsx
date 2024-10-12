@@ -1,4 +1,4 @@
 import { createContext } from "react";
-import { WeaverStoreProps } from "store/slices/store.slicemaster";
+import { WeaverStore } from "services/store/Store";
 
-export const StoreContext = createContext<WeaverStoreProps | undefined>(undefined);
+export const StoreContext = createContext<WeaverStore | undefined>(undefined);

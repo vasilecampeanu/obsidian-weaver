@@ -8,7 +8,7 @@ export class ConversationIOManager {
 	private adapter: FileSystemAdapter;
 
 	constructor(private plugin: Weaver) {
-		this.adapter = plugin.app.vault.adapter as FileSystemAdapter;
+		this.adapter = this.plugin.app.vault.adapter as FileSystemAdapter;
 	}
 
 	/**

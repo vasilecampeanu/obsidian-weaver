@@ -19,8 +19,6 @@ export class WeaverView extends ItemView {
 
 	constructor(leaf: WorkspaceLeaf, plugin: Weaver) {
 		super(leaf);
-
-		// Get a reference to the obsidian weaver plugin
 		this.plugin = plugin;
 	}
 
@@ -36,38 +34,20 @@ export class WeaverView extends ItemView {
 		return "drama";
 	}
 
-	// TODO:
-	// /**
-	//  * Ensures that the Weaver folder and the conversations folder inside it exist in the vault.
-	//  */
-	// public async ensureWeaverFolderExists(): Promise<void> {
-	// 	const folderPath = this.plugin.settings.weaverFolder;
-	// 	const weaverExists = await this.adapter.exists(folderPath);
-
-	// 	if (!weaverExists) {
-	// 		await this.adapter.mkdir(folderPath);
-	// 	}
-
-	// 	// Ensure the conversations folder exists inside the Weaver folder
-	// 	const conversationsFolderPath = `${folderPath}/conversations`;
-	// 	const conversationsExists = await this.adapter.exists(conversationsFolderPath);
-
-	// 	if (!conversationsExists) {
-	// 		await this.adapter.mkdir(conversationsFolderPath);
-	// 	}
-	// }
-	
 	async onOpen() {
 		//#region Services
 
-		// Store
-		const storeService = new StoreService();
-        const store = await storeService.createStore();
+		// Create store service and initialize local storage
+		const storeService = new StoreService(this.plugin);
+		await storeService.ensureLocalStorage();
 
-		// Conversation
-		const openAIRequestManager  = OpenAIRequestManager.getInstance(this.plugin);
+		// Create Zustand store
+		const store = await storeService.createStore();
+
+		// Initialize conversation services
+		const openAIRequestManager = OpenAIRequestManager.getInstance(this.plugin);
 		const conversationIOManager = new ConversationIOManager(this.plugin);
-		const conversationService   = new ConversationService(openAIRequestManager, conversationIOManager);
+		const conversationService = new ConversationService(openAIRequestManager, conversationIOManager, store);
 		await conversationService.initConversation();
 
 		//#endregion
