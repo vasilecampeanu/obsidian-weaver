@@ -6,8 +6,8 @@ import { PluginContext } from "providers/plugin/PluginContext";
 import { StoreContext } from "providers/store/StoreContext";
 import { StrictMode } from "react";
 import { Root, createRoot } from "react-dom/client";
-import { OpenAIManager } from "services/assistant/OpenAIManager";
-import { ConversationManager } from "services/conversation/ConversationManager";
+import { OpenAIRequestManager } from "services/api/providers/OpenAIRequestManager";
+import { ConversationIOManager } from "services/conversation/ConversationIOManager";
 import { ConversationService } from "services/conversation/ConversationService";
 import { StoreService } from "services/store/StoreService";
 
@@ -36,19 +36,38 @@ export class WeaverView extends ItemView {
 		return "drama";
 	}
 
-	async onOpen() {
-		// Initialize managers
-		const openAIManager = OpenAIManager.getInstance(this.plugin);
-		const conversationManager = new ConversationManager(this.plugin);
+	// TODO:
+	// /**
+	//  * Ensures that the Weaver folder and the conversations folder inside it exist in the vault.
+	//  */
+	// public async ensureWeaverFolderExists(): Promise<void> {
+	// 	const folderPath = this.plugin.settings.weaverFolder;
+	// 	const weaverExists = await this.adapter.exists(folderPath);
 
-		//#region 
+	// 	if (!weaverExists) {
+	// 		await this.adapter.mkdir(folderPath);
+	// 	}
+
+	// 	// Ensure the conversations folder exists inside the Weaver folder
+	// 	const conversationsFolderPath = `${folderPath}/conversations`;
+	// 	const conversationsExists = await this.adapter.exists(conversationsFolderPath);
+
+	// 	if (!conversationsExists) {
+	// 		await this.adapter.mkdir(conversationsFolderPath);
+	// 	}
+	// }
+	
+	async onOpen() {
+		//#region Services
 
 		// Store
 		const storeService = new StoreService();
         const store = await storeService.createStore();
 
 		// Conversation
-		const conversationService = new ConversationService(openAIManager, conversationManager);
+		const openAIRequestManager  = OpenAIRequestManager.getInstance(this.plugin);
+		const conversationIOManager = new ConversationIOManager(this.plugin);
+		const conversationService   = new ConversationService(openAIRequestManager, conversationIOManager);
 		await conversationService.initConversation();
 
 		//#endregion

@@ -4,8 +4,8 @@ import OpenAI from 'openai';
 import { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { Stream } from 'openai/streaming';
 
-export class OpenAIManager {
-	private static instance: OpenAIManager;
+export class OpenAIRequestManager {
+	private static instance: OpenAIRequestManager;
 	private client: OpenAI;
 
 	private constructor(plugin: Weaver) {
@@ -15,12 +15,9 @@ export class OpenAIManager {
 		});
 	}
 
-	public static getInstance(plugin: Weaver): OpenAIManager {
-		if (!OpenAIManager.instance) {
-			OpenAIManager.instance = new OpenAIManager(plugin);
-		}
-
-		return OpenAIManager.instance;
+	public static getInstance(plugin: Weaver): OpenAIRequestManager {
+		if (!OpenAIRequestManager.instance) OpenAIRequestManager.instance = new OpenAIRequestManager(plugin);
+		return OpenAIRequestManager.instance;
 	}
 
 	/**

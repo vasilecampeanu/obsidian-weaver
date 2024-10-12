@@ -2,6 +2,9 @@ import { WeaverStoreProps } from "store/slices/store.slicemaster";
 import { createWeaverStore } from "store/WeaverStore";
 
 export class StoreService {
+	constructor() {
+	}
+
     public async hydrateStore(): Promise<Partial<WeaverStoreProps>> {
 		const hydratedProps: Partial<WeaverStoreProps> = {};
         return { ...hydratedProps };

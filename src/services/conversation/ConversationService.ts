@@ -1,38 +1,24 @@
 import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
-import { OpenAIManager } from 'services/assistant/OpenAIManager';
-import { ConversationManager } from 'services/conversation/ConversationManager';
+import { OpenAIRequestManager } from 'services/api/providers/OpenAIRequestManager';
+import { ConversationIOManager } from 'services/conversation/ConversationIOManager';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ConversationService {
 	private currentConversation: IConversation | null = null;
 
-	constructor(private openAIManager: OpenAIManager, private conversationManager: ConversationManager) { }
+	constructor(private openAIManager: OpenAIRequestManager, private conversationIOManager: ConversationIOManager) { }
 
 	/**
 	 * Initializes a new conversation.
 	 */
 	public async initConversation(title: string = 'Untitled'): Promise<void> {
-		await this.conversationManager.ensureWeaverFolderExists();
-		this.currentConversation = await this.conversationManager.createConversation(title);
-	}
-
-	/**
-	 * Loads an existing conversation by ID.
-	 */
-	public async loadConversation(conversationId: string): Promise<void> {
-		const conversation = await this.conversationManager.getConversation(conversationId);
-
-		if (!conversation) {
-			throw new Error(`Conversation with ID ${conversationId} not found`);
-		}
-
-		this.currentConversation = conversation;
+		this.currentConversation = await this.conversationIOManager.createConversation(title);
 	}
 
 	/**
 	 * Sends a message and updates the conversation with the assistant's reply.
 	 */
-	public async sendMessage(userMessage: string): Promise<void> {
+	public async generateAssistantMessage(userMessage: string): Promise<void> {
 		if (!this.currentConversation) {
 			throw new Error('No conversation initialized');
 		}
@@ -62,14 +48,14 @@ export class ConversationService {
 			children: [],
 		};
 
-		await this.conversationManager.addMessageToConversation(
+		await this.conversationIOManager.addMessageToConversation(
 			this.currentConversation.id,
 			userMessageNode
 		);
 
 		this.currentConversation.current_node = userMessageNode.id;
 
-		const conversationPath = await this.conversationManager.getConversationPath(
+		const conversationPath = await this.conversationIOManager.getConversationPath(
 			this.currentConversation.id
 		);
 
@@ -107,11 +93,24 @@ export class ConversationService {
 			children: [],
 		};
 
-		await this.conversationManager.addMessageToConversation(
+		await this.conversationIOManager.addMessageToConversation(
 			this.currentConversation.id,
 			assistantMessageNode
 		);
 
 		this.currentConversation.current_node = assistantMessageNodeId;
+	}
+
+	/**
+	 * Loads an existing conversation by ID.
+	 */
+	public async loadConversation(conversationId: string): Promise<void> {
+		const conversation = await this.conversationIOManager.getConversation(conversationId);
+
+		if (!conversation) {
+			throw new Error(`Conversation with ID ${conversationId} not found`);
+		}
+
+		this.currentConversation = conversation;
 	}
 }

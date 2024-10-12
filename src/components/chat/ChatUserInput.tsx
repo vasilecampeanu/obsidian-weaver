@@ -54,7 +54,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 			setCharCount(0);
 
 			// Generate assistant response
-			await conversation?.sendMessage(userInputMessage);
+			await conversation?.generateAssistantMessage(userInputMessage);
 		} catch (error) {
 			console.error("Error sending message:", error);
 		}
