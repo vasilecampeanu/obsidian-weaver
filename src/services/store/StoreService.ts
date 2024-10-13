@@ -1,7 +1,7 @@
 import Weaver from 'main';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
-import { ensureFoldersExist } from "utils/FileUtils";
+import { ensureFoldersExist } from "utils/FileIOUtils";
 import { DEFAULT_CONTEXT_STATES } from "./slices/store.slice.context";
 import { WeaverStoreProps } from "./slices/store.slicemaster";
 import { createWeaverStore, WeaverStore } from "./Store";

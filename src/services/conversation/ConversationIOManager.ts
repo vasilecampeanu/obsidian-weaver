@@ -2,11 +2,14 @@ import { IConversation, IMessageNode } from 'interfaces/IConversation';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { readJsonFile, writeJsonFile } from '../../utils/FileIOUtils';
 
 export class ConversationIOManager {
-	private storePath: string;
+	private conversationsDir: string;
 
-	constructor(private adapter: FileSystemAdapter, weaverDirectory: string) { this.storePath = weaverDirectory; }
+	constructor(private adapter: FileSystemAdapter, weaverDirectory: string) {
+		this.conversationsDir = path.join(weaverDirectory, 'conversations');
+	}
 
 	public async createConversation(title: string): Promise<IConversation> {
 		const conversationId = uuidv4();
@@ -43,12 +46,7 @@ export class ConversationIOManager {
 		conversation.mapping[systemNodeId] = systemMessageNode;
 		conversation.current_node = systemNodeId;
 
-		const conversationPath = path.join(
-			this.storePath,
-			'conversations',
-			`${conversationId}.json`
-		);
-		await this.adapter.write(conversationPath, JSON.stringify(conversation, null, 4));
+		await writeJsonFile(this.adapter, path.join(this.conversationsDir, conversationId), conversation);
 
 		return conversation;
 	}
@@ -57,7 +55,7 @@ export class ConversationIOManager {
 		conversationId: string,
 		messageNode: IMessageNode
 	): Promise<void> {
-		const conversation = await this.getConversation(conversationId);
+		const conversation = await readJsonFile<IConversation>(this.adapter, path.join(this.conversationsDir, conversationId));
 
 		if (!conversation) {
 			throw new Error('Conversation not found');
@@ -80,7 +78,7 @@ export class ConversationIOManager {
 		conversation.current_node = messageNode.id;
 		conversation.update_time = Date.now() / 1000;
 
-		await this.updateConversation(conversation);
+		await writeJsonFile(this.adapter, path.join(this.conversationsDir, conversation.id), conversation);
 	}
 
 	public async updateConversation(conversation: IConversation): Promise<void> {
@@ -88,36 +86,11 @@ export class ConversationIOManager {
 			throw new Error('The updated conversation is missing required fields.');
 		}
 
-		const conversationPath = path.join(
-			this.storePath,
-			'conversations',
-			`${conversation.id}.json`
-		);
-
-		try {
-			await this.adapter.write(conversationPath, JSON.stringify(conversation, null, 4));
-		} catch (error) {
-			console.error(`Error writing to file ${conversationPath}:`, error);
-			throw error;
-		}
+		await writeJsonFile(this.adapter, path.join(this.conversationsDir, conversation.id), conversation);
 	}
 
 	public async getConversation(conversationId: string): Promise<IConversation | null> {
-		const conversationPath = path.join(
-			this.storePath,
-			'conversations',
-			`${conversationId}.json`
-		);
-
-		try {
-			const data = await this.adapter.read(conversationPath);
-			return JSON.parse(data) as IConversation;
-		} catch (error) {
-			if (error.message.includes('ENOENT')) {
-				return null;
-			}
-			throw error;
-		}
+		return await readJsonFile<IConversation>(this.adapter, path.join(this.conversationsDir, conversationId));
 	}
 
 	public async getConversationPath(conversationId: string): Promise<IMessageNode[]> {
