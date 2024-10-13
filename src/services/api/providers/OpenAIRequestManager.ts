@@ -1,28 +1,18 @@
 import { IMessage } from 'interfaces/IConversation';
-import Weaver from 'main';
 import OpenAI from 'openai';
 import { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { Stream } from 'openai/streaming';
 
 export class OpenAIRequestManager {
-	private static instance: OpenAIRequestManager;
 	private client: OpenAI;
 
-	private constructor(plugin: Weaver) {
+	constructor(apiKey: string) {
 		this.client = new OpenAI({
-			apiKey: plugin.settings.apiKey,
+			apiKey,
 			dangerouslyAllowBrowser: true,
 		});
 	}
 
-	public static getInstance(plugin: Weaver): OpenAIRequestManager {
-		if (!OpenAIRequestManager.instance) OpenAIRequestManager.instance = new OpenAIRequestManager(plugin);
-		return OpenAIRequestManager.instance;
-	}
-
-	/**
-	 * Sends a message stream to the OpenAI API and returns an async iterable.
-	 */
 	public async sendMessageStream(
 		messages: IMessage[],
 		model: string = 'gpt-4'
@@ -34,7 +24,7 @@ export class OpenAIRequestManager {
 
 		try {
 			const response = await this.client.chat.completions.create({
-				model: model,
+				model,
 				messages: apiMessages,
 				stream: true,
 			});
@@ -42,13 +32,10 @@ export class OpenAIRequestManager {
 			return response as AsyncIterable<Stream<ChatCompletionChunk>>;
 		} catch (error) {
 			console.error('Error in sendMessageStream:', error);
-			throw error;
+			throw new Error('Failed to send message stream to OpenAI API');
 		}
 	}
 
-	/**
-	 * Sends a message to the OpenAI API and returns the completion.
-	 */
 	public async sendMessage(
 		messages: IMessage[],
 		model: string = 'gpt-4'
@@ -60,7 +47,7 @@ export class OpenAIRequestManager {
 
 		try {
 			const response = await this.client.chat.completions.create({
-				model: model,
+				model,
 				messages: apiMessages,
 				stream: false,
 			});
@@ -68,7 +55,7 @@ export class OpenAIRequestManager {
 			return response as ChatCompletion;
 		} catch (error) {
 			console.error('Error in sendMessage:', error);
-			throw error;
+			throw new Error('Failed to send message to OpenAI API');
 		}
 	}
 }

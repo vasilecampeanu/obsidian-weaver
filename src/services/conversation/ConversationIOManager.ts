@@ -1,31 +1,19 @@
 import { IConversation, IMessageNode } from 'interfaces/IConversation';
-import Weaver from 'main';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-interface IStore {
-    lastConversationId: string | null;
-}
-
 export class ConversationIOManager {
-	private adapter: FileSystemAdapter;
-    private storePath: string;
+	private storePath: string;
 
-	constructor(private plugin: Weaver) {
-		this.adapter = this.plugin.app.vault.adapter as FileSystemAdapter;
-        this.storePath = path.join(this.plugin.settings.weaverFolder, 'store.json');
-	}
+	constructor(private adapter: FileSystemAdapter, weaverDirectory: string) { this.storePath = weaverDirectory; }
 
-	/**
-	 * Creates a new conversation with a given title.
-	 */
 	public async createConversation(title: string): Promise<IConversation> {
 		const conversationId = uuidv4();
 		const now = Date.now() / 1000;
 
 		const conversation: IConversation = {
-			title: title,
+			title,
 			create_time: now,
 			update_time: now,
 			mapping: {},
@@ -44,11 +32,10 @@ export class ConversationIOManager {
 			id: conversationId,
 		};
 
-		// Initialize with a system message node
 		const systemNodeId = uuidv4();
 		const systemMessageNode: IMessageNode = {
 			id: systemNodeId,
-			message: null, // System messages may not have content initially
+			message: null,
 			parent: null,
 			children: [],
 		};
@@ -56,15 +43,16 @@ export class ConversationIOManager {
 		conversation.mapping[systemNodeId] = systemMessageNode;
 		conversation.current_node = systemNodeId;
 
-		const conversationPath = path.join(this.plugin.settings.weaverFolder, 'conversations', `${conversationId}.json`);
+		const conversationPath = path.join(
+			this.storePath,
+			'conversations',
+			`${conversationId}.json`
+		);
 		await this.adapter.write(conversationPath, JSON.stringify(conversation, null, 4));
 
 		return conversation;
 	}
 
-	/**
-	 * Adds a message node to a conversation.
-	 */
 	public async addMessageToConversation(
 		conversationId: string,
 		messageNode: IMessageNode
@@ -95,33 +83,31 @@ export class ConversationIOManager {
 		await this.updateConversation(conversation);
 	}
 
-	/**
-	 * Updates an existing conversation.
-	 */
-	public async updateConversation(conversation: IConversation): Promise<boolean> {
+	public async updateConversation(conversation: IConversation): Promise<void> {
 		if (!conversation.id || !conversation.current_node || !conversation.mapping) {
-			console.error('The updated conversation is missing required fields.');
 			throw new Error('The updated conversation is missing required fields.');
 		}
 
-		const conversationPath = path.join(this.plugin.settings.weaverFolder, 'conversations', `${conversation.id}.json`);
+		const conversationPath = path.join(
+			this.storePath,
+			'conversations',
+			`${conversation.id}.json`
+		);
 
 		try {
 			await this.adapter.write(conversationPath, JSON.stringify(conversation, null, 4));
-			return true;
 		} catch (error) {
 			console.error(`Error writing to file ${conversationPath}:`, error);
-			return false;
+			throw error;
 		}
 	}
 
-	//#region Accesors
-
-	/**
-	 * Retrieves a conversation by its ID.
-	 */
 	public async getConversation(conversationId: string): Promise<IConversation | null> {
-		const conversationPath = path.join(this.plugin.settings.weaverFolder, 'conversations', `${conversationId}.json`);
+		const conversationPath = path.join(
+			this.storePath,
+			'conversations',
+			`${conversationId}.json`
+		);
 
 		try {
 			const data = await this.adapter.read(conversationPath);
@@ -130,14 +116,10 @@ export class ConversationIOManager {
 			if (error.message.includes('ENOENT')) {
 				return null;
 			}
-
 			throw error;
 		}
 	}
 
-	/**
-	 * Retrieves the path of messages leading up to the current node.
-	 */
 	public async getConversationPath(conversationId: string): Promise<IMessageNode[]> {
 		const conversation = await this.getConversation(conversationId);
 
@@ -180,52 +162,4 @@ export class ConversationIOManager {
 
 		await this.updateConversation(conversation);
 	}
-
-    /**
-     * Saves the store data to store.json.
-     */
-    private async saveStoreData(storeData: IStore): Promise<void> {
-        try {
-            await this.adapter.write(this.storePath, JSON.stringify(storeData, null, 4));
-        } catch (error) {
-            console.error('Error writing to store.json:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Reads the store data from store.json.
-     */
-    private async getStoreData(): Promise<IStore> {
-        try {
-            const data = await this.adapter.read(this.storePath);
-            return JSON.parse(data) as IStore;
-        } catch (error) {
-            if (error.message.includes('ENOENT')) {
-                // File doesn't exist, return default store data
-                return { lastConversationId: null };
-            }
-            console.error('Error reading store.json:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Updates the last conversation ID in store.json.
-     */
-    public async updateLastConversationId(conversationId: string): Promise<void> {
-        const storeData = await this.getStoreData();
-        storeData.lastConversationId = conversationId;
-        await this.saveStoreData(storeData);
-    }
-
-    /**
-     * Retrieves the last conversation ID from store.json.
-     */
-    public async getLastConversationId(): Promise<string | null> {
-        const storeData = await this.getStoreData();
-        return storeData.lastConversationId;
-    }
-
-	//#endregion
 }

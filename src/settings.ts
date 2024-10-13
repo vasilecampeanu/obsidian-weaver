@@ -3,15 +3,19 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 
 export interface WeaverSettings {
 	apiKey: string,
-	weaverFolder: string,
+	weaverDirectory: string,
+	weaverContextStorage: string,
 	loadLastConversation: boolean
 }
 
+const WEAVER_FOLDER = ".weaver";
+
 export const DEFAULT_SETTINGS: WeaverSettings = {
 	apiKey: "",
-	weaverFolder: ".weaver",
+	weaverDirectory: WEAVER_FOLDER,
+	weaverContextStorage: `${WEAVER_FOLDER}/context.json`,
 	loadLastConversation: true
-}
+};
 
 export class WeaverSettingTab extends PluginSettingTab {
 	public plugin: Weaver;

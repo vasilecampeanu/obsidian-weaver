@@ -1,56 +1,48 @@
 import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
-import Weaver from 'main';
 import { OpenAIRequestManager } from 'services/api/providers/OpenAIRequestManager';
 import { ConversationIOManager } from 'services/conversation/ConversationIOManager';
-import { WeaverStoreSession } from 'services/store/slices/store.slicemaster';
+import { WeaverStore } from 'services/store/Store';
 import { v4 as uuidv4 } from 'uuid';
-import { StoreApi } from 'zustand';
 
 export class ConversationService {
 	constructor(
 		private openAIManager: OpenAIRequestManager,
 		private conversationIOManager: ConversationIOManager,
-		private store: StoreApi<WeaverStoreSession>,
-		private plugin: Weaver
-	) { }
+		private store: WeaverStore
+	) {}
 
-	/**
-	 * Initializes a new conversation.
-	 * @param title - The title of the conversation to initialize. Defaults to 'Untitled'.
-	 */
-	public async initConversation(title: string = 'Untitled'): Promise<void> {
-		if (this.plugin.settings.loadLastConversation) {
-			const lastConversationId = await this.conversationIOManager.getLastConversationId();
+	public async initConversation(
+		loadLastConversation: boolean,
+		title: string = 'Untitled'
+	): Promise<void> {
+		if (loadLastConversation) {
+			const previousConversationId = this.store.getState().previousConversationId;
 
-			if (lastConversationId) {
+			if (previousConversationId) {
 				try {
-					await this.loadConversation(lastConversationId);
+					await this.loadConversation(previousConversationId);
 					return;
 				} catch (error) {
-					console.error(`Failed to load conversation with ID ${lastConversationId}:`, error);
+					console.error(
+						`Failed to load conversation with ID ${previousConversationId}:`,
+						error
+					);
 				}
 			}
 		}
 
-		// Create a new conversation since loading the last one is not possible or not desired
 		await this.createNewConversation(title);
 	}
 
-	/**
-	 * Creates a new conversation with the given title.
-	 * @param title - The title of the new conversation.
-	 * @returns The newly created conversation.
-	 */
-	private async createNewConversation(title: string = 'Untitled'): Promise<IConversation> {
+	private async createNewConversation(
+		title: string = 'Untitled'
+	): Promise<IConversation> {
 		const conversation = await this.conversationIOManager.createConversation(title);
 		this.store.getState().setCurrentConversation(conversation);
-		await this.conversationIOManager.updateLastConversationId(conversation.id);
+		this.store.getState().setPreviousConversationId(conversation.id);
 		return conversation;
 	}
 
-	/**
-	 * Sends a message and updates the conversation with the assistant's reply.
-	 */
 	public async generateAssistantMessage(userMessage: string): Promise<void> {
 		const { currentConversation, setCurrentConversation } = this.store.getState();
 
@@ -94,18 +86,21 @@ export class ConversationService {
 			currentConversation.id
 		);
 
-		// Prepare messages for OpenAI API
 		const messages: IMessage[] = conversationPath
 			.filter((node) => node.message)
 			.map((node) => node.message!);
 
-		// Send message to OpenAI API
-		const response = await this.openAIManager.sendMessage(messages);
+		let response;
 
-		// Get assistant's message
-		const assistantMessageContent = response.choices[0].message?.content;
+		try {
+			response = await this.openAIManager.sendMessage(messages);
+		} catch (error) {
+			console.error('Error sending message to OpenAI:', error);
+			return;
+		}
 
-		// Create assistant message node
+		const assistantMessageContent = response.choices[0].message?.content || '';
+
 		const assistantMessageNodeId = uuidv4();
 
 		const assistantMessageNode: IMessageNode = {
@@ -117,7 +112,7 @@ export class ConversationService {
 				update_time: now,
 				content: {
 					content_type: 'text',
-					parts: [assistantMessageContent || ''],
+					parts: [assistantMessageContent],
 				},
 				status: 'finished_successfully',
 				end_turn: true,
@@ -137,13 +132,9 @@ export class ConversationService {
 
 		currentConversation.current_node = assistantMessageNodeId;
 
-		// Update the current conversation in the store
 		setCurrentConversation(currentConversation);
 	}
 
-	/**
-	 * Loads an existing conversation by ID.
-	 */
 	public async loadConversation(conversationId: string): Promise<void> {
 		const conversation = await this.conversationIOManager.getConversation(conversationId);
 
@@ -152,8 +143,6 @@ export class ConversationService {
 		}
 
 		this.store.getState().setCurrentConversation(conversation);
-
-		// Update lastConversationId in store.json
-		await this.conversationIOManager.updateLastConversationId(conversation.id);
+		this.store.getState().setPreviousConversationId(conversation.id);
 	}
 }

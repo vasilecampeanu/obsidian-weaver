@@ -1,6 +1,8 @@
+// components/WeaverView.tsx
+
 import { Plugin } from "components/Plugin";
 import Weaver from "main";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { FileSystemAdapter, ItemView, WorkspaceLeaf } from "obsidian";
 import { ConversationContext } from "providers/conversation/ConversationContext";
 import { PluginContext } from "providers/plugin/PluginContext";
 import { StoreContext } from "providers/store/StoreContext";
@@ -15,11 +17,11 @@ export const VIEW_WEAVER = "weaver-view";
 
 export class WeaverView extends ItemView {
 	private root: Root | null = null;
-	private plugin: Weaver;
+	private storeService: StoreService;
 
-	constructor(leaf: WorkspaceLeaf, plugin: Weaver) {
+	constructor(leaf: WorkspaceLeaf, private plugin: Weaver) {
 		super(leaf);
-		this.plugin = plugin;
+		this.storeService = new StoreService(plugin);
 	}
 
 	getViewType() {
@@ -35,29 +37,35 @@ export class WeaverView extends ItemView {
 	}
 
 	async onOpen() {
-		//#region Services
+		// Initialize the Zustand store with hydration and persistence
+		await this.storeService.initializeStore();
 
-		// Create store service and initialize local storage
-		const storeService = new StoreService(this.plugin);
-		await storeService.ensureLocalStorage();
+		// Initialize other services
+		const apiKey = this.plugin.settings.apiKey;
+		const openAIRequestManager = new OpenAIRequestManager(apiKey);
 
-		// Create Zustand store
-		const store = await storeService.createStore();
+		const conversationIOManager = new ConversationIOManager(
+			this.plugin.app.vault.adapter as FileSystemAdapter,
+			this.plugin.settings.weaverDirectory
+		);
 
-		// Initialize conversation services
-		const openAIRequestManager = OpenAIRequestManager.getInstance(this.plugin);
-		const conversationIOManager = new ConversationIOManager(this.plugin);
-		const conversationService = new ConversationService(openAIRequestManager, conversationIOManager, store, this.plugin);
-		await conversationService.initConversation();
+		const conversationService = new ConversationService(
+			openAIRequestManager,
+			conversationIOManager,
+			this.storeService.getStore()
+		);
 
-		//#endregion
+		// Initialize the conversation based on settings
+		await conversationService.initConversation(
+			this.plugin.settings.loadLastConversation
+		);
 
-		// Render root
+		// Set up React rendering with context providers
 		this.root = createRoot(this.containerEl.children[1]);
 		this.root.render(
 			<StrictMode>
 				<PluginContext.Provider value={this.plugin}>
-					<StoreContext.Provider value={store}>
+					<StoreContext.Provider value={this.storeService.getStore()}>
 						<ConversationContext.Provider value={conversationService}>
 							<Plugin />
 						</ConversationContext.Provider>
