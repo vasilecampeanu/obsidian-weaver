@@ -1,4 +1,5 @@
-import { IMessage, IMessageNode } from 'interfaces/IConversation';
+import { IConversation, IMessage, IMessageNode } from 'interfaces/IConversation';
+import Weaver from 'main';
 import { OpenAIRequestManager } from 'services/api/providers/OpenAIRequestManager';
 import { ConversationIOManager } from 'services/conversation/ConversationIOManager';
 import { WeaverStoreSession } from 'services/store/slices/store.slicemaster';
@@ -9,15 +10,42 @@ export class ConversationService {
 	constructor(
 		private openAIManager: OpenAIRequestManager,
 		private conversationIOManager: ConversationIOManager,
-		private store: StoreApi<WeaverStoreSession>
+		private store: StoreApi<WeaverStoreSession>,
+		private plugin: Weaver
 	) { }
 
 	/**
 	 * Initializes a new conversation.
+	 * @param title - The title of the conversation to initialize. Defaults to 'Untitled'.
 	 */
 	public async initConversation(title: string = 'Untitled'): Promise<void> {
+		if (this.plugin.settings.loadLastConversation) {
+			const lastConversationId = await this.conversationIOManager.getLastConversationId();
+
+			if (lastConversationId) {
+				try {
+					await this.loadConversation(lastConversationId);
+					return;
+				} catch (error) {
+					console.error(`Failed to load conversation with ID ${lastConversationId}:`, error);
+				}
+			}
+		}
+
+		// Create a new conversation since loading the last one is not possible or not desired
+		await this.createNewConversation(title);
+	}
+
+	/**
+	 * Creates a new conversation with the given title.
+	 * @param title - The title of the new conversation.
+	 * @returns The newly created conversation.
+	 */
+	private async createNewConversation(title: string = 'Untitled'): Promise<IConversation> {
 		const conversation = await this.conversationIOManager.createConversation(title);
 		this.store.getState().setCurrentConversation(conversation);
+		await this.conversationIOManager.updateLastConversationId(conversation.id);
+		return conversation;
 	}
 
 	/**
@@ -124,5 +152,8 @@ export class ConversationService {
 		}
 
 		this.store.getState().setCurrentConversation(conversation);
+
+		// Update lastConversationId in store.json
+		await this.conversationIOManager.updateLastConversationId(conversation.id);
 	}
 }

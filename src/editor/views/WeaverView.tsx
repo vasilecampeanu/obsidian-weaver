@@ -47,7 +47,7 @@ export class WeaverView extends ItemView {
 		// Initialize conversation services
 		const openAIRequestManager = OpenAIRequestManager.getInstance(this.plugin);
 		const conversationIOManager = new ConversationIOManager(this.plugin);
-		const conversationService = new ConversationService(openAIRequestManager, conversationIOManager, store);
+		const conversationService = new ConversationService(openAIRequestManager, conversationIOManager, store, this.plugin);
 		await conversationService.initConversation();
 
 		//#endregion

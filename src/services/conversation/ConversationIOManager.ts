@@ -4,11 +4,17 @@ import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
+interface IStore {
+    lastConversationId: string | null;
+}
+
 export class ConversationIOManager {
 	private adapter: FileSystemAdapter;
+    private storePath: string;
 
 	constructor(private plugin: Weaver) {
 		this.adapter = this.plugin.app.vault.adapter as FileSystemAdapter;
+        this.storePath = path.join(this.plugin.settings.weaverFolder, 'store.json');
 	}
 
 	/**
@@ -174,6 +180,52 @@ export class ConversationIOManager {
 
 		await this.updateConversation(conversation);
 	}
+
+    /**
+     * Saves the store data to store.json.
+     */
+    private async saveStoreData(storeData: IStore): Promise<void> {
+        try {
+            await this.adapter.write(this.storePath, JSON.stringify(storeData, null, 4));
+        } catch (error) {
+            console.error('Error writing to store.json:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Reads the store data from store.json.
+     */
+    private async getStoreData(): Promise<IStore> {
+        try {
+            const data = await this.adapter.read(this.storePath);
+            return JSON.parse(data) as IStore;
+        } catch (error) {
+            if (error.message.includes('ENOENT')) {
+                // File doesn't exist, return default store data
+                return { lastConversationId: null };
+            }
+            console.error('Error reading store.json:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Updates the last conversation ID in store.json.
+     */
+    public async updateLastConversationId(conversationId: string): Promise<void> {
+        const storeData = await this.getStoreData();
+        storeData.lastConversationId = conversationId;
+        await this.saveStoreData(storeData);
+    }
+
+    /**
+     * Retrieves the last conversation ID from store.json.
+     */
+    public async getLastConversationId(): Promise<string | null> {
+        const storeData = await this.getStoreData();
+        return storeData.lastConversationId;
+    }
 
 	//#endregion
 }
