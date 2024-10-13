@@ -38,13 +38,13 @@ export class ConversationService {
 		title: string = 'Untitled'
 	): Promise<IConversation> {
 		const conversation = await this.conversationIOManager.createConversation(title);
-		this.store.getState().setCurrentConversation(conversation);
+		this.store.getState().setConversation(conversation);
 		this.store.getState().setPreviousConversationId(conversation.id);
 		return conversation;
 	}
 
 	public async generateAssistantMessage(userMessage: string): Promise<void> {
-		const { currentConversation, setCurrentConversation } = this.store.getState();
+		const { conversation: currentConversation, setConversation: setCurrentConversation } = this.store.getState();
 
 		if (!currentConversation) {
 			throw new Error('No conversation initialized');
@@ -142,7 +142,7 @@ export class ConversationService {
 			throw new Error(`Conversation with ID ${conversationId} not found`);
 		}
 
-		this.store.getState().setCurrentConversation(conversation);
+		this.store.getState().setConversation(conversation);
 		this.store.getState().setPreviousConversationId(conversation.id);
 	}
 }

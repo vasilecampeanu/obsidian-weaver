@@ -46,7 +46,7 @@ export class ConversationIOManager {
 		conversation.mapping[systemNodeId] = systemMessageNode;
 		conversation.current_node = systemNodeId;
 
-		await writeJsonFile(this.adapter, path.join(this.conversationsDir, conversationId), conversation);
+		await writeJsonFile(this.adapter, path.join(this.conversationsDir, `${conversationId}.json`), conversation);
 
 		return conversation;
 	}
@@ -55,7 +55,7 @@ export class ConversationIOManager {
 		conversationId: string,
 		messageNode: IMessageNode
 	): Promise<void> {
-		const conversation = await readJsonFile<IConversation>(this.adapter, path.join(this.conversationsDir, conversationId));
+		const conversation = await this.getConversation(conversationId);
 
 		if (!conversation) {
 			throw new Error('Conversation not found');
@@ -78,7 +78,7 @@ export class ConversationIOManager {
 		conversation.current_node = messageNode.id;
 		conversation.update_time = Date.now() / 1000;
 
-		await writeJsonFile(this.adapter, path.join(this.conversationsDir, conversation.id), conversation);
+		await writeJsonFile(this.adapter, path.join(this.conversationsDir, `${conversationId}.json`), conversation);
 	}
 
 	public async updateConversation(conversation: IConversation): Promise<void> {
@@ -86,11 +86,11 @@ export class ConversationIOManager {
 			throw new Error('The updated conversation is missing required fields.');
 		}
 
-		await writeJsonFile(this.adapter, path.join(this.conversationsDir, conversation.id), conversation);
+		await writeJsonFile(this.adapter, path.join(this.conversationsDir, `${conversation.id}.json`), conversation);
 	}
 
 	public async getConversation(conversationId: string): Promise<IConversation | null> {
-		return await readJsonFile<IConversation>(this.adapter, path.join(this.conversationsDir, conversationId));
+		return await readJsonFile<IConversation>(this.adapter, path.join(this.conversationsDir, `${conversationId}.json`));
 	}
 
 	public async getConversationPath(conversationId: string): Promise<IMessageNode[]> {
@@ -116,9 +116,6 @@ export class ConversationIOManager {
 		return path;
 	}
 
-	/**
-	 * Navigates to a specific node in the conversation.
-	 */
 	public async navigateToNode(conversationId: string, nodeId: string): Promise<void> {
 		const conversation = await this.getConversation(conversationId);
 
