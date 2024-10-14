@@ -7,6 +7,7 @@ import {
 } from 'helpers/ConversationIOController';
 import { IMessage, IMessageNode } from 'interfaces/IConversation';
 import { FileSystemAdapter } from 'obsidian';
+import { ChatCompletionChunk } from 'openai/resources/chat/completions';
 import { usePlugin } from 'providers/plugin/usePlugin';
 import { useStore } from 'providers/store/useStore';
 import { useState } from 'react';
@@ -48,7 +49,7 @@ export const useConversation = () => {
 		if (!conversation) {
 			throw new Error('No conversation initialized');
 		}
-
+	
 		const now = Date.now() / 1000;
 		const userMessageNodeId = uuidv4();
 		const userMessageNode: IMessageNode = {
@@ -72,37 +73,25 @@ export const useConversation = () => {
 			parent: conversation.current_node,
 			children: [],
 		};
-
-		await addMessageToConversation(adapter, plugin.settings.weaverDirectory, conversation.id, userMessageNode);
-
+	
+		const updatedConversationWithUserMessage = await addMessageToConversation(adapter, plugin.settings.weaverDirectory, conversation.id, userMessageNode);
+	
 		conversation.current_node = userMessageNode.id;
 
+		setConversation(updatedConversationWithUserMessage);
+	
 		const conversationPath = await getConversationPath(adapter, plugin.settings.weaverDirectory, conversation.id);
-
+	
 		const messages: IMessage[] = conversationPath
 			.filter((node) => node.message)
 			.map((node) => node.message!);
-
-		let response;
-
+	
+		let responseStream: AsyncIterable<ChatCompletionChunk>;
+	
 		const controller = new AbortController();
 		setAbortController(controller);
-
-		try {
-			response = await openAIManager.sendMessage(messages, 'gpt-4', controller.signal);
-		} catch (error) {
-			if (error.message === 'Request was aborted') {
-				// TODO: Handle the aborted request, perhaps update the state/UI
-				console.log('Message generation was aborted');
-				return;
-			}
-			console.error('Error sending message to OpenAI:', error);
-			return;
-		} finally {
-			setAbortController(null);
-		}
-
-		const assistantMessageContent = response.choices[0].message?.content || '';
+	
+		// Create a placeholder for the assistant's message
 		const assistantMessageNodeId = uuidv4();
 		const assistantMessageNode: IMessageNode = {
 			id: assistantMessageNodeId,
@@ -113,10 +102,10 @@ export const useConversation = () => {
 				update_time: now,
 				content: {
 					content_type: 'text',
-					parts: [assistantMessageContent],
+					parts: [''], // Start with an empty string
 				},
-				status: 'finished_successfully',
-				end_turn: true,
+				status: 'in_progress', // Update status to indicate streaming
+				end_turn: false,
 				weight: 1.0,
 				metadata: {},
 				recipient: 'all',
@@ -125,12 +114,59 @@ export const useConversation = () => {
 			parent: userMessageNode.id,
 			children: [],
 		};
-
-		await addMessageToConversation(adapter, plugin.settings.weaverDirectory, conversation.id, assistantMessageNode);
-
+	
+		const updatedConversationWithAssistentMessage = await addMessageToConversation(adapter, plugin.settings.weaverDirectory, conversation.id, assistantMessageNode);
 		conversation.current_node = assistantMessageNodeId;
-		setConversation({ ...conversation });
-	};
+		setConversation(updatedConversationWithAssistentMessage);
+	
+		try {
+			responseStream = await openAIManager.sendMessageStream(messages, 'gpt-4', controller.signal);
+		} catch (error) {
+			if (error.message === 'Request was aborted') {
+				console.log('Message generation was aborted');
+				return;
+			}
+			console.error('Error sending message to OpenAI:', error);
+			return;
+		}
+	
+		try {
+			for await (const chunk of responseStream) {
+				const delta = chunk.choices[0].delta.content || '';
+
+				if (delta) {
+					if (assistantMessageNode.message) { // Type guard
+						const updatedContent = assistantMessageNode.message.content.parts[0] + delta;
+						assistantMessageNode.message.content.parts[0] = updatedContent;
+						assistantMessageNode.message.update_time = Date.now() / 1000;
+	
+						// Update the message in the conversation
+						const updatedConversationWithAssistentMessage = await addMessageToConversation(adapter, plugin.settings.weaverDirectory, conversation.id, assistantMessageNode);
+						setConversation(updatedConversationWithAssistentMessage);
+					} else {
+						console.error('assistantMessageNode.message is null or undefined');
+					}
+				}
+			}
+	
+			// Once streaming is complete, update the status
+			if (assistantMessageNode.message) { // Type guard
+				assistantMessageNode.message.status = 'finished_successfully';
+				assistantMessageNode.message.end_turn = true;
+				const updatedConversationWithAssistentMessage = await addMessageToConversation(adapter, plugin.settings.weaverDirectory, conversation.id, assistantMessageNode);
+				setConversation(updatedConversationWithAssistentMessage);
+			}
+		} catch (error) {
+			if (error.message === 'Request was aborted') {
+				console.log('Message generation was aborted');
+			} else {
+				console.error('Error processing message stream:', error);
+			}
+		} finally {
+			setAbortController(null);
+		}
+	};	
+
 
 	const loadConversation = async (conversationId: string) => {
 		const conversation = await getConversation(adapter, plugin.settings.weaverDirectory, conversationId);
@@ -151,23 +187,23 @@ export const useConversation = () => {
 
 	const getConversationPathWithBranches = () => {
 		if (!conversation) return [];
-	
-		const traverse = (nodeId: string, path: IMessageNode[]) => {
-		const node = conversation.mapping[nodeId];
 
-		if (!node) return;
-	
-		if (node.message?.author.role !== 'system') {
-			path.push(node);
-		}
-	
-		if (node.children.length > 0) {
-			node.children.forEach((childId) => {
-				traverse(childId, path);
-			});
-		}
+		const traverse = (nodeId: string, path: IMessageNode[]) => {
+			const node = conversation.mapping[nodeId];
+
+			if (!node) return;
+
+			if (node.message?.author.role !== 'system') {
+				path.push(node);
+			}
+
+			if (node.children.length > 0) {
+				node.children.forEach((childId) => {
+					traverse(childId, path);
+				});
+			}
 		};
-	
+
 		const path: IMessageNode[] = [];
 		traverse(conversation.current_node, path);
 		return path;

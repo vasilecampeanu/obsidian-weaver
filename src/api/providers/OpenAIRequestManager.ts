@@ -1,8 +1,6 @@
-// OpenAIRequestManager.ts
 import { IMessage } from 'interfaces/IConversation';
 import OpenAI from 'openai';
 import { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions';
-import { Stream } from 'openai/streaming';
 
 export class OpenAIRequestManager {
 	private client: OpenAI;
@@ -18,7 +16,7 @@ export class OpenAIRequestManager {
 		messages: IMessage[],
 		model: string = 'gpt-4',
 		abortSignal?: AbortSignal
-	): Promise<AsyncIterable<Stream<ChatCompletionChunk>>> {
+	): Promise<AsyncIterable<ChatCompletionChunk>> {
 		const apiMessages = messages.map((msg) => ({
 			role: msg.author.role,
 			content: msg.content.parts.join(''),
@@ -36,7 +34,7 @@ export class OpenAIRequestManager {
 				}
 			);
 
-			return response as AsyncIterable<Stream<ChatCompletionChunk>>;
+			return response;
 		} catch (error: any) {
 			if (error.name === 'AbortError') {
 				console.error('Request aborted');

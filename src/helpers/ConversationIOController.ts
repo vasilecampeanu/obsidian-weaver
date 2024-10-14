@@ -54,7 +54,7 @@ export const addMessageToConversation = async (
 	weaverDirectory: string,
 	conversationId: string,
 	messageNode: IMessageNode
-): Promise<void> => {
+): Promise<IConversation> => {
 	const conversationsDir = path.join(weaverDirectory, 'conversations');
 	const conversation = await getConversation(adapter, weaverDirectory, conversationId);
 
@@ -79,6 +79,8 @@ export const addMessageToConversation = async (
 	conversation.update_time = Date.now() / 1000;
 
 	await writeJsonFile(adapter, path.join(conversationsDir, `${conversationId}.json`), conversation);
+
+	return conversation;
 };
 
 export const getConversation = async (
