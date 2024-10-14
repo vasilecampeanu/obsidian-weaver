@@ -38,23 +38,17 @@ export const createConversationSlice = (
 	const settings = plugin.settings;
 	const adapter  = plugin.app.vault.adapter as FileSystemAdapter;
 
-	/**
-	 * Saves the current store data to the local storage.
-	 */
 	const saveContextData = async (plugin: Weaver, data: Partial<ILocalStorage>): Promise<void> => {
 		try {
 			let existingData: ILocalStorage = DEFAULT_LOCAL_STORAGE_STATES;
 	
-			// Check if the file exists before attempting to read it
 			if (await adapter.exists(settings.weaverContextStorage)) {
 				const fileContents = await adapter.read(settings.weaverContextStorage);
 				existingData = JSON.parse(fileContents);
 			}
 	
-			// Merge existing data with new data
 			const mergedData = { ...existingData, ...data };
 	
-			// Write the merged data back to the file
 			await adapter.write(
 				settings.weaverContextStorage,
 				JSON.stringify(mergedData, null, 4)

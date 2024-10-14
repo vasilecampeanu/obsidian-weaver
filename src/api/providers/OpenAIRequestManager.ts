@@ -1,3 +1,4 @@
+// OpenAIRequestManager.ts
 import { IMessage } from 'interfaces/IConversation';
 import OpenAI from 'openai';
 import { ChatCompletion, ChatCompletionChunk } from 'openai/resources/chat/completions';
@@ -15,7 +16,8 @@ export class OpenAIRequestManager {
 
 	public async sendMessageStream(
 		messages: IMessage[],
-		model: string = 'gpt-4'
+		model: string = 'gpt-4',
+		abortSignal?: AbortSignal
 	): Promise<AsyncIterable<Stream<ChatCompletionChunk>>> {
 		const apiMessages = messages.map((msg) => ({
 			role: msg.author.role,
@@ -23,14 +25,23 @@ export class OpenAIRequestManager {
 		}));
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model,
-				messages: apiMessages,
-				stream: true,
-			});
+			const response = await this.client.chat.completions.create(
+				{
+					model,
+					messages: apiMessages,
+					stream: true,
+				},
+				{
+					signal: abortSignal,
+				}
+			);
 
 			return response as AsyncIterable<Stream<ChatCompletionChunk>>;
-		} catch (error) {
+		} catch (error: any) {
+			if (error.name === 'AbortError') {
+				console.error('Request aborted');
+				throw new Error('Request was aborted');
+			}
 			console.error('Error in sendMessageStream:', error);
 			throw new Error('Failed to send message stream to OpenAI API');
 		}
@@ -38,7 +49,8 @@ export class OpenAIRequestManager {
 
 	public async sendMessage(
 		messages: IMessage[],
-		model: string = 'gpt-4'
+		model: string = 'gpt-4',
+		abortSignal?: AbortSignal
 	): Promise<ChatCompletion> {
 		const apiMessages = messages.map((msg) => ({
 			role: msg.author.role,
@@ -46,14 +58,23 @@ export class OpenAIRequestManager {
 		}));
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model,
-				messages: apiMessages,
-				stream: false,
-			});
+			const response = await this.client.chat.completions.create(
+				{
+					model,
+					messages: apiMessages,
+					stream: false,
+				},
+				{
+					signal: abortSignal,
+				}
+			);
 
 			return response as ChatCompletion;
-		} catch (error) {
+		} catch (error: any) {
+			if (error.name === 'AbortError') {
+				console.error('Request aborted');
+				throw new Error('Request was aborted');
+			}
 			console.error('Error in sendMessage:', error);
 			throw new Error('Failed to send message to OpenAI API');
 		}

@@ -1,7 +1,7 @@
+import { readJsonFile, writeJsonFile } from 'helpers/FileIOUtils';
 import { IConversation, IMessageNode } from 'interfaces/IConversation';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
-import { readJsonFile, writeJsonFile } from 'utils/FileIOUtils';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createConversation = async (

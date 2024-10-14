@@ -1,4 +1,42 @@
 .ow-chat-dialogue-feed
 {
 	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	.ow-chat-message-bubble
+	{
+		display: flex;
+
+		.message-content
+		{
+			padding: 10px;
+			max-width: 85%;
+			border-radius: 10px;
+			border: 1px solid var(--prompt-border-color);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+			font-size: var(--font-ui-small);
+		}
+
+		&.assistant
+		{
+			justify-content: start;
+
+			.message-content
+			{
+				background-color: var(--interactive-normal);
+			}
+		}
+	
+		&.user
+		{
+			justify-content: end;
+
+			.message-content
+			{
+				background-color: var(--interactive-accent);
+			}
+		}
+	}
 }
