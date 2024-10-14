@@ -8,12 +8,12 @@ export interface WeaverSettings {
 	loadLastConversation: boolean
 }
 
-const WEAVER_FOLDER = ".weaver";
-
 export const DEFAULT_SETTINGS: WeaverSettings = {
 	apiKey: "",
-	weaverDirectory: WEAVER_FOLDER,
-	weaverContextStorage: `${WEAVER_FOLDER}/context.json`,
+	weaverDirectory: ".weaver",
+	get weaverContextStorage() {
+		return `${this.weaverDirectory}/context.json`;
+	},
 	loadLastConversation: true
 };
 

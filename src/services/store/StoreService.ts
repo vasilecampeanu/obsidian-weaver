@@ -2,55 +2,63 @@ import Weaver from 'main';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
 import { ensureFoldersExist } from "utils/FileIOUtils";
-import { ContextProps, DEFAULT_CONTEXT_STATES } from "./slices/store.slice.context";
-import { WeaverStoreProps } from "./slices/store.slicemaster";
+import { OpenAIRequestManager } from '../../api/providers/OpenAIRequestManager';
+import { DEFAULT_LOCAL_STORAGE_STATES, ILocalStorage } from './slices/store.slice.conversation';
+import { WeaverStoreProps } from './slices/store.slicemaster';
 import { createWeaverStore, WeaverStore } from "./Store";
 
 export class StoreService {
-	private store: WeaverStore | null = null;
+    private store: WeaverStore | null = null;
 
-	constructor(private plugin: Weaver) {}
+    constructor(private plugin: Weaver) {}
 
-	public async initializeStore(): Promise<void> {
+	public async initializeStore(): Promise<WeaverStore> {
 		await this.ensureLocalStorage();
 		const hydration = await this.hydrateStore();
-		this.store = createWeaverStore(this.plugin, hydration);
-	}
-
-	private async ensureLocalStorage(): Promise<void> {
-		const weaverDirectory = this.plugin.settings.weaverDirectory;
-		const conversationsFolder = path.join(weaverDirectory, 'conversations');
-		await ensureFoldersExist(this.plugin.app.vault.adapter as FileSystemAdapter, [weaverDirectory, conversationsFolder]);
-	}
-
-	public getStore(): WeaverStore {
-		if (!this.store) {
-			throw new Error("Store has not been initialized. Call initializeStore() first.");
-		}
-
+	
+		// Initialize dependencies
+		const openAIManager = new OpenAIRequestManager(this.plugin.settings.apiKey);
+	
+		// Create the store with initialized dependencies
+		this.store = createWeaverStore(this.plugin, openAIManager, hydration);
+		
 		return this.store;
 	}
 
-    private async hydrateStore(): Promise<Partial<WeaverStoreProps>> {
-		const context = await this.getContextData();
-
-        const hydratedProps: Partial<WeaverStoreProps> = {
-			previousConversationId: context.previousConversationId
-        };
-
-        return { ...hydratedProps };
+    private async ensureLocalStorage(): Promise<void> {
+        const weaverDirectory = this.plugin.settings.weaverDirectory;
+        const conversationsFolder = path.join(weaverDirectory, 'conversations');
+        await ensureFoldersExist(this.plugin.app.vault.adapter as FileSystemAdapter, [weaverDirectory, conversationsFolder]);
     }
 
-	public async getContextData(): Promise<ContextProps> {
-		try {
-			const data = await this.plugin.app.vault.adapter.read(this.plugin.settings.weaverContextStorage);
-			return JSON.parse(data) as ContextProps;
-		} catch (error: any) {
-			if (error.message.includes('ENOENT')) {
-				return DEFAULT_CONTEXT_STATES;
-			}
+    public getStore(): WeaverStore {
+        if (!this.store) {
+            throw new Error("Store has not been initialized. Call initializeStore() first.");
+        }
 
-			throw error; 
-		}
-	}
+        return this.store;
+    }
+
+    private async hydrateStore(): Promise<Partial<WeaverStoreProps>> {
+        const context = await this.getContextData();
+
+        const hydratedProps: Partial<WeaverStoreProps> = {
+            previousConversationId: context.previousConversationId
+        };
+
+        return hydratedProps;
+    }
+
+    public async getContextData(): Promise<ILocalStorage> {
+        try {
+            const data = await this.plugin.app.vault.adapter.read(this.plugin.settings.weaverContextStorage);
+            return JSON.parse(data) as ILocalStorage;
+        } catch (error: any) {
+            if (error.message.includes('ENOENT')) {
+                return DEFAULT_LOCAL_STORAGE_STATES;
+            }
+
+            throw error; 
+        }
+    }
 }

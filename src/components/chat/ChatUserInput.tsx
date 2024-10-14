@@ -1,7 +1,7 @@
 import { Icon } from "components/primitives/Icon";
 import { AnimatePresence, motion } from "framer-motion";
+import { useConversation } from "hooks/useConversation";
 import { IUserSelection } from "interfaces/IUserEvents";
-import { useConversation } from "providers/conversation/useConversation";
 import { usePlugin } from "providers/plugin/usePlugin";
 import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
