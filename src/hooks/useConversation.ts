@@ -56,71 +56,218 @@ export const useConversation = () => {
 		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
 	);
 
-	// Helper function to add a message node to the conversation
-	const addMessageNode = (
-		conversation: IConversation,
-		messageNode: IMessageNode
-	): IConversation => {
-		const now = Date.now() / 1000;
-
-		// Update conversation mapping with new message node
-		const updatedMapping = {
-			...conversation.mapping,
-			[messageNode.id]: messageNode,
-		};
-
-		// Update parent node's children
-		if (messageNode.parent) {
-			const parentNode = updatedMapping[messageNode.parent];
-			if (parentNode && !parentNode.children.includes(messageNode.id)) {
-				updatedMapping[messageNode.parent] = {
-					...parentNode,
-					children: [...parentNode.children, messageNode.id],
-				};
-			}
-		}
-
-		// Update conversation
-		const updatedConversation: IConversation = {
-			...conversation,
-			mapping: updatedMapping,
-			current_node: messageNode.id,
-			update_time: now,
-		};
-
-		return updatedConversation;
-	};
-
-	// Helper function to get the conversation path up to a specific node
-	const getConversationPathUpToNode = (conversation: IConversation, nodeId: string): IMessageNode[] => {
-		let path: IMessageNode[] = [];
-		let currentNode = conversation.mapping[nodeId];
-
-		while (currentNode) {
-			if (currentNode.message?.author.role !== 'system') {
-				path.unshift(currentNode);
-			}
-
-			if (currentNode.parent) {
-				currentNode = conversation.mapping[currentNode.parent];
-			} else {
-				break;
-			}
-		}
-
-		return path;
-	};
-
-	// Helper function to save the conversation
-	const saveConversation = async (conversation: IConversation) => {
+	const saveConversation = async (updatedConversation: IConversation) => {
 		try {
-			await writeConversation(adapter, plugin.settings.weaverDirectory, conversation);
+			await writeConversation(adapter, plugin.settings.weaverDirectory, updatedConversation);
 		} catch (error) {
 			console.error('Failed to save conversation:', error);
 		}
 	};
 
-	// Helper function to stream assistant's response
+	const updateConversation = async (updatedConversation: IConversation) => {
+		setConversation(updatedConversation);
+		await saveConversation(updatedConversation);
+	};
+
+	const generateAssistantMessage = useCallback(
+		async (userMessage: string) => {
+			if (!conversation) {
+				throw new Error('No conversation initialized');
+			}
+
+			setIsGenerating(true);
+
+			const now = Date.now() / 1000;
+			const userMessageNodeId = uuidv4();
+			const userMessageNode: IMessageNode = {
+				id: userMessageNodeId,
+				message: {
+					id: userMessageNodeId,
+					author: { role: 'user', name: null, metadata: {} },
+					create_time: now,
+					update_time: now,
+					content: {
+						content_type: 'text',
+						parts: [userMessage],
+					},
+					status: 'finished_successfully',
+					end_turn: true,
+					weight: 1.0,
+					metadata: {},
+					recipient: 'all',
+					channel: null,
+				},
+				parent: conversation.current_node,
+				children: [],
+			};
+
+			// Add user message node to conversation
+			let updatedConversation = {
+				...conversation,
+				mapping: {
+					...conversation.mapping,
+					[userMessageNodeId]: userMessageNode,
+					...(conversation.current_node && {
+						[conversation.current_node]: {
+							...conversation.mapping[conversation.current_node],
+							children: [
+								...conversation.mapping[conversation.current_node].children,
+								userMessageNodeId,
+							],
+						},
+					}),
+				},
+				current_node: userMessageNodeId,
+				update_time: now,
+			};
+			await updateConversation(updatedConversation);
+
+			// Prepare conversation path up to user message
+			const conversationPath = getConversationPathToNode(updatedConversation, userMessageNodeId)
+				.filter((node) => node.message)
+				.map((node) => node.message!);
+
+			const assistantMessageNodeId = uuidv4();
+			const assistantMessageNode: IMessageNode = {
+				id: assistantMessageNodeId,
+				message: {
+					id: assistantMessageNodeId,
+					author: { role: 'assistant', name: null, metadata: {} },
+					create_time: now,
+					update_time: now,
+					content: {
+						content_type: 'text',
+						parts: [''],
+					},
+					status: 'in_progress',
+					end_turn: false,
+					weight: 1.0,
+					metadata: {},
+					recipient: 'all',
+					channel: null,
+				},
+				parent: userMessageNodeId,
+				children: [],
+			};
+
+			// Add assistant message node to conversation
+			updatedConversation = {
+				...updatedConversation,
+				mapping: {
+					...updatedConversation.mapping,
+					[assistantMessageNodeId]: assistantMessageNode,
+					[userMessageNodeId]: {
+						...updatedConversation.mapping[userMessageNodeId],
+						children: [...updatedConversation.mapping[userMessageNodeId].children, assistantMessageNodeId],
+					},
+				},
+				current_node: assistantMessageNodeId,
+				update_time: now,
+			};
+			await updateConversation(updatedConversation);
+
+			const controller = new AbortController();
+			setAbortController(controller);
+
+			// Stream assistant response
+			await streamAssistantResponse(
+				updatedConversation,
+				assistantMessageNode,
+				conversationPath,
+				controller
+			);
+		},
+		[conversation, openAIManager, updateConversation]
+	);
+
+	const regenerateAssistantMessage = useCallback(
+		async (messageId: string) => {
+			if (!conversation) {
+				throw new Error('No conversation initialized');
+			}
+
+			setIsGenerating(true);
+
+			const now = Date.now() / 1000;
+
+			// Get the assistant message node by messageId
+			const assistantNodeToRegenerate = conversation.mapping[messageId];
+
+			if (!assistantNodeToRegenerate || assistantNodeToRegenerate.message?.author.role !== 'assistant') {
+				throw new Error('Provided messageId is not an assistant message');
+			}
+
+			const userMessageNodeId = assistantNodeToRegenerate.parent;
+
+			if (!userMessageNodeId) {
+				throw new Error('No parent user message node found for regeneration');
+			}
+
+			const userMessageNode = conversation.mapping[userMessageNodeId];
+
+			if (!userMessageNode || userMessageNode.message?.author.role !== 'user') {
+				throw new Error('Parent node is not a user message');
+			}
+
+			// Create a new assistant message node
+			const assistantMessageNodeId = uuidv4();
+			const assistantMessageNode: IMessageNode = {
+				id: assistantMessageNodeId,
+				message: {
+					id: assistantMessageNodeId,
+					author: { role: 'assistant', name: null, metadata: {} },
+					create_time: now,
+					update_time: now,
+					content: {
+						content_type: 'text',
+						parts: [''],
+					},
+					status: 'in_progress',
+					end_turn: false,
+					weight: 1.0,
+					metadata: {},
+					recipient: 'all',
+					channel: null,
+				},
+				parent: userMessageNodeId,
+				children: [],
+			};
+
+			// Add assistant message node to conversation
+			let updatedConversation = {
+				...conversation,
+				mapping: {
+					...conversation.mapping,
+					[assistantMessageNodeId]: assistantMessageNode,
+					[userMessageNodeId]: {
+						...userMessageNode,
+						children: [...userMessageNode.children, assistantMessageNodeId],
+					},
+				},
+				current_node: assistantMessageNodeId,
+				update_time: now,
+			};
+			await updateConversation(updatedConversation);
+
+			// Prepare conversation path up to user message node
+			const conversationPath = getConversationPathToNode(updatedConversation, userMessageNodeId)
+				.filter((node) => node.message)
+				.map((node) => node.message!);
+
+			const controller = new AbortController();
+			setAbortController(controller);
+
+			// Stream assistant response
+			await streamAssistantResponse(
+				updatedConversation,
+				assistantMessageNode,
+				conversationPath,
+				controller
+			);
+		},
+		[conversation, openAIManager, updateConversation]
+	);
+
 	const streamAssistantResponse = async (
 		conversation: IConversation,
 		assistantMessageNode: IMessageNode,
@@ -196,10 +343,7 @@ export const useConversation = () => {
 				update_time: Date.now() / 1000,
 			};
 
-			setConversation(finalConversation);
-
-			// Write the updated conversation to file
-			await saveConversation(finalConversation);
+			await updateConversation(finalConversation);
 		} catch (error: any) {
 			if (error.name === 'AbortError') {
 				console.log('Message generation was aborted');
@@ -229,9 +373,7 @@ export const useConversation = () => {
 					update_time: Date.now() / 1000,
 				};
 
-				setConversation(partialConversation);
-
-				await saveConversation(partialConversation);
+				await updateConversation(partialConversation);
 			} else {
 				console.error('Error generating assistant message:', error);
 
@@ -260,9 +402,7 @@ export const useConversation = () => {
 					update_time: Date.now() / 1000,
 				};
 
-				setConversation(errorConversation);
-
-				await saveConversation(errorConversation);
+				await updateConversation(errorConversation);
 			}
 		} finally {
 			setIsGenerating(false);
@@ -270,166 +410,21 @@ export const useConversation = () => {
 		}
 	};
 
-	const generateAssistantMessage = useCallback(
-		async (userMessage: string) => {
-			if (!conversation) {
-				throw new Error('No conversation initialized');
-			}
+	const getConversationPathToNode = (conversation: IConversation, nodeId: string): IMessageNode[] => {
+		const path: IMessageNode[] = [];
+		let currentNodeId = nodeId;
 
-			setIsGenerating(true);
+		while (currentNodeId) {
+			const node = conversation.mapping[currentNodeId];
+			if (!node) break;
 
-			const now = Date.now() / 1000;
-			const userMessageNodeId = uuidv4();
-			const userMessageNode: IMessageNode = {
-				id: userMessageNodeId,
-				message: {
-					id: userMessageNodeId,
-					author: { role: 'user', name: null, metadata: {} },
-					create_time: now,
-					update_time: now,
-					content: {
-						content_type: 'text',
-						parts: [userMessage],
-					},
-					status: 'finished_successfully',
-					end_turn: true,
-					weight: 1.0,
-					metadata: {},
-					recipient: 'all',
-					channel: null,
-				},
-				parent: conversation.current_node,
-				children: [],
-			};
+			path.unshift(node);
 
-			// Add user message node to conversation
-			let updatedConversation = addMessageNode(conversation, userMessageNode);
-			setConversation(updatedConversation);
+			currentNodeId = node.parent!;
+		}
 
-			// Save conversation
-			await saveConversation(updatedConversation);
-
-			// Prepare conversation path up to user message
-			const conversationPath = getConversationPathUpToNode(updatedConversation, userMessageNode.id)
-				.filter((node) => node.message)
-				.map((node) => node.message!);
-
-			const assistantMessageNodeId = uuidv4();
-			const assistantMessageNode: IMessageNode = {
-				id: assistantMessageNodeId,
-				message: {
-					id: assistantMessageNodeId,
-					author: { role: 'assistant', name: null, metadata: {} },
-					create_time: now,
-					update_time: now,
-					content: {
-						content_type: 'text',
-						parts: [''],
-					},
-					status: 'in_progress',
-					end_turn: false,
-					weight: 1.0,
-					metadata: {},
-					recipient: 'all',
-					channel: null,
-				},
-				parent: userMessageNode.id,
-				children: [],
-			};
-
-			// Add assistant message node to conversation
-			updatedConversation = addMessageNode(updatedConversation, assistantMessageNode);
-			setConversation(updatedConversation);
-
-			const controller = new AbortController();
-			setAbortController(controller);
-
-			// Stream assistant response
-			await streamAssistantResponse(
-				updatedConversation,
-				assistantMessageNode,
-				conversationPath,
-				controller
-			);
-		},
-		[conversation, openAIManager, setConversation]
-	);
-
-	const regenerateAssistantMessage = useCallback(
-		async (messageId: string) => {
-			if (!conversation) {
-				throw new Error('No conversation initialized');
-			}
-
-			setIsGenerating(true);
-
-			const now = Date.now() / 1000;
-
-			// Get the assistant message node by messageId
-			const assistantNodeToRegenerate = conversation.mapping[messageId];
-
-			if (!assistantNodeToRegenerate || assistantNodeToRegenerate.message?.author.role !== 'assistant') {
-				throw new Error('Provided messageId is not an assistant message');
-			}
-
-			const userMessageNodeId = assistantNodeToRegenerate.parent;
-
-			if (!userMessageNodeId) {
-				throw new Error('No parent user message node found for regeneration');
-			}
-
-			const userMessageNode = conversation.mapping[userMessageNodeId];
-
-			if (!userMessageNode || userMessageNode.message?.author.role !== 'user') {
-				throw new Error('Parent node is not a user message');
-			}
-
-			// Create a new assistant message node
-			const assistantMessageNodeId = uuidv4();
-			const assistantMessageNode: IMessageNode = {
-				id: assistantMessageNodeId,
-				message: {
-					id: assistantMessageNodeId,
-					author: { role: 'assistant', name: null, metadata: {} },
-					create_time: now,
-					update_time: now,
-					content: {
-						content_type: 'text',
-						parts: [''],
-					},
-					status: 'in_progress',
-					end_turn: false,
-					weight: 1.0,
-					metadata: {},
-					recipient: 'all',
-					channel: null,
-				},
-				parent: userMessageNodeId,
-				children: [],
-			};
-
-			// Add assistant message node to conversation
-			let updatedConversation = addMessageNode(conversation, assistantMessageNode);
-			setConversation(updatedConversation);
-
-			// Prepare conversation path up to user message node
-			const conversationPath = getConversationPathUpToNode(updatedConversation, userMessageNodeId)
-				.filter((node) => node.message)
-				.map((node) => node.message!);
-
-			const controller = new AbortController();
-			setAbortController(controller);
-
-			// Stream assistant response
-			await streamAssistantResponse(
-				updatedConversation,
-				assistantMessageNode,
-				conversationPath,
-				controller
-			);
-		},
-		[conversation, openAIManager, setConversation]
-	);
+		return path;
+	};
 
 	const loadConversation = useCallback(
 		async (conversationId: string) => {
@@ -451,27 +446,20 @@ export const useConversation = () => {
 		}
 	}, [abortController]);
 
-	const getConversationPathWithBranches = useCallback((): IMessageNode[] => {
-		if (!conversation) return [];
+	const navigateToNode = useCallback(
+		async (nodeId: string) => {
+			if (!conversation) return;
 
-		const traverse = (nodeId: string, path: IMessageNode[]) => {
-			const node = conversation.mapping[nodeId];
+			const updatedConversation = {
+				...conversation,
+				current_node: nodeId,
+				update_time: Date.now() / 1000,
+			};
 
-			if (!node) return;
-
-			if (node.message?.author.role !== 'system') {
-				path.push(node);
-			}
-
-			node.children.forEach((childId) => traverse(childId, path));
-		};
-
-		const path: IMessageNode[] = [];
-
-		traverse(conversation.current_node, path);
-
-		return path;
-	}, [conversation]);
+			await updateConversation(updatedConversation);
+		},
+		[conversation, updateConversation]
+	);
 
 	return {
 		conversation,
@@ -479,9 +467,10 @@ export const useConversation = () => {
 		initConversation,
 		createNewConversation,
 		generateAssistantMessage,
-		regenerateAssistantMessage, // Updated regenerateAssistantMessage to accept messageId
+		regenerateAssistantMessage,
 		loadConversation,
 		stopMessageGeneration,
-		getConversationPathWithBranches,
+		updateConversation,
+		navigateToNode
 	};
 };

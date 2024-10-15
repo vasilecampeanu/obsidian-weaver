@@ -1,3 +1,4 @@
+import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
 import React from "react";
 
@@ -18,6 +19,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	onPrevBranch,
 	onNextBranch,
 }) => {
+	const { regenerateAssistantMessage } = useConversation();
 	const message = messageNode.message;
 
 	if (!message) return null;
@@ -35,6 +37,13 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 					</span>
 					<button onClick={onNextBranch}>&gt;</button>
 				</div>
+			)}
+			{message.author.role === "assistant" && (
+				<button
+					onClick={() => regenerateAssistantMessage(messageNode.id)}
+				>
+					Regenerate
+				</button>
 			)}
 		</div>
 	);
