@@ -94,7 +94,12 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 				<ChatSelectedTextModal userSelection={userSelection} />
 			)}
 			<div className="ow-chat-user-input-toolbar">
-				<button className="ow-btn assistant-response-stop">
+				<button 
+					className="ow-btn assistant-response-stop"
+					onClick={() => {
+						conversation.stopMessageGeneration();
+					}}
+				>
 					<Icon iconId="circle-off" />
 				</button>
 				<button className="ow-btn assistant-response-regenerate">

@@ -25,6 +25,7 @@ export const useConversation = () => {
 		() => new OpenAIRequestManager(plugin.settings.apiKey),
 		[plugin.settings.apiKey]
 	);
+
 	const adapter = useMemo(() => plugin.app.vault.adapter as FileSystemAdapter, [plugin.app.vault]);
 
 	const initConversation = async (title: string = 'Untitled') => {
@@ -93,8 +94,10 @@ export const useConversation = () => {
 
 			// Update the parent node's children
 			const parentNodeId = userMessageNode.parent;
+
 			if (parentNodeId) {
 				const parentNode = updatedConversation.mapping[parentNodeId];
+
 				if (parentNode && !parentNode.children.includes(userMessageNode.id)) {
 					updatedConversation.mapping[parentNodeId] = {
 						...parentNode,
@@ -105,10 +108,14 @@ export const useConversation = () => {
 
 			setConversation(updatedConversation);
 
+			try {
+				await writeConversation(adapter, plugin.settings.weaverDirectory, updatedConversation);
+			} catch (saveError) {
+				console.error('Failed to save conversation after user message:', saveError);
+			}
+
 			// Prepare messages for OpenAI
-			const conversationPath = Object.values(updatedConversation.mapping)
-				.filter((node) => node.message)
-				.map((node) => node.message!);
+			const conversationPath = Object.values(updatedConversation.mapping).filter((node) => node.message).map((node) => node.message!);
 
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
@@ -175,7 +182,7 @@ export const useConversation = () => {
 				};
 
 				setConversation(newConversation);
-			}, 100); // Throttle to update every 100ms
+			}, 100);
 
 			try {
 				const responseStream = await openAIManager.sendMessageStream(
@@ -225,8 +232,74 @@ export const useConversation = () => {
 			} catch (error: any) {
 				if (error.name === 'AbortError') {
 					console.log('Message generation was aborted');
+
+					// Save the conversation with partial assistant content
+					const partialAssistantNode: IMessageNode = {
+						...assistantMessageNode,
+						message: {
+							...assistantMessageNode.message!,
+							content: {
+								...assistantMessageNode.message!.content,
+								parts: [assistantContent],
+							},
+							status: 'aborted',
+							end_turn: false,
+							update_time: Date.now() / 1000,
+						},
+					};
+
+					const partialConversation: IConversation = {
+						...updatedConversation,
+						mapping: {
+							...updatedConversation.mapping,
+							[assistantMessageNodeId]: partialAssistantNode,
+						},
+						current_node: assistantMessageNodeId,
+						update_time: Date.now() / 1000,
+					};
+
+					setConversation(partialConversation);
+
+					try {
+						await writeConversation(adapter, plugin.settings.weaverDirectory, partialConversation);
+					} catch (saveError) {
+						console.error('Failed to save conversation after abort:', saveError);
+					}
 				} else {
 					console.error('Error generating assistant message:', error);
+
+					// Optionally, save the conversation even on other errors
+					const errorAssistantNode: IMessageNode = {
+						...assistantMessageNode,
+						message: {
+							...assistantMessageNode.message!,
+							content: {
+								...assistantMessageNode.message!.content,
+								parts: [assistantContent || ''],
+							},
+							status: 'error',
+							end_turn: false,
+							update_time: Date.now() / 1000,
+						},
+					};
+
+					const errorConversation: IConversation = {
+						...updatedConversation,
+						mapping: {
+							...updatedConversation.mapping,
+							[assistantMessageNodeId]: errorAssistantNode,
+						},
+						current_node: assistantMessageNodeId,
+						update_time: Date.now() / 1000,
+					};
+
+					setConversation(errorConversation);
+
+					try {
+						await writeConversation(adapter, plugin.settings.weaverDirectory, errorConversation);
+					} catch (saveError) {
+						console.error('Failed to save conversation after error:', saveError);
+					}
 				}
 			} finally {
 				setAbortController(null);
