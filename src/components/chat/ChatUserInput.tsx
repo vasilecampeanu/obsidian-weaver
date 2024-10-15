@@ -93,19 +93,6 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 			{userSelection && (
 				<ChatSelectedTextModal userSelection={userSelection} />
 			)}
-			<div className="ow-chat-user-input-toolbar">
-				<button 
-					className="ow-btn assistant-response-stop"
-					onClick={() => {
-						conversation.stopMessageGeneration();
-					}}
-				>
-					<Icon iconId="circle-off" />
-				</button>
-				<button className="ow-btn assistant-response-regenerate">
-					<Icon iconId="refresh-cw" />
-				</button>
-			</div>
 			<div className="ow-chat-user-input-inner-wrapper">
 				<div className="ow-user-actions">
 					<AnimatePresence>
@@ -122,7 +109,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 									ease: "easeInOut",
 								}}
 							>
-								<Icon iconId="plus" />
+								<Icon iconId="message-circle-plus" className="new-chat-icon" />
 							</motion.button>
 						)}
 					</AnimatePresence>
@@ -151,13 +138,21 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 							animate={{ height: isExpanded ? "6em" : "2em" }}
 							transition={{ duration: 0.3, ease: "easeInOut" }}
 						/>
-						{userInputMessage.length > 0 && (
+						{userInputMessage.length > 0 ? (
 							<button
 								className="ow-btn submit"
 								type="submit"
 								disabled={userInputMessage.trim().length === 0}
 							>
 								<Icon iconId="send" />
+							</button>
+						) : conversation.isGenerating && (
+							<button
+								className="ow-btn submit"
+								type="submit"
+								disabled={userInputMessage.trim().length === 0}
+							>
+								<Icon iconId="square" />
 							</button>
 						)}
 					</form>

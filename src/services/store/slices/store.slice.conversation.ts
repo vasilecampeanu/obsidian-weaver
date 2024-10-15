@@ -1,4 +1,3 @@
-import { OpenAIRequestManager } from 'api/providers/OpenAIRequestManager';
 import { IConversation } from 'interfaces/IConversation';
 import Weaver from 'main';
 import { FileSystemAdapter } from 'obsidian';
@@ -10,6 +9,7 @@ export interface ILocalStorage {
 
 export interface ConversationProps extends ILocalStorage {
     conversation: IConversation | null;
+	isGenerating: boolean;
 }
 
 export const DEFAULT_LOCAL_STORAGE_STATES: ILocalStorage = {
@@ -19,16 +19,17 @@ export const DEFAULT_LOCAL_STORAGE_STATES: ILocalStorage = {
 export const DEFAULT_CONVERSATION_STATES: ConversationProps = {
 	...DEFAULT_LOCAL_STORAGE_STATES,
     conversation: null,
+    isGenerating: false,
 };
 
 export interface ConversationState extends ConversationProps {
     setConversation: (conversation: IConversation | null) => void;
+    setIsGenerating: (isGenerating: boolean) => void;
     setPreviousConversationId: (previousConversationId: string | null) => void;
 }
 
 export const createConversationSlice = (
     plugin: Weaver,
-    openAIManager: OpenAIRequestManager,
 ): StateCreator<
     ConversationState,
     [],
@@ -65,5 +66,6 @@ export const createConversationSlice = (
 			set({ previousConversationId: conversationId });
 			saveContextData(plugin, { previousConversationId: conversationId })
 		},
+        setIsGenerating: (isGenerating: boolean) => set({ isGenerating }),
 	});
 }

@@ -2,7 +2,6 @@ import { ensureFoldersExist } from "helpers/FileIOUtils";
 import Weaver from 'main';
 import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
-import { OpenAIRequestManager } from '../../api/providers/OpenAIRequestManager';
 import { DEFAULT_LOCAL_STORAGE_STATES, ILocalStorage } from './slices/store.slice.conversation';
 import { WeaverStoreProps } from './slices/store.slicemaster';
 import { createWeaverStore, WeaverStore } from "./Store";
@@ -16,11 +15,8 @@ export class StoreService {
 		await this.ensureLocalStorage();
 		const hydration = await this.hydrateStore();
 	
-		// Initialize dependencies
-		const openAIManager = new OpenAIRequestManager(this.plugin.settings.apiKey);
-	
 		// Create the store with initialized dependencies
-		this.store = createWeaverStore(this.plugin, openAIManager, hydration);
+		this.store = createWeaverStore(this.plugin, hydration);
 		
 		return this.store;
 	}

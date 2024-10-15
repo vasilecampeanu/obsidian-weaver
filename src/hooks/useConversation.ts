@@ -14,10 +14,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const useConversation = () => {
 	const plugin = usePlugin();
+	
 	const conversation = useStore((state) => state.conversation);
 	const setConversation = useStore((state) => state.setConversation);
+	
 	const previousConversationId = useStore((state) => state.previousConversationId);
 	const setPreviousConversationId = useStore((state) => state.setPreviousConversationId);
+
+	const isGenerating = useStore((state) => state.isGenerating);
+    const setIsGenerating = useStore((state) => state.setIsGenerating);
 
 	const [abortController, setAbortController] = useState<AbortController | null>(null);
 
@@ -56,6 +61,8 @@ export const useConversation = () => {
 			if (!conversation) {
 				throw new Error('No conversation initialized');
 			}
+
+            setIsGenerating(true);
 
 			const now = Date.now() / 1000;
 			const userMessageNodeId = uuidv4();
@@ -302,6 +309,7 @@ export const useConversation = () => {
 					}
 				}
 			} finally {
+				setIsGenerating(false);
 				setAbortController(null);
 			}
 		},
@@ -352,6 +360,7 @@ export const useConversation = () => {
 
 	return {
 		conversation,
+		isGenerating,
 		initConversation,
 		createNewConversation,
 		generateAssistantMessage,
