@@ -49,38 +49,13 @@ export const createConversation = async (
 	return conversation;
 };
 
-export const addMessageToConversation = async (
+export const writeConversation = async (
 	adapter: FileSystemAdapter,
 	weaverDirectory: string,
-	conversationId: string,
-	messageNode: IMessageNode
-): Promise<IConversation> => {
+	conversation: IConversation
+): Promise<void> => {
 	const conversationsDir = path.join(weaverDirectory, 'conversations');
-	const conversation = await getConversation(adapter, weaverDirectory, conversationId);
-
-	if (!conversation) {
-		throw new Error('Conversation not found');
-	}
-
-	conversation.mapping[messageNode.id] = messageNode;
-
-	if (messageNode.parent) {
-		const parentNode = conversation.mapping[messageNode.parent];
-		if (parentNode) {
-			if (!parentNode.children.includes(messageNode.id)) {
-				parentNode.children.push(messageNode.id);
-			}
-		} else {
-			console.warn(`Parent node ${messageNode.parent} not found`);
-		}
-	}
-
-	conversation.current_node = messageNode.id;
-	conversation.update_time = Date.now() / 1000;
-
-	await writeJsonFile(adapter, path.join(conversationsDir, `${conversationId}.json`), conversation);
-
-	return conversation;
+	await writeJsonFile(adapter, path.join(conversationsDir, `${conversation.id}.json`), conversation);
 };
 
 export const getConversation = async (
@@ -90,29 +65,4 @@ export const getConversation = async (
 ): Promise<IConversation | null> => {
 	const conversationsDir = path.join(weaverDirectory, 'conversations');
 	return await readJsonFile<IConversation>(adapter, path.join(conversationsDir, `${conversationId}.json`));
-};
-
-export const getConversationPath = async (
-	adapter: FileSystemAdapter,
-	weaverDirectory: string,
-	conversationId: string
-): Promise<IMessageNode[]> => {
-	const conversation = await getConversation(adapter, weaverDirectory, conversationId);
-	if (!conversation) {
-		throw new Error('Conversation not found');
-	}
-
-	const pathNodes: IMessageNode[] = [];
-	let currentNode = conversation.mapping[conversation.current_node];
-
-	while (currentNode) {
-		pathNodes.unshift(currentNode);
-		if (currentNode.parent) {
-			currentNode = conversation.mapping[currentNode.parent];
-		} else {
-			break;
-		}
-	}
-
-	return pathNodes;
 };
