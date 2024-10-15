@@ -14,15 +14,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const useConversation = () => {
 	const plugin = usePlugin();
-	
+
 	const conversation = useStore((state) => state.conversation);
 	const setConversation = useStore((state) => state.setConversation);
-	
+
 	const previousConversationId = useStore((state) => state.previousConversationId);
 	const setPreviousConversationId = useStore((state) => state.setPreviousConversationId);
 
 	const isGenerating = useStore((state) => state.isGenerating);
-    const setIsGenerating = useStore((state) => state.setIsGenerating);
+	const setIsGenerating = useStore((state) => state.setIsGenerating);
 
 	const [abortController, setAbortController] = useState<AbortController | null>(null);
 
@@ -56,13 +56,227 @@ export const useConversation = () => {
 		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
 	);
 
+	// Helper function to add a message node to the conversation
+	const addMessageNode = (
+		conversation: IConversation,
+		messageNode: IMessageNode
+	): IConversation => {
+		const now = Date.now() / 1000;
+
+		// Update conversation mapping with new message node
+		const updatedMapping = {
+			...conversation.mapping,
+			[messageNode.id]: messageNode,
+		};
+
+		// Update parent node's children
+		if (messageNode.parent) {
+			const parentNode = updatedMapping[messageNode.parent];
+			if (parentNode && !parentNode.children.includes(messageNode.id)) {
+				updatedMapping[messageNode.parent] = {
+					...parentNode,
+					children: [...parentNode.children, messageNode.id],
+				};
+			}
+		}
+
+		// Update conversation
+		const updatedConversation: IConversation = {
+			...conversation,
+			mapping: updatedMapping,
+			current_node: messageNode.id,
+			update_time: now,
+		};
+
+		return updatedConversation;
+	};
+
+	// Helper function to get the conversation path up to a specific node
+	const getConversationPathUpToNode = (conversation: IConversation, nodeId: string): IMessageNode[] => {
+		let path: IMessageNode[] = [];
+		let currentNode = conversation.mapping[nodeId];
+
+		while (currentNode) {
+			if (currentNode.message?.author.role !== 'system') {
+				path.unshift(currentNode);
+			}
+
+			if (currentNode.parent) {
+				currentNode = conversation.mapping[currentNode.parent];
+			} else {
+				break;
+			}
+		}
+
+		return path;
+	};
+
+	// Helper function to save the conversation
+	const saveConversation = async (conversation: IConversation) => {
+		try {
+			await writeConversation(adapter, plugin.settings.weaverDirectory, conversation);
+		} catch (error) {
+			console.error('Failed to save conversation:', error);
+		}
+	};
+
+	// Helper function to stream assistant's response
+	const streamAssistantResponse = async (
+		conversation: IConversation,
+		assistantMessageNode: IMessageNode,
+		conversationPath: any[],
+		controller: AbortController
+	) => {
+		let assistantContent = '';
+		const assistantMessageNodeId = assistantMessageNode.id;
+
+		const throttledSetConversation = throttle((updatedContent: string) => {
+			const updatedAssistantNode: IMessageNode = {
+				...assistantMessageNode,
+				message: {
+					...assistantMessageNode.message!,
+					content: {
+						...assistantMessageNode.message!.content,
+						parts: [updatedContent],
+					},
+					update_time: Date.now() / 1000,
+				},
+			};
+
+			const newConversation: IConversation = {
+				...conversation,
+				mapping: {
+					...conversation.mapping,
+					[assistantMessageNodeId]: updatedAssistantNode,
+				},
+				update_time: Date.now() / 1000,
+			};
+
+			setConversation(newConversation);
+		}, 100);
+
+		try {
+			const responseStream = await openAIManager.sendMessageStream(
+				conversationPath,
+				'gpt-4',
+				controller.signal
+			);
+
+			for await (const chunk of responseStream) {
+				const delta = chunk.choices[0].delta.content || '';
+
+				if (delta) {
+					assistantContent += delta;
+					throttledSetConversation(assistantContent);
+				}
+			}
+
+			// Final update after stream ends
+			const finalAssistantNode: IMessageNode = {
+				...assistantMessageNode,
+				message: {
+					...assistantMessageNode.message!,
+					content: {
+						...assistantMessageNode.message!.content,
+						parts: [assistantContent],
+					},
+					status: 'finished_successfully',
+					end_turn: true,
+					update_time: Date.now() / 1000,
+				},
+			};
+
+			const finalConversation: IConversation = {
+				...conversation,
+				mapping: {
+					...conversation.mapping,
+					[assistantMessageNodeId]: finalAssistantNode,
+				},
+				current_node: assistantMessageNodeId,
+				update_time: Date.now() / 1000,
+			};
+
+			setConversation(finalConversation);
+
+			// Write the updated conversation to file
+			await saveConversation(finalConversation);
+		} catch (error: any) {
+			if (error.name === 'AbortError') {
+				console.log('Message generation was aborted');
+
+				// Save the conversation with partial assistant content
+				const partialAssistantNode: IMessageNode = {
+					...assistantMessageNode,
+					message: {
+						...assistantMessageNode.message!,
+						content: {
+							...assistantMessageNode.message!.content,
+							parts: [assistantContent],
+						},
+						status: 'aborted',
+						end_turn: false,
+						update_time: Date.now() / 1000,
+					},
+				};
+
+				const partialConversation: IConversation = {
+					...conversation,
+					mapping: {
+						...conversation.mapping,
+						[assistantMessageNodeId]: partialAssistantNode,
+					},
+					current_node: assistantMessageNodeId,
+					update_time: Date.now() / 1000,
+				};
+
+				setConversation(partialConversation);
+
+				await saveConversation(partialConversation);
+			} else {
+				console.error('Error generating assistant message:', error);
+
+				// Optionally, save the conversation even on other errors
+				const errorAssistantNode: IMessageNode = {
+					...assistantMessageNode,
+					message: {
+						...assistantMessageNode.message!,
+						content: {
+							...assistantMessageNode.message!.content,
+							parts: [assistantContent || ''],
+						},
+						status: 'error',
+						end_turn: false,
+						update_time: Date.now() / 1000,
+					},
+				};
+
+				const errorConversation: IConversation = {
+					...conversation,
+					mapping: {
+						...conversation.mapping,
+						[assistantMessageNodeId]: errorAssistantNode,
+					},
+					current_node: assistantMessageNodeId,
+					update_time: Date.now() / 1000,
+				};
+
+				setConversation(errorConversation);
+
+				await saveConversation(errorConversation);
+			}
+		} finally {
+			setIsGenerating(false);
+			setAbortController(null);
+		}
+	};
+
 	const generateAssistantMessage = useCallback(
 		async (userMessage: string) => {
 			if (!conversation) {
 				throw new Error('No conversation initialized');
 			}
 
-            setIsGenerating(true);
+			setIsGenerating(true);
 
 			const now = Date.now() / 1000;
 			const userMessageNodeId = uuidv4();
@@ -88,41 +302,17 @@ export const useConversation = () => {
 				children: [],
 			};
 
-			// Update the conversation in memory
-			const updatedConversation: IConversation = {
-				...conversation,
-				mapping: {
-					...conversation.mapping,
-					[userMessageNodeId]: userMessageNode,
-				},
-				current_node: userMessageNodeId,
-				update_time: now,
-			};
-
-			// Update the parent node's children
-			const parentNodeId = userMessageNode.parent;
-
-			if (parentNodeId) {
-				const parentNode = updatedConversation.mapping[parentNodeId];
-
-				if (parentNode && !parentNode.children.includes(userMessageNode.id)) {
-					updatedConversation.mapping[parentNodeId] = {
-						...parentNode,
-						children: [...parentNode.children, userMessageNode.id],
-					};
-				}
-			}
-
+			// Add user message node to conversation
+			let updatedConversation = addMessageNode(conversation, userMessageNode);
 			setConversation(updatedConversation);
 
-			try {
-				await writeConversation(adapter, plugin.settings.weaverDirectory, updatedConversation);
-			} catch (saveError) {
-				console.error('Failed to save conversation after user message:', saveError);
-			}
+			// Save conversation
+			await saveConversation(updatedConversation);
 
-			// Prepare messages for OpenAI
-			const conversationPath = Object.values(updatedConversation.mapping).filter((node) => node.message).map((node) => node.message!);
+			// Prepare conversation path up to user message
+			const conversationPath = getConversationPathUpToNode(updatedConversation, userMessageNode.id)
+				.filter((node) => node.message)
+				.map((node) => node.message!);
 
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
@@ -147,173 +337,98 @@ export const useConversation = () => {
 				children: [],
 			};
 
-			// Update the conversation with assistant message node
-			updatedConversation.mapping[assistantMessageNodeId] = assistantMessageNode;
-			updatedConversation.current_node = assistantMessageNodeId;
-
-			// Update the user node's children
-			updatedConversation.mapping[userMessageNode.id] = {
-				...updatedConversation.mapping[userMessageNode.id],
-				children: [...updatedConversation.mapping[userMessageNode.id].children, assistantMessageNode.id],
-			};
-
+			// Add assistant message node to conversation
+			updatedConversation = addMessageNode(updatedConversation, assistantMessageNode);
 			setConversation(updatedConversation);
 
 			const controller = new AbortController();
 			setAbortController(controller);
 
-			// Local variable to accumulate assistant message content
-			let assistantContent = '';
-
-			// Throttled function to update the conversation state
-			const throttledSetConversation = throttle((updatedContent: string) => {
-				const updatedAssistantNode: IMessageNode = {
-					...assistantMessageNode,
-					message: {
-						...assistantMessageNode.message!,
-						content: {
-							...assistantMessageNode.message!.content,
-							parts: [updatedContent],
-						},
-						update_time: Date.now() / 1000,
-					},
-				};
-
-				const newConversation: IConversation = {
-					...updatedConversation,
-					mapping: {
-						...updatedConversation.mapping,
-						[assistantMessageNodeId]: updatedAssistantNode,
-					},
-					update_time: Date.now() / 1000,
-				};
-
-				setConversation(newConversation);
-			}, 100);
-
-			try {
-				const responseStream = await openAIManager.sendMessageStream(
-					conversationPath,
-					'gpt-4',
-					controller.signal
-				);
-
-				for await (const chunk of responseStream) {
-					const delta = chunk.choices[0].delta.content || '';
-
-					if (delta) {
-						assistantContent += delta;
-						throttledSetConversation(assistantContent);
-					}
-				}
-
-				// Final update after stream ends
-				const finalAssistantNode: IMessageNode = {
-					...assistantMessageNode,
-					message: {
-						...assistantMessageNode.message!,
-						content: {
-							...assistantMessageNode.message!.content,
-							parts: [assistantContent],
-						},
-						status: 'finished_successfully',
-						end_turn: true,
-						update_time: Date.now() / 1000,
-					},
-				};
-
-				const finalConversation: IConversation = {
-					...updatedConversation,
-					mapping: {
-						...updatedConversation.mapping,
-						[assistantMessageNodeId]: finalAssistantNode,
-					},
-					current_node: assistantMessageNodeId,
-					update_time: Date.now() / 1000,
-				};
-
-				setConversation(finalConversation);
-
-				// Write the updated conversation to file
-				await writeConversation(adapter, plugin.settings.weaverDirectory, finalConversation);
-			} catch (error: any) {
-				if (error.name === 'AbortError') {
-					console.log('Message generation was aborted');
-
-					// Save the conversation with partial assistant content
-					const partialAssistantNode: IMessageNode = {
-						...assistantMessageNode,
-						message: {
-							...assistantMessageNode.message!,
-							content: {
-								...assistantMessageNode.message!.content,
-								parts: [assistantContent],
-							},
-							status: 'aborted',
-							end_turn: false,
-							update_time: Date.now() / 1000,
-						},
-					};
-
-					const partialConversation: IConversation = {
-						...updatedConversation,
-						mapping: {
-							...updatedConversation.mapping,
-							[assistantMessageNodeId]: partialAssistantNode,
-						},
-						current_node: assistantMessageNodeId,
-						update_time: Date.now() / 1000,
-					};
-
-					setConversation(partialConversation);
-
-					try {
-						await writeConversation(adapter, plugin.settings.weaverDirectory, partialConversation);
-					} catch (saveError) {
-						console.error('Failed to save conversation after abort:', saveError);
-					}
-				} else {
-					console.error('Error generating assistant message:', error);
-
-					// Optionally, save the conversation even on other errors
-					const errorAssistantNode: IMessageNode = {
-						...assistantMessageNode,
-						message: {
-							...assistantMessageNode.message!,
-							content: {
-								...assistantMessageNode.message!.content,
-								parts: [assistantContent || ''],
-							},
-							status: 'error',
-							end_turn: false,
-							update_time: Date.now() / 1000,
-						},
-					};
-
-					const errorConversation: IConversation = {
-						...updatedConversation,
-						mapping: {
-							...updatedConversation.mapping,
-							[assistantMessageNodeId]: errorAssistantNode,
-						},
-						current_node: assistantMessageNodeId,
-						update_time: Date.now() / 1000,
-					};
-
-					setConversation(errorConversation);
-
-					try {
-						await writeConversation(adapter, plugin.settings.weaverDirectory, errorConversation);
-					} catch (saveError) {
-						console.error('Failed to save conversation after error:', saveError);
-					}
-				}
-			} finally {
-				setIsGenerating(false);
-				setAbortController(null);
-			}
+			// Stream assistant response
+			await streamAssistantResponse(
+				updatedConversation,
+				assistantMessageNode,
+				conversationPath,
+				controller
+			);
 		},
-		[conversation, openAIManager, setConversation, adapter, plugin.settings.weaverDirectory]
+		[conversation, openAIManager, setConversation]
+	);
+
+	const regenerateAssistantMessage = useCallback(
+		async (messageId: string) => {
+			if (!conversation) {
+				throw new Error('No conversation initialized');
+			}
+
+			setIsGenerating(true);
+
+			const now = Date.now() / 1000;
+
+			// Get the assistant message node by messageId
+			const assistantNodeToRegenerate = conversation.mapping[messageId];
+
+			if (!assistantNodeToRegenerate || assistantNodeToRegenerate.message?.author.role !== 'assistant') {
+				throw new Error('Provided messageId is not an assistant message');
+			}
+
+			const userMessageNodeId = assistantNodeToRegenerate.parent;
+
+			if (!userMessageNodeId) {
+				throw new Error('No parent user message node found for regeneration');
+			}
+
+			const userMessageNode = conversation.mapping[userMessageNodeId];
+
+			if (!userMessageNode || userMessageNode.message?.author.role !== 'user') {
+				throw new Error('Parent node is not a user message');
+			}
+
+			// Create a new assistant message node
+			const assistantMessageNodeId = uuidv4();
+			const assistantMessageNode: IMessageNode = {
+				id: assistantMessageNodeId,
+				message: {
+					id: assistantMessageNodeId,
+					author: { role: 'assistant', name: null, metadata: {} },
+					create_time: now,
+					update_time: now,
+					content: {
+						content_type: 'text',
+						parts: [''],
+					},
+					status: 'in_progress',
+					end_turn: false,
+					weight: 1.0,
+					metadata: {},
+					recipient: 'all',
+					channel: null,
+				},
+				parent: userMessageNodeId,
+				children: [],
+			};
+
+			// Add assistant message node to conversation
+			let updatedConversation = addMessageNode(conversation, assistantMessageNode);
+			setConversation(updatedConversation);
+
+			// Prepare conversation path up to user message node
+			const conversationPath = getConversationPathUpToNode(updatedConversation, userMessageNodeId)
+				.filter((node) => node.message)
+				.map((node) => node.message!);
+
+			const controller = new AbortController();
+			setAbortController(controller);
+
+			// Stream assistant response
+			await streamAssistantResponse(
+				updatedConversation,
+				assistantMessageNode,
+				conversationPath,
+				controller
+			);
+		},
+		[conversation, openAIManager, setConversation]
 	);
 
 	const loadConversation = useCallback(
@@ -364,6 +479,7 @@ export const useConversation = () => {
 		initConversation,
 		createNewConversation,
 		generateAssistantMessage,
+		regenerateAssistantMessage, // Updated regenerateAssistantMessage to accept messageId
 		loadConversation,
 		stopMessageGeneration,
 		getConversationPathWithBranches,
