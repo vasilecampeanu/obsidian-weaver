@@ -1,3 +1,4 @@
+import { Icon } from "components/primitives/Icon";
 import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
 import React from "react";
@@ -29,22 +30,31 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 			<div className="message-content">
 				{message.content.parts.join("\n")}
 			</div>
-			{hasBranches && (
-				<div className="branch-navigation">
-					<button onClick={onPrevBranch}>&lt;</button>
-					<span>
-						{currentBranchIndex + 1} / {totalBranches}
-					</span>
-					<button onClick={onNextBranch}>&gt;</button>
-				</div>
-			)}
-			{message.author.role === "assistant" && (
-				<button
-					onClick={() => regenerateAssistantMessage(messageNode.id)}
-				>
-					Regenerate
-				</button>
-			)}
+			<div className="ow-message-utility-bar">
+				{hasBranches && (
+					<div className="branch-navigation">
+						<button onClick={onPrevBranch}>
+							<Icon iconId={"chevron-left"} />
+						</button>
+						<span>
+							{currentBranchIndex + 1} / {totalBranches}
+						</span>
+						<button onClick={onNextBranch}>
+							<Icon iconId={"chevron-right"} />
+						</button>
+					</div>
+				)}
+				{message.author.role === "assistant" && (
+					<>
+						<button><Icon iconId={"copy"} /></button>
+						<button
+							onClick={() => regenerateAssistantMessage(messageNode.id)}
+						>
+							<Icon iconId={"refresh-ccw"} />
+						</button>
+					</>
+				)}
+			</div>
 		</div>
 	);
 };

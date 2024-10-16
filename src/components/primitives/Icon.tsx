@@ -14,12 +14,7 @@ export const Icon: React.FC<IconProps> = ({ iconId, className, ...props }) => {
         }
     }, [iconId]);
 
-    // Combine the default 'ow-icon' class with any additional classes
     const combinedClassName = ['ow-icon', className].filter(Boolean).join(' ');
 
-    return <div 
-		ref={ref} 
-		className={combinedClassName} 
-		{...props} 
-	/>;
+    return <div ref={ref} className={combinedClassName} {...props} />;
 };

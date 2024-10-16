@@ -1,105 +1,135 @@
 import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { ChatMessageBubble } from "./ChatMessageBubble";
+
+const useLatestCreateTimeMap = (mapping: Record<string, IMessageNode>) => {
+	const latestMap = useMemo(() => {
+		const map: Record<string, number> = {};
+
+		const computeLatest = (nodeId: string): number => {
+			const node = mapping[nodeId];
+
+			if (!node) return 0;
+
+			if (map[nodeId]) return map[nodeId];
+
+			let latest = node.message?.create_time ?? 0;
+
+			node.children.forEach((childId) => {
+				const childLatest = computeLatest(childId);
+				if (childLatest > latest) {
+					latest = childLatest;
+				}
+			});
+
+			map[nodeId] = latest;
+
+			return latest;
+		};
+
+		Object.keys(mapping).forEach((nodeId) => {
+			computeLatest(nodeId);
+		});
+
+		return map;
+	}, [mapping]);
+
+	return latestMap;
+};
 
 export const ChatDialogueFeed: React.FC = () => {
 	const { conversation, navigateToNode } = useConversation();
 
-	if (!conversation) {
-		return <div>Loading conversation...</div>;
-	}
+	const latestCreateTimeMap = useLatestCreateTimeMap(
+		conversation?.mapping || {}
+	);
 
-	const renderMessages = () => {
-		if (!conversation.current_node) {
-			return [];
-		}
+	const path = useMemo(() => {
+		if (!conversation?.current_node) return [];
 
-		const path: IMessageNode[] = [];
-
+		const tempPath: IMessageNode[] = [];
 		let currentNodeId = conversation.current_node;
 
-		// Build the path from current_node back to the root
 		while (currentNodeId) {
 			const node = conversation.mapping[currentNodeId];
 			if (!node) break;
-
-			path.unshift(node); // Prepend to build the path in order from root to current_node
-
+			tempPath.unshift(node);
 			currentNodeId = node.parent!;
 		}
 
-		const messagesToRender = path.map((node) => {
+		return tempPath;
+	}, [conversation]);
+
+	const getSortedSiblings = useCallback(
+		(parentNode: IMessageNode | null): IMessageNode[] => {
+			if (!parentNode) return [];
+
+			const siblings = parentNode.children
+				.map((siblingId) => conversation?.mapping[siblingId])
+				.filter((node): node is IMessageNode => node !== undefined)
+				.sort(
+					(a, b) =>
+						(a.message?.create_time ?? 0) -
+						(b.message?.create_time ?? 0)
+				);
+
+			return siblings;
+		},
+		[conversation]
+	);
+
+	const handleBranchNavigation = useCallback(
+		async (
+			siblings: IMessageNode[],
+			currentIndex: number,
+			direction: "prev" | "next"
+		) => {
+			if (siblings.length === 0) return;
+
+			const newIndex =
+				direction === "prev"
+					? (currentIndex - 1 + siblings.length) % siblings.length
+					: (currentIndex + 1) % siblings.length;
+
+			let newBranchNode = siblings[newIndex];
+
+			while (newBranchNode.children.length > 0) {
+				const childNodes = newBranchNode.children
+					.map((childId) => conversation?.mapping[childId])
+					.filter((node): node is IMessageNode => node !== undefined)
+					.sort(
+						(a, b) =>
+							(latestCreateTimeMap[b.id] ?? 0) -
+							(latestCreateTimeMap[a.id] ?? 0)
+					);
+
+				if (childNodes.length === 0) break;
+
+				newBranchNode = childNodes[0];
+			}
+
+			await navigateToNode(newBranchNode.id);
+		},
+		[conversation, navigateToNode, latestCreateTimeMap]
+	);
+
+	const renderMessages = useMemo(() => {
+		if (!path.length) return null;
+
+		return path.map((node) => {
 			const parentNode = node.parent
-				? conversation.mapping[node.parent]
+				? conversation?.mapping[node.parent] || null
 				: null;
-			const siblings = parentNode ? parentNode.children : [];
-
+			const siblings = getSortedSiblings(parentNode);
 			const hasBranches = siblings.length > 1;
-
-			const siblingsNodes = siblings.map(
-				(siblingId) => conversation.mapping[siblingId]
+			const currentBranchIndex = siblings.findIndex(
+				(sibling) => sibling.id === node.id
 			);
+			const totalBranches = siblings.length;
 
-			// Sort siblings by create_time (ascending)
-			siblingsNodes.sort(
-				(a, b) =>
-					(a.message?.create_time ?? 0) -
-					(b.message?.create_time ?? 0)
-			);
-
-			const currentBranchIndex = siblingsNodes.findIndex(
-				(n) => n.id === node.id
-			);
-
-			const handlePrevBranch = async () => {
-				if (!parentNode) return;
-
-				const newIndex =
-					(currentBranchIndex - 1 + siblingsNodes.length) %
-					siblingsNodes.length;
-				const newBranchNode = siblingsNodes[newIndex];
-
-				// Traverse down the new branch to find its leaf node
-				let newCurrentNode = newBranchNode;
-				while (newCurrentNode.children.length > 0) {
-					const childNodes = newCurrentNode.children.map(
-						(childId) => conversation.mapping[childId]
-					);
-					childNodes.sort(
-						(a, b) =>
-							(a.message?.create_time ?? 0) -
-							(b.message?.create_time ?? 0)
-					);
-					newCurrentNode = childNodes[childNodes.length - 1];
-				}
-
-				await navigateToNode(newCurrentNode.id);
-			};
-
-			const handleNextBranch = async () => {
-				if (!parentNode) return;
-
-				const newIndex =
-					(currentBranchIndex + 1) % siblingsNodes.length;
-				const newBranchNode = siblingsNodes[newIndex];
-
-				// Traverse down the new branch to find its leaf node
-				let newCurrentNode = newBranchNode;
-				while (newCurrentNode.children.length > 0) {
-					const childNodes = newCurrentNode.children.map(
-						(childId) => conversation.mapping[childId]
-					);
-					childNodes.sort(
-						(a, b) =>
-							(a.message?.create_time ?? 0) -
-							(b.message?.create_time ?? 0)
-					);
-					newCurrentNode = childNodes[childNodes.length - 1];
-				}
-
-				await navigateToNode(newCurrentNode.id);
-			};
+			const handlePrevBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "prev");
+			const handleNextBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "next");
 
 			return (
 				<ChatMessageBubble
@@ -107,15 +137,13 @@ export const ChatDialogueFeed: React.FC = () => {
 					messageNode={node}
 					hasBranches={hasBranches}
 					currentBranchIndex={currentBranchIndex}
-					totalBranches={siblings.length}
+					totalBranches={totalBranches}
 					onPrevBranch={handlePrevBranch}
 					onNextBranch={handleNextBranch}
 				/>
 			);
 		});
+	}, [path, getSortedSiblings, handleBranchNavigation, conversation]);
 
-		return messagesToRender;
-	};
-
-	return <div className="ow-chat-dialogue-feed">{renderMessages()}</div>;
+	return <div className="ow-chat-dialogue-feed">{renderMessages}</div>;
 };

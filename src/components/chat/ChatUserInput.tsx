@@ -157,6 +157,9 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 						)}
 					</form>
 					<div className="ow-inline-input-utilities">
+						<button className="ow-btn paperclip" type="button">
+							<Icon iconId="paperclip" />
+						</button>
 						<div
 							className={`ow-input-character-counter ${
 								charCount > MAX_CHARACTERS

@@ -78,17 +78,28 @@
 			.ow-inline-input-utilities
 			{
 				display: flex;
-				justify-content: space-between;
-	
+				gap: 5px;
+
+				.ow-btn.paperclip
+				{
+					all: unset;
+				}
+
+				.ow-input-character-counter
+				{
+					font-size: var(--font-ui-small);
+				}
+
 				.ow-btn.pin-input
 				{
 					all: unset;
-	
+					margin-left: auto;
+
 					svg
 					{
 						transform: rotate(45deg);
 					}
-				}	
+				}
 			}
 		}	
 	}	
