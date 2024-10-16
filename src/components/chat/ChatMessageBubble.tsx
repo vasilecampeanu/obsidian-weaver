@@ -1,7 +1,7 @@
 import { Icon } from "components/primitives/Icon";
 import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
-import React from "react";
+import React, { useState } from "react";
 
 interface ChatMessageBubbleProps {
 	messageNode: IMessageNode;
@@ -21,9 +21,18 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	onNextBranch,
 }) => {
 	const { regenerateAssistantMessage } = useConversation();
+	const [isCopied, setIsCopied] = useState(false);
 	const message = messageNode.message;
 
 	if (!message) return null;
+
+	const handleCopyClick = () => {
+		navigator.clipboard.writeText(message.content.parts.join("\n"));
+		setIsCopied(true);
+		setTimeout(() => {
+			setIsCopied(false);
+		}, 1000);
+	};
 
 	return (
 		<div className={`ow-chat-message-bubble ${message.author.role}`}>
@@ -32,27 +41,36 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 			</div>
 			<div className="ow-message-utility-bar">
 				{hasBranches && (
-					<div className="branch-navigation">
-						<button onClick={onPrevBranch}>
+					<div className="ow-branch-navigation">
+						<button 
+							className="ow-btn"
+							onClick={onPrevBranch}
+						>
 							<Icon iconId={"chevron-left"} />
 						</button>
-						<span>
+						<span className="ow-branch-index">
 							{currentBranchIndex + 1} / {totalBranches}
 						</span>
-						<button onClick={onNextBranch}>
+						<button 
+							className="ow-btn"
+							onClick={onNextBranch}
+						>
 							<Icon iconId={"chevron-right"} />
 						</button>
 					</div>
 				)}
 				{message.author.role === "assistant" && (
-					<>
-						<button><Icon iconId={"copy"} /></button>
+					<div className="ow-user-actions">
+						<button className="ow-btn" onClick={handleCopyClick}>
+							<Icon iconId={isCopied ? "check" : "copy"} />
+						</button>
 						<button
+							className="ow-btn"
 							onClick={() => regenerateAssistantMessage(messageNode.id)}
 						>
 							<Icon iconId={"refresh-ccw"} />
 						</button>
-					</>
+					</div>
 				)}
 			</div>
 		</div>

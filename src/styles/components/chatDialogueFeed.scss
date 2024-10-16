@@ -10,6 +10,7 @@
 	.ow-chat-message-bubble
 	{
 		display: flex;
+		gap: 5px;
 
 		.message-content
 		{
@@ -23,6 +24,58 @@
 		.ow-message-utility-bar
 		{
 			display: flex;
+			width: 100%;
+			gap: 5px;
+
+			.ow-btn
+			{
+				all: unset;
+				padding: 5px;
+				border-radius: 5px;
+
+				.ow-icon
+				{
+					svg
+					{
+						width: 16px;
+						height: 16px;
+					}
+				}
+
+				&:hover
+				{
+					background-color: var(--background-modifier-hover);	
+				}
+			}
+
+			.ow-branch-navigation
+			{
+				display: flex;
+				align-items: center;
+				gap: 5px;
+
+				.ow-branch-index
+				{
+					line-height: 26px;
+					font-size: var(--font-ui-small);
+					font-family: var(--font-monospace);
+				}
+			}
+
+			.ow-user-actions
+			{
+				display: flex;
+				gap: 5px;
+				opacity: 0;
+			}
+
+			&:hover
+			{
+				.ow-user-actions
+				{
+					opacity: 1;
+				}	
+			}
 		}
 
 		&.assistant
@@ -46,6 +99,11 @@
 			{
 				max-width: 85%;
 				background-color: var(--interactive-accent);
+			}
+
+			.ow-message-utility-bar
+			{
+				display: none;
 			}
 		}
 	}
