@@ -83,7 +83,14 @@ export const ChatDialogueFeed: React.FC = () => {
 	const renderMessages = useMemo(() => {
 		if (!path.length) return null;
 
-		return path.map((node) => {
+		const lastAssistantIndex = path
+			.map((node, index) => ({ node, index }))
+			.reverse()
+			.find(
+				({ node }) => node.message?.author.role === "assistant"
+			)?.index;
+
+		return path.map((node, index) => {
 			const parentNode = node.parent
 				? conversation?.mapping[node.parent] || null
 				: null;
@@ -97,6 +104,10 @@ export const ChatDialogueFeed: React.FC = () => {
 			const handlePrevBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "prev");
 			const handleNextBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "next");
 
+			const isLatest =
+				node.message?.author.role === "assistant" &&
+				index === lastAssistantIndex;
+
 			return (
 				<ChatMessageBubble
 					key={node.id}
@@ -106,6 +117,7 @@ export const ChatDialogueFeed: React.FC = () => {
 					totalBranches={totalBranches}
 					onPrevBranch={handlePrevBranch}
 					onNextBranch={handleNextBranch}
+					isLatest={isLatest}
 				/>
 			);
 		});

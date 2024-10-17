@@ -130,7 +130,17 @@
 				.ow-user-actions 
 				{
 					opacity: 1;
-				}	
+				}
+			}
+		}
+
+		&.latest
+		{
+			padding-bottom: 5px;
+
+			.ow-user-actions 
+			{
+				opacity: 1;
 			}
 		}
 	}

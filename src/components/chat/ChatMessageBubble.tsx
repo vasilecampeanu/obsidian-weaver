@@ -10,6 +10,7 @@ interface ChatMessageBubbleProps {
 	totalBranches: number;
 	onPrevBranch: () => void;
 	onNextBranch: () => void;
+	isLatest?: boolean;
 }
 
 export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
@@ -19,6 +20,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	totalBranches,
 	onPrevBranch,
 	onNextBranch,
+	isLatest,
 }) => {
 	const { regenerateAssistantMessage } = useConversation();
 	const [isCopied, setIsCopied] = useState(false);
@@ -35,41 +37,34 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	};
 
 	return (
-		<div className={`ow-chat-message-bubble ${message.author.role}`}>
+		<div className={`ow-chat-message-bubble ${message.author.role} ${isLatest ? "latest" : ""}`}>
 			<div className="message-content">
 				{message.content.parts.join("\n")}
 			</div>
 			<div className="ow-message-utility-bar">
 				{hasBranches && (
 					<div className="ow-branch-navigation">
-						<button 
-							className="ow-btn"
-							onClick={onPrevBranch}
-						>
+						<button className="ow-btn" onClick={onPrevBranch}>
 							<Icon iconId={"chevron-left"} />
 						</button>
 						<span className="ow-branch-index">
 							{currentBranchIndex + 1} / {totalBranches}
 						</span>
-						<button 
-							className="ow-btn"
-							onClick={onNextBranch}
-						>
+						<button className="ow-btn" onClick={onNextBranch}>
 							<Icon iconId={"chevron-right"} />
 						</button>
 					</div>
 				)}
 				{message.author.role === "assistant" && (
 					<div className="ow-user-actions">
-						<button 
-							className="ow-btn" 
-							onClick={handleCopyClick}
-						>
+						<button className="ow-btn" onClick={handleCopyClick}>
 							<Icon iconId={isCopied ? "check" : "copy"} />
 						</button>
 						<button
 							className="ow-btn"
-							onClick={() => regenerateAssistantMessage(messageNode.id)}
+							onClick={() =>
+								regenerateAssistantMessage(messageNode.id)
+							}
 						>
 							<Icon iconId={"refresh-ccw"} />
 						</button>
