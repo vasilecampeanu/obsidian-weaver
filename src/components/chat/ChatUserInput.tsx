@@ -7,11 +7,12 @@ import { ChangeEvent, ClipboardEvent, useEffect, useState } from "react";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
 const MAX_CHARACTERS = 2000;
+const TEXTAREA_LINE_HEIGHT = 14;
 
 const buttonVariants = {
 	hidden:  { opacity: 0 },
 	visible: { opacity: 1 },
-	exit:    { opacity: 0 }
+	exit:    { opacity: 0 },
 };
 
 interface ChatUserInputProps {}
@@ -21,8 +22,8 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [charCount, setCharCount] = useState<number>(0);
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isFocused, setIsFocused] = useState<boolean>(false);
+	const [isPinned, setIsPinned] = useState<boolean>(false);
 
-	// State for selected text and modal visibility
 	const [userSelection, setUserSelection] = useState<IUserSelection>();
 
 	const plugin = usePlugin();
@@ -42,8 +43,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 		};
 	}, [plugin]);
 
-	// Determine if the input area should be expanded
-	const isExpanded = isHovered || isFocused || userInputMessage.length > 0;
+	const isExpanded = isHovered || isFocused || userInputMessage.length > 0 || isPinned;
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -109,7 +109,10 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 									ease: "easeInOut",
 								}}
 							>
-								<Icon iconId="message-circle-plus" className="new-chat-icon" />
+								<Icon
+									iconId="message-circle-plus"
+									className="new-chat-icon"
+								/>
 							</motion.button>
 						)}
 					</AnimatePresence>
@@ -135,7 +138,16 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 							className="ow-textarea"
 							onFocus={() => setIsFocused(true)}
 							onBlur={() => setIsFocused(false)}
-							animate={{ height: isExpanded ? "6em" : "2em" }}
+							initial={{
+								height: `${2 * TEXTAREA_LINE_HEIGHT}px`,
+							}}
+							animate={{
+								height: 
+									isPinned
+									? `${10 * TEXTAREA_LINE_HEIGHT}px` : isExpanded
+									? `${6 *  TEXTAREA_LINE_HEIGHT}px`
+									: `${2 *  TEXTAREA_LINE_HEIGHT}px`
+							}}
 							transition={{ duration: 0.3, ease: "easeInOut" }}
 						/>
 						{userInputMessage.length > 0 ? (
@@ -146,20 +158,21 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 							>
 								<Icon iconId="send" />
 							</button>
-						) : conversation.isGenerating && (
-							<button
-								className="ow-btn submit"
-								type="submit"
-								onClick={() => conversation.stopMessageGeneration()}
-							>
-								<Icon iconId="square" />
-							</button>
+						) : (
+							conversation.isGenerating && (
+								<button
+									className="ow-btn submit"
+									type="button"
+									onClick={() =>
+										conversation.stopMessageGeneration()
+									}
+								>
+									<Icon iconId="square" />
+								</button>
+							)
 						)}
 					</form>
 					<div className="ow-inline-input-utilities">
-						<button className="ow-btn paperclip" type="button">
-							<Icon iconId="paperclip" />
-						</button>
 						<div
 							className={`ow-input-character-counter ${
 								charCount > MAX_CHARACTERS
@@ -169,8 +182,14 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 						>
 							{charCount}/{MAX_CHARACTERS}
 						</div>
-						<button className="ow-btn pin-input" type="button">
-							<Icon iconId="pin" />
+						<button
+							className={`ow-btn pin-input ${
+								isPinned ? "pinned" : ""
+							}`}
+							type="button"
+							onClick={() => setIsPinned((prev) => !prev)}
+						>
+							<Icon iconId={"pin"} />
 						</button>
 					</div>
 				</motion.div>
