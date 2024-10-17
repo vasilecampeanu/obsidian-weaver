@@ -73,10 +73,23 @@
 					all: unset;
 					align-self: flex-start;
 
+					padding: 6px;
+					border-radius: 50%;
+					background-color: var(--text-normal);
+						
+
 					svg
 					{
 						width: 14px;
 						height: 14px;
+						color: black;
+						fill: black;
+						stroke-width: 3;
+					}
+
+					&:hover
+					{
+						opacity: .9;
 					}
 				}
 			}
@@ -94,6 +107,7 @@
 				.ow-input-character-counter
 				{
 					font-size: var(--font-ui-small);
+					color: var(--text-muted);
 				}
 
 				.ow-btn.pin-input
@@ -106,6 +120,23 @@
 						transform: rotate(45deg);
 						width: 14px;
 						height: 14px;
+						color: var(--text-muted);
+					}
+
+					&:hover
+					{
+						svg
+						{
+							fill: var(--text-muted);
+						}
+					}
+
+					&.pinned
+					{
+						svg
+						{
+							fill: var(--text-muted);
+						}
 					}
 				}
 			}

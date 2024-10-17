@@ -199,16 +199,14 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 								type="submit"
 								disabled={userInputMessage.trim().length === 0}
 							>
-								<Icon iconId="send" />
+								<Icon iconId="arrow-up" />
 							</button>
 						) : (
 							conversation.isGenerating && (
 								<button
 									className="ow-btn submit"
 									type="button"
-									onClick={() =>
-										conversation.stopMessageGeneration()
-									}
+									onClick={() => conversation.stopMessageGeneration()}
 								>
 									<Icon iconId="square" />
 								</button>
