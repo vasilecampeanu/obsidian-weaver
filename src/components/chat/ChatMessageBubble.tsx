@@ -22,8 +22,12 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	onNextBranch,
 	isLatest,
 }) => {
-	const { regenerateAssistantMessage } = useConversation();
+	const { regenerateAssistantMessage, editUserMessage } = useConversation();
 	const [isCopied, setIsCopied] = useState(false);
+	const [isEditing, setIsEditing] = useState(false);
+	const [editedContent, setEditedContent] = useState(
+		messageNode.message?.content.parts.join("\n") || ""
+	);
 	const message = messageNode.message;
 
 	if (!message) return null;
@@ -36,10 +40,52 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 		}, 1500);
 	};
 
+	const handleEditClick = () => {
+		setIsEditing(true);
+	};
+
+	const handleCancelEdit = () => {
+		setIsEditing(false);
+		setEditedContent(message.content.parts.join("\n"));
+	};
+
+	const handleSaveEdit = async () => {
+		if (editedContent.trim() === "") {
+			// TODO: Optionally, handle empty content (e.g., show a warning)
+			return;
+		}
+
+		await editUserMessage(messageNode.id, editedContent.trim());
+		setIsEditing(false);
+	};
+
 	return (
 		<div className={`ow-chat-message-bubble ${message.author.role} ${isLatest ? "latest" : ""}`}>
 			<div className="message-content">
-				{message.content.parts.join("\n")}
+				{isEditing ? (
+					<div className="editing-area">
+						<textarea
+							value={editedContent}
+							onChange={(e) => setEditedContent(e.target.value)}
+							rows={3}
+							className="ow-edit-textarea"
+						/>
+						<div className="editing-buttons">
+							<button
+								className="ow-btn save"
+								onClick={handleSaveEdit}
+							>
+								Save
+							</button>
+							<button
+								className="ow-btn cancel"
+								onClick={handleCancelEdit}
+							>
+								Cancel
+							</button>
+						</div>
+					</div>
+				) : (message.content.parts.join("\n"))}
 			</div>
 			<div className="ow-message-utility-bar">
 				{hasBranches && (
@@ -70,9 +116,12 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 						</button>
 					</div>
 				)}
-				{message.author.role === "user" && (
+				{message.author.role === "user" && !isEditing && (
 					<div className="ow-user-actions">
-						<button className="ow-btn edit">
+						<button
+							className="ow-btn edit"
+							onClick={handleEditClick}
+						>
 							<Icon iconId={"pen"} />
 						</button>
 					</div>

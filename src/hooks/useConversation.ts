@@ -513,6 +513,134 @@ export const useConversation = () => {
 		[conversation, updateConversation]
 	);
 
+	const editUserMessage = useCallback(
+		async (messageId: string, newContent: string) => {
+			if (!conversation) {
+				throw new Error('No conversation initialized');
+			}
+
+			setIsGenerating(true);
+	
+			const now = Date.now() / 1000;
+	
+			// Retrieve the original user message node
+			const originalUserNode = conversation.mapping[messageId];
+			if (!originalUserNode || originalUserNode.message?.author.role !== 'user') {
+				throw new Error('Provided messageId is not a user message');
+			}
+	
+			const parentNodeId = originalUserNode.parent;
+			if (!parentNodeId) {
+				throw new Error('No parent node found for the user message');
+			}
+	
+			const parentNode = conversation.mapping[parentNodeId];
+			if (!parentNode) {
+				throw new Error('Parent node does not exist');
+			}
+	
+			// Create a new user message node with the edited content
+			const newUserMessageNodeId = uuidv4();
+			const newUserMessageNode: IMessageNode = {
+				id: newUserMessageNodeId,
+				message: {
+					id: newUserMessageNodeId,
+					author: { role: 'user', name: null, metadata: {} },
+					create_time: now,
+					update_time: now,
+					content: {
+						content_type: 'text',
+						parts: [newContent],
+					},
+					status: 'finished_successfully',
+					end_turn: true,
+					weight: 1.0,
+					metadata: {},
+					recipient: 'all',
+					channel: null,
+				},
+				parent: parentNodeId,
+				children: [],
+			};
+	
+			// Update the conversation with the new user message node
+			let updatedConversation: IConversation = {
+				...conversation,
+				mapping: {
+					...conversation.mapping,
+					[newUserMessageNodeId]: newUserMessageNode,
+					[parentNodeId]: {
+						...parentNode,
+						children: [...parentNode.children, newUserMessageNodeId],
+					},
+				},
+				current_node: newUserMessageNodeId,
+				update_time: now,
+			};
+	
+			await updateConversation(updatedConversation);
+	
+			// Prepare the conversation path up to the new user message
+			const conversationPath = getConversationPathToNode(updatedConversation, newUserMessageNodeId)
+				.filter((node) => node.message)
+				.map((node) => node.message!);
+	
+			// Create a new assistant message node
+			const assistantMessageNodeId = uuidv4();
+			const assistantMessageNode: IMessageNode = {
+				id: assistantMessageNodeId,
+				message: {
+					id: assistantMessageNodeId,
+					author: { role: 'assistant', name: null, metadata: {} },
+					create_time: now,
+					update_time: now,
+					content: {
+						content_type: 'text',
+						parts: [''],
+					},
+					status: 'in_progress',
+					end_turn: false,
+					weight: 1.0,
+					metadata: {},
+					recipient: 'all',
+					channel: null,
+				},
+				parent: newUserMessageNodeId,
+				children: [],
+			};
+	
+			// Add the assistant message node to the conversation
+			updatedConversation = {
+				...updatedConversation,
+				mapping: {
+					...updatedConversation.mapping,
+					[assistantMessageNodeId]: assistantMessageNode,
+					[newUserMessageNodeId]: {
+						...newUserMessageNode,
+						children: [...newUserMessageNode.children, assistantMessageNodeId],
+					},
+				},
+				current_node: assistantMessageNodeId,
+				update_time: now,
+			};
+	
+			await updateConversation(updatedConversation);
+	
+			// Initialize AbortController for streaming
+			const controller = new AbortController();
+			setAbortController(controller);
+	
+			// Stream assistant response
+			await streamAssistantResponse(
+				updatedConversation,
+				assistantMessageNode,
+				conversationPath,
+				controller
+			);
+		},
+		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
+	);
+
 	return {
 		conversation,
 		isGenerating,
@@ -524,5 +652,6 @@ export const useConversation = () => {
 		stopMessageGeneration,
 		updateConversation,
 		navigateToNode,
+		editUserMessage
 	};
 };
