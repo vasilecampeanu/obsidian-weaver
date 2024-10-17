@@ -61,31 +61,43 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 
 	return (
 		<div className={`ow-chat-message-bubble ${message.author.role} ${isLatest ? "latest" : ""}`}>
-			<div className="message-content">
-				{isEditing ? (
-					<div className="editing-area">
-						<textarea
-							value={editedContent}
-							onChange={(e) => setEditedContent(e.target.value)}
-							rows={3}
-							className="ow-edit-textarea"
-						/>
-						<div className="editing-buttons">
-							<button
-								className="ow-btn save"
-								onClick={handleSaveEdit}
-							>
-								Save
-							</button>
-							<button
-								className="ow-btn cancel"
-								onClick={handleCancelEdit}
-							>
-								Cancel
-							</button>
+			<div className="ow-message">
+				<div className="ow-message-content">
+					{isEditing ? (
+						<div className="editing-area">
+							<textarea
+								value={editedContent}
+								onChange={(e) => setEditedContent(e.target.value)}
+								rows={3}
+								className="ow-edit-textarea"
+							/>
+							<div className="editing-buttons">
+								<button
+									className="ow-btn save"
+									onClick={handleSaveEdit}
+								>
+									Save
+								</button>
+								<button
+									className="ow-btn cancel"
+									onClick={handleCancelEdit}
+								>
+									Cancel
+								</button>
+							</div>
 						</div>
+					) : (message.content.parts.join("\n"))}
+				</div>
+				{message.author.role === "user" && !isEditing && (
+					<div className="ow-user-actions">
+						<button
+							className="ow-btn edit"
+							onClick={handleEditClick}
+						>
+							<Icon iconId={"pen"} />
+						</button>
 					</div>
-				) : (message.content.parts.join("\n"))}
+				)}
 			</div>
 			<div className="ow-message-utility-bar">
 				{hasBranches && (
@@ -113,16 +125,6 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 							}
 						>
 							<Icon iconId={"refresh-ccw"} />
-						</button>
-					</div>
-				)}
-				{message.author.role === "user" && !isEditing && (
-					<div className="ow-user-actions">
-						<button
-							className="ow-btn edit"
-							onClick={handleEditClick}
-						>
-							<Icon iconId={"pen"} />
 						</button>
 					</div>
 				)}
