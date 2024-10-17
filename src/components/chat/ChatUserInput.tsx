@@ -127,11 +127,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const isExpanded = isHovered || isFocused || userInputMessage.length > 0 || isPinned;
 
 	return (
-		<div
-			className="ow-chat-user-input"
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}
-		>
+		<div className="ow-chat-user-input">
 			{userSelection && (
 				<ChatSelectedTextModal userSelection={userSelection} />
 			)}

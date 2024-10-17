@@ -31,7 +31,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 		setIsCopied(true);
 		setTimeout(() => {
 			setIsCopied(false);
-		}, 1000);
+		}, 1500);
 	};
 
 	return (
@@ -61,7 +61,10 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 				)}
 				{message.author.role === "assistant" && (
 					<div className="ow-user-actions">
-						<button className="ow-btn" onClick={handleCopyClick}>
+						<button 
+							className="ow-btn" 
+							onClick={handleCopyClick}
+						>
 							<Icon iconId={isCopied ? "check" : "copy"} />
 						</button>
 						<button
@@ -69,6 +72,13 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 							onClick={() => regenerateAssistantMessage(messageNode.id)}
 						>
 							<Icon iconId={"refresh-ccw"} />
+						</button>
+					</div>
+				)}
+				{message.author.role === "user" && (
+					<div className="ow-user-actions">
+						<button className="ow-btn edit">
+							<Icon iconId={"pen"} />
 						</button>
 					</div>
 				)}

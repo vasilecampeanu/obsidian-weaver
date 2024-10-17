@@ -24,7 +24,6 @@
 		.ow-message-utility-bar
 		{
 			display: flex;
-			width: 100%;
 			gap: 5px;
 
 			.ow-btn
@@ -44,7 +43,7 @@
 
 				&:hover
 				{
-					background-color: var(--background-modifier-hover);	
+					background-color: var(--background-modifier-hover);
 				}
 			}
 
@@ -54,7 +53,7 @@
 				align-items: center;
 				gap: 5px;
 
-				.ow-branch-index
+				.ow-branch-index 
 				{
 					line-height: 26px;
 					font-size: var(--font-ui-small);
@@ -67,43 +66,71 @@
 				display: flex;
 				gap: 5px;
 				opacity: 0;
+
+				.ow-btn.edit
+				{
+					padding: 8px;
+					border-radius: 50%;
+
+					svg
+					{
+						stroke-width: 3;
+						width: 12px;
+						height: 12px;
+					}
+				}
 			}
 
 			&:hover
 			{
-				.ow-user-actions
+				.ow-user-actions 
 				{
 					opacity: 1;
-				}	
+				}
 			}
 		}
 
-		&.assistant
+		&.assistant 
 		{
-			justify-content: start;
 			flex-direction: column;
 			align-items: flex-start;
 
-			.message-content
+			.message-content 
 			{
 				max-width: 100%;
 				background-color: var(--interactive-normal);
 			}
-		}
-	
-		&.user
-		{
-			justify-content: end;
 
-			.message-content
+			.ow-message-utility-bar 
+			{
+				justify-content: flex-start;
+				width: 100%;
+			}
+		}
+
+		&.user 
+		{
+			flex-direction: row-reverse;
+			align-items: start;
+
+			.message-content 
 			{
 				max-width: 85%;
 				background-color: var(--interactive-accent);
+				align-self: flex-end;
 			}
 
-			.ow-message-utility-bar
+			.ow-message-utility-bar 
 			{
-				display: none;
+				justify-content: flex-end;
+			}
+
+			&:hover
+			{
+				.ow-user-actions 
+				{
+					opacity: 1;
+				}	
 			}
 		}
 	}
