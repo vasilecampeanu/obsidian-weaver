@@ -73,14 +73,6 @@
 				gap: 5px;
 				opacity: 0;
 			}
-
-			&:hover
-			{
-				.ow-user-actions 
-				{
-					opacity: 1;
-				}
-			}
 		}
 
 		&.assistant 
@@ -93,6 +85,8 @@
 
 				.ow-message-content
 				{
+					display: flex;
+					gap: 10px;
 					max-width: 100%;
 					background-color: var(--interactive-normal);
 				}
@@ -102,6 +96,14 @@
 			{
 				justify-content: flex-start;
 				width: 100%;
+			}
+
+			&:hover
+			{
+				.ow-user-actions 
+				{
+					opacity: 1;
+				}
 			}
 		}
 
