@@ -1,11 +1,11 @@
-import { Icon } from "components/primitives/Icon";
 import { EChatModels } from "enums/EProviders";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactElement, useEffect, useRef, useState } from "react";
 
-interface ModelDropdownProps {
+interface ModelSwitcherProps {
 	currentModel?: EChatModels;
 	onSelect: (model: EChatModels) => void;
+	children: ReactElement; // Accepts a single React element as the trigger
 }
 
 const modelDescriptions: Record<EChatModels, string> = {
@@ -14,12 +14,16 @@ const modelDescriptions: Record<EChatModels, string> = {
 	[EChatModels.GPT_4o_mini]: "Faster at reasoning",
 };
 
-export const ModelSwitcher: React.FC<ModelDropdownProps> = ({
+export const ModelSwitcher: React.FC<ModelSwitcherProps> = ({
 	currentModel,
 	onSelect,
+	children,
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	// Toggle dropdown open state
+	const toggleDropdown = () => setIsOpen((prev) => !prev);
 
 	// Close switcher when clicking outside
 	useEffect(() => {
@@ -56,23 +60,17 @@ export const ModelSwitcher: React.FC<ModelDropdownProps> = ({
 		? currentModel.toUpperCase()
 		: "SELECT MODEL";
 
+	// Clone the child element to attach the toggle function and accessibility props
+	const trigger = React.cloneElement(children, {
+		onClick: toggleDropdown,
+		"aria-haspopup": "listbox",
+		"aria-expanded": isOpen,
+		disabled: !currentModel,
+	});
+
 	return (
 		<div className="ow-model-switcher" ref={dropdownRef}>
-			<button
-				className="ow-model-info-select"
-				onClick={() => setIsOpen((prev) => !prev)}
-				aria-haspopup="listbox"
-				aria-expanded={isOpen}
-				disabled={!currentModel}
-			>
-				<span className="icon">
-					<Icon iconId={"sparkles"} />
-				</span>
-				<span className="model-name">{displayModel}</span>
-				<span className="icon">
-					<Icon iconId={"chevron-down"} />
-				</span>
-			</button>
+			{trigger}
 			<AnimatePresence>
 				{isOpen && (
 					<motion.ul

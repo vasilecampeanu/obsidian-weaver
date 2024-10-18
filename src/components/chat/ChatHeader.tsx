@@ -7,7 +7,7 @@ import { ModelSwitcher } from "./ModelSwitcher";
 interface ChatHeaderProps {}
 
 export const ChatHeader: React.FC<ChatHeaderProps> = () => {
-	const { conversation, updateConversationTitle, updateConversationModel} = useConversation();
+	const { conversation, updateConversationTitle, updateConversationModel } = useConversation();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editableTitle, setEditableTitle] = useState<string>("");
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +68,22 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 						conversation?.default_model_slug as EChatModels
 					}
 					onSelect={handleModelSelect}
-				/>
+				>
+					<button
+						className="ow-model-info-select"
+						aria-label="Select model"
+					>
+						<span className="icon">
+							<Icon iconId={"sparkles"} />
+						</span>
+						<span className="model-name">
+							{conversation?.default_model_slug ? conversation.default_model_slug.toUpperCase() : "SELECT MODEL"}
+						</span>
+						<span className="icon">
+							<Icon iconId={"chevron-down"} />
+						</span>
+					</button>
+				</ModelSwitcher>
 			</div>
 			<div className="ow-chat-title" onDoubleClick={handleDoubleClick}>
 				{isEditing ? (

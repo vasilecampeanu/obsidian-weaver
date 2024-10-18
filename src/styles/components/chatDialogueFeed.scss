@@ -189,6 +189,11 @@
 
 			.ow-message
 			{
+				.ow-openai-icon
+				{
+					align-self: flex-start;
+				}
+
 				.ow-message-content
 				{
 					display: flex;

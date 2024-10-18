@@ -207,7 +207,7 @@ export const useConversation = () => {
 
 	// Regenerate an assistant message based on a previous assistant message
 	const regenerateAssistantMessage = useCallback(
-		async (messageId: string) => {
+		async (messageId: string, model?: EChatModels) => {
 			if (!conversation) {
 				throw new Error('No conversation initialized');
 			}
@@ -298,7 +298,8 @@ export const useConversation = () => {
 				updatedConversation,
 				assistantMessageNode,
 				conversationPath,
-				controller
+				controller,
+				model
 			);
 		},
 		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
@@ -310,7 +311,8 @@ export const useConversation = () => {
 			conversation: IConversation,
 			assistantMessageNode: IMessageNode,
 			conversationPath: any[],
-			controller: AbortController
+			controller: AbortController,
+			model?: EChatModels
 		) => {
 			let assistantContent = '';
 			const assistantMessageNodeId = assistantMessageNode.id;
@@ -346,7 +348,7 @@ export const useConversation = () => {
 			try {
 				const responseStream = await openAIManager.sendMessageStream(
 					conversationPath,
-					conversation.default_model_slug,
+					model ? model : conversation.default_model_slug,
 					controller.signal
 				);
 
