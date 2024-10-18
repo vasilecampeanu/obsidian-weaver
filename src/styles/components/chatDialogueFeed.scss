@@ -157,6 +157,33 @@
 				justify-content: flex-end;
 			}
 
+			&.editing
+			{
+				width: 100%;
+				
+				.ow-message
+				{
+					width: 100%;
+
+					.ow-message-content 
+					{
+						max-width: 100%;
+						width: 100%;
+
+						textarea
+						{
+							all: unset;
+							width: 100%;
+							resize: none;
+							line-height: 14px;
+							font-size: 14px;
+							white-space: pre-wrap;
+							overflow-wrap: break-word;
+						}
+					}
+				}
+			}
+
 			&:hover
 			{
 				.ow-user-actions 

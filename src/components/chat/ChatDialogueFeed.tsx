@@ -1,15 +1,13 @@
 import { useConversation } from "hooks/useConversation";
 import { useLatestCreateTimeMap } from "hooks/useLatestCreateTimeMap";
 import { IMessageNode } from "interfaces/IConversation";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { ChatMessageBubble } from "./ChatMessageBubble";
 
 export const ChatDialogueFeed: React.FC = () => {
 	const { conversation, navigateToNode } = useConversation();
-
-	const latestCreateTimeMap = useLatestCreateTimeMap(
-		conversation?.mapping || {}
-	);
+	const latestCreateTimeMap = useLatestCreateTimeMap(conversation?.mapping || {});
+	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 
 	const path = useMemo(() => {
 		if (!conversation?.current_node) return [];
@@ -118,10 +116,12 @@ export const ChatDialogueFeed: React.FC = () => {
 					onPrevBranch={handlePrevBranch}
 					onNextBranch={handleNextBranch}
 					isLatest={isLatest}
+					isEditing={editingMessageId === node.id}
+					setEditingMessageId={setEditingMessageId}
 				/>
 			);
 		});
-	}, [path, getSortedSiblings, handleBranchNavigation, conversation]);
+	}, [path, getSortedSiblings, handleBranchNavigation, conversation, editingMessageId]);
 
 	return <div className="ow-chat-dialogue-feed">{renderMessages}</div>;
 };
