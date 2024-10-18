@@ -1,11 +1,13 @@
 import { Icon } from "components/primitives/Icon";
+import { EChatModels } from "enums/EProviders";
 import { useConversation } from "hooks/useConversation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ModelSwitcher } from "./ModelSwitcher";
 
 interface ChatHeaderProps {}
 
 export const ChatHeader: React.FC<ChatHeaderProps> = () => {
-	const { conversation, updateConversationTitle } = useConversation();
+	const { conversation, updateConversationTitle, updateConversationModel} = useConversation();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editableTitle, setEditableTitle] = useState<string>("");
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -49,17 +51,25 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 		handleSubmit();
 	};
 
+	const handleModelSelect = async (model: EChatModels) => {
+		if (model !== conversation?.default_model_slug) {
+			updateConversationModel(model);
+		}
+	};
+
 	return (
 		<div className="ow-chat-header">
-			<button className="ow-model-info-select">
-				<span>
-					<Icon iconId={"sparkles"} />
-				</span>
-				<span>{conversation?.default_model_slug.toUpperCase()}</span>
-				<span>
-					<Icon iconId={"chevron-down"} />
-				</span>
-			</button>
+			<div className="ow-user-header-actions">
+				<button className="ow-btn-back">
+					<Icon iconId={"arrow-left"} />
+				</button>
+				<ModelSwitcher
+					currentModel={
+						conversation?.default_model_slug as EChatModels
+					}
+					onSelect={handleModelSelect}
+				/>
+			</div>
 			<div className="ow-chat-title" onDoubleClick={handleDoubleClick}>
 				{isEditing ? (
 					<input

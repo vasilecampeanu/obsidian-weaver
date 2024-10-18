@@ -1,4 +1,5 @@
 import { OpenAIRequestManager } from 'api/providers/OpenAIRequestManager';
+import { EChatModels } from 'enums/EProviders';
 import { throttle } from 'helpers/Async';
 import {
 	createConversation,
@@ -49,7 +50,7 @@ export const useConversation = () => {
 	// Create a new conversation and set it in the store
 	const createNewConversation = useCallback(
 		async (title: string = 'Untitled') => {
-			const newConversation = await createConversation(adapter, plugin.settings.weaverDirectory, title);
+			const newConversation = await createConversation(adapter, plugin.settings.model, plugin.settings.weaverDirectory, title);
 			setConversation(newConversation);
 			setPreviousConversationId(newConversation.id);
 			return newConversation;
@@ -141,13 +142,17 @@ export const useConversation = () => {
 				.filter((node) => node.message)
 				.map((node) => node.message!);
 
-			// Create assistant message node
+			// Create assistant message node with updated metadata
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
 				id: assistantMessageNodeId,
 				message: {
 					id: assistantMessageNodeId,
-					author: { role: 'assistant', name: null, metadata: {} },
+					author: {
+						role: 'assistant', 
+						name: null, 
+						metadata: {}
+					},
 					create_time: now,
 					update_time: now,
 					content: {
@@ -157,7 +162,10 @@ export const useConversation = () => {
 					status: 'in_progress',
 					end_turn: false,
 					weight: 1.0,
-					metadata: {},
+					metadata: {
+						default_model_slug: updatedConversation.default_model_slug,
+						model_slug: updatedConversation.default_model_slug,
+					},
 					recipient: 'all',
 					channel: null,
 				},
@@ -228,13 +236,17 @@ export const useConversation = () => {
 				throw new Error('Parent node is not a user message');
 			}
 
-			// Create a new assistant message node
+			// Create a new assistant message node with updated metadata
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
 				id: assistantMessageNodeId,
 				message: {
 					id: assistantMessageNodeId,
-					author: { role: 'assistant', name: null, metadata: {} },
+					author: {
+						role: 'assistant', 
+						name: null, 
+						metadata: {}
+					},
 					create_time: now,
 					update_time: now,
 					content: {
@@ -244,7 +256,10 @@ export const useConversation = () => {
 					status: 'in_progress',
 					end_turn: false,
 					weight: 1.0,
-					metadata: {},
+					metadata: {
+						default_model_slug: conversation.default_model_slug,
+						model_slug: conversation.default_model_slug
+					},
 					recipient: 'all',
 					channel: null,
 				},
@@ -259,8 +274,8 @@ export const useConversation = () => {
 					...conversation.mapping,
 					[assistantMessageNodeId]: assistantMessageNode,
 					[userMessageNodeId]: {
-						...userMessageNode,
-						children: [...userMessageNode.children, assistantMessageNodeId],
+						...conversation.mapping[userMessageNodeId],
+						children: [...conversation.mapping[userMessageNodeId].children, assistantMessageNodeId],
 					},
 				},
 				current_node: assistantMessageNodeId,
@@ -331,7 +346,7 @@ export const useConversation = () => {
 			try {
 				const responseStream = await openAIManager.sendMessageStream(
 					conversationPath,
-					'gpt-4',
+					conversation.default_model_slug,
 					controller.signal
 				);
 
@@ -513,6 +528,7 @@ export const useConversation = () => {
 		[conversation, updateConversation]
 	);
 
+	// Edit a user message and generate a new assistant response
 	const editUserMessage = useCallback(
 		async (messageId: string, newContent: string) => {
 			if (!conversation) {
@@ -520,25 +536,25 @@ export const useConversation = () => {
 			}
 
 			setIsGenerating(true);
-	
+
 			const now = Date.now() / 1000;
-	
+
 			// Retrieve the original user message node
 			const originalUserNode = conversation.mapping[messageId];
 			if (!originalUserNode || originalUserNode.message?.author.role !== 'user') {
 				throw new Error('Provided messageId is not a user message');
 			}
-	
+
 			const parentNodeId = originalUserNode.parent;
 			if (!parentNodeId) {
 				throw new Error('No parent node found for the user message');
 			}
-	
+
 			const parentNode = conversation.mapping[parentNodeId];
 			if (!parentNode) {
 				throw new Error('Parent node does not exist');
 			}
-	
+
 			// Create a new user message node with the edited content
 			const newUserMessageNodeId = uuidv4();
 			const newUserMessageNode: IMessageNode = {
@@ -562,7 +578,7 @@ export const useConversation = () => {
 				parent: parentNodeId,
 				children: [],
 			};
-	
+
 			// Update the conversation with the new user message node
 			let updatedConversation: IConversation = {
 				...conversation,
@@ -577,21 +593,25 @@ export const useConversation = () => {
 				current_node: newUserMessageNodeId,
 				update_time: now,
 			};
-	
+
 			await updateConversation(updatedConversation);
-	
+
 			// Prepare the conversation path up to the new user message
 			const conversationPath = getConversationPathToNode(updatedConversation, newUserMessageNodeId)
 				.filter((node) => node.message)
 				.map((node) => node.message!);
-	
-			// Create a new assistant message node
+
+			// Create a new assistant message node with updated metadata
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
 				id: assistantMessageNodeId,
 				message: {
 					id: assistantMessageNodeId,
-					author: { role: 'assistant', name: null, metadata: {} },
+					author: {
+						role: 'assistant', 
+						name: null, 
+						metadata: {}
+					},
 					create_time: now,
 					update_time: now,
 					content: {
@@ -601,14 +621,17 @@ export const useConversation = () => {
 					status: 'in_progress',
 					end_turn: false,
 					weight: 1.0,
-					metadata: {},
+					metadata: {
+						default_model_slug: updatedConversation.default_model_slug,
+						model_slug: updatedConversation.default_model_slug,
+					},
 					recipient: 'all',
 					channel: null,
 				},
 				parent: newUserMessageNodeId,
 				children: [],
 			};
-	
+
 			// Add the assistant message node to the conversation
 			updatedConversation = {
 				...updatedConversation,
@@ -623,13 +646,13 @@ export const useConversation = () => {
 				current_node: assistantMessageNodeId,
 				update_time: now,
 			};
-	
+
 			await updateConversation(updatedConversation);
-	
+
 			// Initialize AbortController for streaming
 			const controller = new AbortController();
 			setAbortController(controller);
-	
+
 			// Stream assistant response
 			await streamAssistantResponse(
 				updatedConversation,
@@ -641,18 +664,36 @@ export const useConversation = () => {
 		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
 	);
 
+	// Update the conversation title
 	const updateConversationTitle = useCallback(
 		async (newTitle: string) => {
-		  if (!conversation) return;
-	  
-		  const now = Date.now() / 1000;
-		  const updatedConversation: IConversation = {
-			...conversation,
-			title: newTitle,
-			update_time: now,
-		  };
-	  
-		  await updateConversation(updatedConversation);
+			if (!conversation) return;
+
+			const now = Date.now() / 1000;
+			const updatedConversation: IConversation = {
+				...conversation,
+				title: newTitle,
+				update_time: now,
+			};
+
+			await updateConversation(updatedConversation);
+		},
+		[conversation, updateConversation]
+	);
+
+	// Update the conversation default model slug 
+	const updateConversationModel = useCallback(
+		async (model: EChatModels) => {
+			if (!conversation) return;
+
+			const now = Date.now() / 1000;
+			const updatedConversation: IConversation = {
+				...conversation,
+				default_model_slug: model,
+				update_time: now,
+			};
+
+			await updateConversation(updatedConversation);
 		},
 		[conversation, updateConversation]
 	);
@@ -669,6 +710,7 @@ export const useConversation = () => {
 		updateConversation,
 		navigateToNode,
 		editUserMessage,
-		updateConversationTitle
+		updateConversationTitle,
+		updateConversationModel
 	};
 };

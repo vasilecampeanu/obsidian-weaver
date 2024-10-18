@@ -4,19 +4,22 @@
 	display: flex;
 	flex-direction: column;
 	align-items: start;
-	gap: 2px;
+	gap: 5px;
 
-	.ow-model-info-select
+	.ow-user-header-actions
 	{
-		all: unset;
 		display: flex;
-		gap: 5px;
-		padding: 5px;
-		border-radius: 5px;
 
-		&:hover
+		.ow-btn-back
 		{
-			background-color: var(--background-modifier-hover);	
+			all: unset;
+			padding: 5px;
+			border-radius: 5px;
+
+			&:hover
+			{
+				background-color: var(--background-modifier-hover);	
+			}
 		}
 	}
 

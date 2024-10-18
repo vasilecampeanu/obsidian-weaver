@@ -1,0 +1,79 @@
+.ow-model-switcher
+{
+	position: relative;
+
+	.ow-model-info-select
+	{
+		all: unset;
+		display: flex;
+		gap: 5px;
+		padding: 5px;
+		border-radius: 5px;
+
+		.icon 
+		{
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	
+		.model-name 
+		{
+			font-size: 14px;
+			font-weight: 500;
+		}	
+
+		&:hover
+		{
+			background-color: var(--background-modifier-hover);	
+		}
+	}
+
+	.ow-model-switcher-menu
+	{
+		position: absolute;
+		top: 100%;
+		left: 0;
+		background-color: var(--background-secondary);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		border: 1px solid var(--prompt-border-color);
+		border-radius: 15px;
+		margin-top: 5px;
+		z-index: 1000;
+		list-style: none;
+		padding: 10px;
+		margin: 0;
+		min-width: 300px;
+
+		.ow-model-switcher-header
+		{
+			padding: 10px;
+			color: var(--text-muted);
+		}
+
+		.ow-model-switcher-item 
+		{
+			padding: 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.2s ease;
+			
+			&.selected 
+			{
+				font-weight: bold;
+				background-color: var(--background-modifier-hover);
+			}
+	  
+			&:not(.selected):hover 
+			{
+			background-color: var(--background-modifier-hover);
+			}
+
+			.model-item-content
+			{
+				display: flex;
+				flex-direction: column;
+			}
+		}
+	}
+}

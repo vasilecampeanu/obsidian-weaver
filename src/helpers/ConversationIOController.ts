@@ -1,3 +1,4 @@
+import { EChatModels } from 'enums/EProviders';
 import { readJsonFile, writeJsonFile } from 'helpers/FileIOUtils';
 import { IConversation, IMessageNode } from 'interfaces/IConversation';
 import { FileSystemAdapter } from 'obsidian';
@@ -6,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const createConversation = async (
 	adapter: FileSystemAdapter,
+	model: EChatModels,
 	weaverDirectory: string,
 	title: string
 ): Promise<IConversation> => {
@@ -26,7 +28,7 @@ export const createConversation = async (
 		gizmo_id: null,
 		is_archived: false,
 		safe_urls: [],
-		default_model_slug: 'gpt-4',
+		default_model_slug: model,
 		conversation_origin: null,
 		voice: null,
 		async_status: null,

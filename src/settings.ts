@@ -1,11 +1,13 @@
+import { EChatModels } from "enums/EProviders";
 import Weaver from "main";
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, TextComponent } from "obsidian";
 
 export interface WeaverSettings {
 	apiKey: string,
 	weaverDirectory: string,
 	weaverContextStorage: string,
-	loadLastConversation: boolean
+	loadLastConversation: boolean,
+	model: EChatModels
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -14,7 +16,8 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	get weaverContextStorage() {
 		return `${this.weaverDirectory}/context.json`;
 	},
-	loadLastConversation: true
+	loadLastConversation: true,
+	model: EChatModels.GPT_4
 };
 
 export class WeaverSettingTab extends PluginSettingTab {
@@ -35,7 +38,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 			text: 'OpenAI'
 		});
 
-		let inputEl;
+		let inputEl: TextComponent;
 		new Setting(containerEl)
 			.setName('API Key')
 			.setDesc('You can get an API key from your OpenAI account.')
@@ -47,9 +50,24 @@ export class WeaverSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 				.then((textEl) => {
-					inputEl = textEl
+					inputEl = textEl;
 				})
 				.inputEl.setAttribute('type', 'password')
-			)
+			);
+
+		new Setting(containerEl)
+			.setName('Model')
+			.setDesc('This allows you to choose which model the chat view should utilize.')
+			.addDropdown((dropdown) => {
+				Object.values(EChatModels).forEach((model) => {
+					const label = model.toUpperCase().replace(/_/g, ' ');
+					dropdown.addOption(model, label);
+				});
+				dropdown.setValue(this.plugin.settings.model);
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.model = value as EChatModels;
+					await this.plugin.saveSettings();
+				});
+			});
 	}
 }

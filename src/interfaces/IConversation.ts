@@ -1,3 +1,5 @@
+import { EChatModels } from "enums/EProviders";
+
 // Interface representing the entire conversation
 export interface IConversation {
 	title: string;
@@ -12,7 +14,7 @@ export interface IConversation {
 	gizmo_id: any;
 	is_archived: boolean;
 	safe_urls: any[];
-	default_model_slug: string;
+	default_model_slug: EChatModels;
 	conversation_origin: any;
 	voice: any;
 	async_status: any;
