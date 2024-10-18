@@ -641,6 +641,22 @@ export const useConversation = () => {
 		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
 	);
 
+	const updateConversationTitle = useCallback(
+		async (newTitle: string) => {
+		  if (!conversation) return;
+	  
+		  const now = Date.now() / 1000;
+		  const updatedConversation: IConversation = {
+			...conversation,
+			title: newTitle,
+			update_time: now,
+		  };
+	  
+		  await updateConversation(updatedConversation);
+		},
+		[conversation, updateConversation]
+	);
+
 	return {
 		conversation,
 		isGenerating,
@@ -652,6 +668,7 @@ export const useConversation = () => {
 		stopMessageGeneration,
 		updateConversation,
 		navigateToNode,
-		editUserMessage
+		editUserMessage,
+		updateConversationTitle
 	};
 };
