@@ -1,4 +1,4 @@
-import { EChatModels } from "enums/EProviders";
+import { EChatModels, modelDescriptions } from "enums/EProviders";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { ReactElement, useEffect, useRef, useState } from "react";
 
@@ -7,12 +7,6 @@ interface ModelSwitcherProps {
 	onSelect: (model: EChatModels) => void;
 	children: ReactElement; // Accepts a single React element as the trigger
 }
-
-const modelDescriptions: Record<EChatModels, string> = {
-	[EChatModels.GPT_4]: "Legacy model",
-	[EChatModels.GPT_4o]: "Great for most tasks",
-	[EChatModels.GPT_4o_mini]: "Faster at reasoning",
-};
 
 export const ModelSwitcher: React.FC<ModelSwitcherProps> = ({
 	currentModel,
@@ -55,10 +49,6 @@ export const ModelSwitcher: React.FC<ModelSwitcherProps> = ({
 			transition: { duration: 0.2 },
 		},
 	};
-
-	const displayModel = currentModel
-		? currentModel.toUpperCase()
-		: "SELECT MODEL";
 
 	// Clone the child element to attach the toggle function and accessibility props
 	const trigger = React.cloneElement(children, {

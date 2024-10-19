@@ -73,7 +73,7 @@ export interface IMetadata {
 	timestamp_?: string;
 	message_type?: string | null;
 	model_slug?: EChatModels;
-	default_model_slug?: string;
+	default_model_slug?: EChatModels;
 	parent_id?: string;
 	finish_details?: {
 		type: string;

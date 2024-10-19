@@ -4,7 +4,8 @@ import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
 import { Component, MarkdownRenderer } from "obsidian";
 import { usePlugin } from "providers/plugin/usePlugin";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { ChatModelSwitcher } from "./ChatModelSwitcher";
 
 interface ChatMessageBubbleProps {
 	messageNode: IMessageNode;
@@ -16,6 +17,7 @@ interface ChatMessageBubbleProps {
 	isLatest?: boolean;
 	isEditing: boolean;
 	setEditingMessageId: (id: string | null) => void;
+	boundaryRef: React.RefObject<HTMLElement>;
 }
 
 export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
@@ -28,18 +30,20 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	isLatest,
 	isEditing,
 	setEditingMessageId,
+	boundaryRef,
 }) => {
 	const app = usePlugin().app;
+
 	const { regenerateAssistantMessage, editUserMessage, isGenerating } = useConversation();
 	const [isCopied, setIsCopied] = useState(false);
-
 	const [editedContent, setEditedContent] = useState(
 		messageNode.message?.content.parts.join("\n") || ""
 	);
-
 	const [renderedContent, setRenderedContent] = useState<{
 		__html: string;
 	} | null>(null);
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
+	const regenerateButtonRef = useRef<HTMLButtonElement>(null);
 
 	const message = messageNode.message;
 
@@ -112,6 +116,10 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 		setEditingMessageId(null);
 	};
 
+	const togglePopover = () => {
+		setIsChatModelSwitcherOpen((prev) => !prev);
+	};
+
 	return (
 		<div
 			className={`ow-chat-message-bubble ${message.author.role} ${
@@ -157,9 +165,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 										renderedContent || { __html: "" }
 									}
 								/>
-								{isGenerating && isLatest && (
-									<>#</>
-								)}
+								{isGenerating && isLatest && <>#</>}
 							</div>
 						</>
 					) : (
@@ -182,22 +188,16 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 					</div>
 				)}
 			</div>
-			<div className="ow-message-utility-bar">
+			<div className={`ow-message-utility-bar ${isChatModelSwitcherOpen ? "model-switcher-open" : ""}`}>
 				{hasBranches && (
 					<div className="ow-branch-navigation">
-						<button
-							className="ow-btn"
-							onClick={onPrevBranch}
-						>
+						<button className="ow-btn" onClick={onPrevBranch}>
 							<Icon iconId={"chevron-left"} />
 						</button>
 						<span className="ow-branch-index">
 							{currentBranchIndex + 1} / {totalBranches}
 						</span>
-						<button
-							className="ow-btn"
-							onClick={onNextBranch}
-						>
+						<button className="ow-btn" onClick={onNextBranch}>
 							<Icon iconId={"chevron-right"} />
 						</button>
 					</div>
@@ -212,12 +212,29 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 						</button>
 						<button
 							className="ow-btn regenerate"
-							onClick={() =>
-								regenerateAssistantMessage(messageNode.id)
-							}
+							onClick={togglePopover}
+							ref={regenerateButtonRef}
 						>
-							<Icon iconId={"refresh-ccw"} />
+							<div>
+								<Icon iconId={"refresh-ccw"} />
+							</div>
+							<span>
+								{message.metadata.model_slug?.toUpperCase()}
+							</span>
+							<div>
+								<Icon iconId={"chevron-down"} />
+							</div>
 						</button>
+						<ChatModelSwitcher
+							referenceElement={regenerateButtonRef}
+							boundaryRef={boundaryRef}
+							isChatModelSwitcherOpen={isChatModelSwitcherOpen}
+							setIsChatModelSwitcherOpen={setIsChatModelSwitcherOpen}
+							currentModel={message.metadata.model_slug}
+							onSelect={(model) => {
+								regenerateAssistantMessage(message.id, model);
+							}}
+						/>
 					</div>
 				)}
 			</div>

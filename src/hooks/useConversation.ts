@@ -258,7 +258,7 @@ export const useConversation = () => {
 					weight: 1.0,
 					metadata: {
 						default_model_slug: conversation.default_model_slug,
-						model_slug: conversation.default_model_slug
+						model_slug: model
 					},
 					recipient: 'all',
 					channel: null,

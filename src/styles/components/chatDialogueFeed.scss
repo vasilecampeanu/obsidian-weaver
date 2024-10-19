@@ -180,6 +180,14 @@
 				gap: 5px;
 				opacity: 0;
 			}
+
+			&.model-switcher-open
+			{
+				.ow-user-actions
+				{
+					opacity: 1;
+				}
+			}
 		}
 
 		&.assistant 
@@ -207,6 +215,15 @@
 			{
 				justify-content: flex-start;
 				width: 100%;
+			}
+
+			.ow-user-actions
+			{
+				.ow-btn.regenerate
+				{
+					display: flex;
+					gap: 5px;
+				}
 			}
 
 			&:hover

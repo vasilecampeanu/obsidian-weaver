@@ -1,81 +1,74 @@
-.ow-model-switcher
+.ow-chat-model-switcher
 {
-	position: relative;
-
-	.ow-model-info-select
-	{
-		all: unset;
-		display: flex;
-		gap: 5px;
-		padding: 5px;
-		border-radius: 5px;
-
-		.icon 
-		{
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-	
-		.model-name 
-		{
-			font-size: 14px;
-			font-weight: 500;
-		}	
-
-		&:hover
-		{
-			background-color: var(--background-modifier-hover);	
-		}
-	}
-
 	.ow-model-switcher-menu
 	{
+		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		position: absolute;
-		top: 100%;
-		left: 0;
 		background-color: var(--background-secondary);
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		border: 1px solid var(--prompt-border-color);
 		border-radius: 15px;
-		margin-top: 10px !important;
-		z-index: 1000;
 		list-style: none;
 		padding: 10px;
-		margin: 0;
 		min-width: 300px;
 
 		.ow-model-switcher-header
 		{
 			padding: 10px;
+			font-weight: bold;
 			color: var(--text-muted);
+		}
+
+		hr
+		{
+			margin: 0px;
+			margin: 5px 10px;
 		}
 
 		.ow-model-switcher-item 
 		{
-			margin-top: 5px;
 			padding: 10px;
 			border-radius: 5px;
 			cursor: pointer;
 			transition: background-color 0.2s ease;
-			
-			&.selected 
+
+			&:hover 
 			{
-				font-weight: bold;
 				background-color: var(--background-modifier-hover);
-			}
-	  
-			&:not(.selected):hover 
-			{
-			background-color: var(--background-modifier-hover);
 			}
 
 			.model-item-content
 			{
 				display: flex;
 				flex-direction: column;
+
+				.model-name
+				{
+					font-weight: bold;
+				}
+
+				.model-description
+				{
+					color: var(--text-muted);
+				}
+			}
+
+			&.try-again-current
+			{
+				display: flex;
+				flex-direction: row;
+				
+				.model-item-content
+				{
+					flex: 1;
+					width: 100%;
+				}
+
+				.ow-icon
+				{
+					align-self: center;
+				}
 			}
 		}
 	}

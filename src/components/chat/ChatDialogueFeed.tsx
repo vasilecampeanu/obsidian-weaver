@@ -1,13 +1,18 @@
 import { useConversation } from "hooks/useConversation";
 import { useLatestCreateTimeMap } from "hooks/useLatestCreateTimeMap";
 import { IMessageNode } from "interfaces/IConversation";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ChatMessageBubble } from "./ChatMessageBubble";
 
 export const ChatDialogueFeed: React.FC = () => {
 	const { conversation, navigateToNode } = useConversation();
-	const latestCreateTimeMap = useLatestCreateTimeMap(conversation?.mapping || {});
-	const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+	const latestCreateTimeMap = useLatestCreateTimeMap(
+		conversation?.mapping || {}
+	);
+	const [editingMessageId, setEditingMessageId] = useState<string | null>(
+		null
+	);
+	const boundaryRef = useRef<HTMLDivElement>(null);
 
 	const path = useMemo(() => {
 		if (!conversation?.current_node) return [];
@@ -53,7 +58,7 @@ export const ChatDialogueFeed: React.FC = () => {
 
 			const newIndex =
 				direction === "prev"
-					? (currentIndex - 1  + siblings.length) % siblings.length
+					? (currentIndex - 1 + siblings.length) % siblings.length
 					: (currentIndex + 1) % siblings.length;
 
 			let newBranchNode = siblings[newIndex];
@@ -99,8 +104,10 @@ export const ChatDialogueFeed: React.FC = () => {
 			);
 			const totalBranches = siblings.length;
 
-			const handlePrevBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "prev");
-			const handleNextBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "next");
+			const handlePrevBranch = () =>
+				handleBranchNavigation(siblings, currentBranchIndex, "prev");
+			const handleNextBranch = () =>
+				handleBranchNavigation(siblings, currentBranchIndex, "next");
 
 			const isLatest =
 				node.message?.author.role === "assistant" &&
@@ -118,10 +125,21 @@ export const ChatDialogueFeed: React.FC = () => {
 					isLatest={isLatest}
 					isEditing={editingMessageId === node.id}
 					setEditingMessageId={setEditingMessageId}
+					boundaryRef={boundaryRef}
 				/>
 			);
 		});
-	}, [path, getSortedSiblings, handleBranchNavigation, conversation, editingMessageId]);
+	}, [
+		path,
+		getSortedSiblings,
+		handleBranchNavigation,
+		conversation,
+		editingMessageId,
+	]);
 
-	return <div className="ow-chat-dialogue-feed">{renderMessages}</div>;
+	return (
+		<div ref={boundaryRef} className="ow-chat-dialogue-feed">
+			{renderMessages}
+		</div>
+	);
 };
