@@ -25,6 +25,7 @@
 				border: 1px solid var(--prompt-border-color);
 				box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
 				font-size: var(--font-ui-small);
+				position: relative;
 
 				.ow-rendered-content
 				{
@@ -223,6 +224,13 @@
 				{
 					display: flex;
 					gap: 5px;
+
+					.ow-model-slug
+					{
+						align-self: center;
+						justify-self: center;
+						font-size: 11px;
+					}
 				}
 			}
 
@@ -258,13 +266,13 @@
 					display: flex;
 					gap: 5px;
 					opacity: 0;
-	
+
 					.ow-btn.edit
 					{
 						all: unset;
 						padding: 8px;
 						border-radius: 50%;
-	
+
 						&:hover
 						{
 							background-color: var(--background-modifier-hover);
@@ -298,15 +306,55 @@
 						max-width: 100%;
 						width: 100%;
 
-						textarea
+						.editing-area
 						{
-							all: unset;
 							width: 100%;
-							resize: none;
-							line-height: 14px;
-							font-size: 14px;
-							white-space: pre-wrap;
-							overflow-wrap: break-word;
+							display: flex;
+							flex-direction: column;
+
+							textarea
+							{
+								all: unset;
+								width: 100%;
+								max-height: calc(20 * 14px);
+								resize: none;
+								line-height: 14px;
+								font-size: 14px;
+								white-space: pre-wrap;
+								overflow-wrap: break-word;
+								border: 1px solid var(--prompt-border-color);
+								border-radius: 5px;
+								padding: 8px;
+								font-family: inherit;
+								box-sizing: border-box;
+								line-height: 1.5;
+								background-color: white;								
+								color: black;
+							}
+		
+							.editing-buttons
+							{
+								display: flex;
+								gap: 5px;
+								align-self: flex-end;
+								margin-top: 5px;
+		
+								.ow-btn
+								{
+									all: unset;
+									padding: 10px 15px;
+									border-radius: 25px;
+									background-color: white;
+									color: black;
+									cursor: default;
+		
+									&.cancel
+									{
+										background-color: var(--background-secondary);
+										color: var(--text-normal);
+									}
+								}
+							}
 						}
 					}
 				}

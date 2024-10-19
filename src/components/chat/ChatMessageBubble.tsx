@@ -1,5 +1,6 @@
 import { ChatGPTIcon } from "components/icons/ChatGPTIcon";
 import { Icon } from "components/primitives/Icon";
+import { motion } from "framer-motion";
 import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
 import { Component, MarkdownRenderer } from "obsidian";
@@ -34,7 +35,8 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 }) => {
 	const app = usePlugin().app;
 
-	const { regenerateAssistantMessage, editUserMessage, isGenerating } = useConversation();
+	const { regenerateAssistantMessage, editUserMessage, isGenerating } =
+		useConversation();
 	const [isCopied, setIsCopied] = useState(false);
 	const [editedContent, setEditedContent] = useState(
 		messageNode.message?.content.parts.join("\n") || ""
@@ -42,8 +44,12 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	const [renderedContent, setRenderedContent] = useState<{
 		__html: string;
 	} | null>(null);
-	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] =
+		useState(false);
 	const regenerateButtonRef = useRef<HTMLButtonElement>(null);
+	const [isHovered, setIsHovered] = useState(false);
+
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	const message = messageNode.message;
 
@@ -89,6 +95,13 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 		};
 	}, [message, app]);
 
+	useEffect(() => {
+		if (isEditing && textareaRef.current) {
+			textareaRef.current.style.height = "auto";
+			textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+		}
+	}, [editedContent, isEditing]);
+
 	if (!message) return null;
 
 	const handleCopyClick = () => {
@@ -122,34 +135,31 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 
 	return (
 		<div
-			className={`ow-chat-message-bubble ${message.author.role} ${
-				isLatest ? "latest" : ""
-			} ${isEditing ? "editing" : ""}`}
+			className={`ow-chat-message-bubble ${message.author.role} ${isLatest ? "latest" : ""} ${isEditing ? "editing" : ""}`}
 		>
 			<div className="ow-message">
 				<div className="ow-message-content">
 					{isEditing ? (
 						<div className="editing-area">
 							<textarea
+								ref={textareaRef}
 								value={editedContent}
-								onChange={(e) =>
-									setEditedContent(e.target.value)
-								}
-								rows={3}
+								onChange={(e) => setEditedContent(e.target.value)}
 								className="ow-edit-textarea"
+								rows={1}
 							/>
 							<div className="editing-buttons">
-								<button
-									className="ow-btn save"
-									onClick={handleSaveEdit}
-								>
-									Save
-								</button>
 								<button
 									className="ow-btn cancel"
 									onClick={handleCancelEdit}
 								>
 									Cancel
+								</button>
+								<button
+									className="ow-btn save"
+									onClick={handleSaveEdit}
+								>
+									Save
 								</button>
 							</div>
 						</div>
@@ -188,7 +198,11 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 					</div>
 				)}
 			</div>
-			<div className={`ow-message-utility-bar ${isChatModelSwitcherOpen ? "model-switcher-open" : ""}`}>
+			<div
+				className={`ow-message-utility-bar ${
+					isChatModelSwitcherOpen ? "model-switcher-open" : ""
+				}`}
+			>
 				{hasBranches && (
 					<div className="ow-branch-navigation">
 						<button className="ow-btn" onClick={onPrevBranch}>
@@ -212,15 +226,24 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 						</button>
 						<button
 							className="ow-btn regenerate"
+							onMouseEnter={() => setIsHovered(true)}
+							onMouseLeave={() => setIsHovered(false)}
 							onClick={togglePopover}
 							ref={regenerateButtonRef}
 						>
 							<div>
 								<Icon iconId={"refresh-ccw"} />
 							</div>
-							<span>
-								{message.metadata.model_slug?.toUpperCase()}
-							</span>
+							{isHovered && (
+								<motion.span
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									transition={{ duration: 0.3 }}
+									className="ow-model-slug"
+								>
+									{message.metadata.model_slug?.toUpperCase()}
+								</motion.span>
+							)}
 							<div>
 								<Icon iconId={"chevron-down"} />
 							</div>
@@ -229,7 +252,9 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 							referenceElement={regenerateButtonRef}
 							boundaryRef={boundaryRef}
 							isChatModelSwitcherOpen={isChatModelSwitcherOpen}
-							setIsChatModelSwitcherOpen={setIsChatModelSwitcherOpen}
+							setIsChatModelSwitcherOpen={
+								setIsChatModelSwitcherOpen
+							}
 							currentModel={message.metadata.model_slug}
 							onSelect={(model) => {
 								regenerateAssistantMessage(message.id, model);
