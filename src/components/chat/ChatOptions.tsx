@@ -68,17 +68,20 @@ export const ChatOptions: React.FC<ChatOptionsProps> = ({
 							<span>Rename</span>
 						</div>
 					</li>
-					<li
-						className="ow-chat-options-item delete"
-						onClick={() => onDelete && handleOptionClick(onDelete)}
-						role="menuitem"
-						tabIndex={0}
-					>
-						<div className="option-item-content">
-							<Icon iconId="trash" className="option-icon" />
-							<span>Delete</span>
-						</div>
-					</li>
+					{/*
+						TODO:
+						<li
+							className="ow-chat-options-item delete"
+							onClick={() => onDelete && handleOptionClick(onDelete)}
+							role="menuitem"
+							tabIndex={0}
+						>
+							<div className="option-item-content">
+								<Icon iconId="trash" className="option-icon" />
+								<span>Delete</span>
+							</div>
+						</li> 
+					*/}
 				</motion.ul>
 			)}
 		</AnimatePresence>

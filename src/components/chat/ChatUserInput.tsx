@@ -10,7 +10,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
 const MAX_CHARACTERS = 2000;
 const TEXTAREA_LINE_HEIGHT = 14;
@@ -128,9 +127,12 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 	return (
 		<div className="ow-chat-user-input">
-			{userSelection && (
-				<ChatSelectedTextModal userSelection={userSelection} />
-			)}
+			{/*
+				TODO: 
+				{userSelection && (
+					<ChatSelectedTextModal userSelection={userSelection} />
+				)} 
+			 */}
 			<div className="ow-chat-user-input-inner-wrapper">
 				<div className="ow-user-actions">
 					<AnimatePresence>

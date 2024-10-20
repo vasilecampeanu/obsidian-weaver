@@ -95,9 +95,12 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	return (
 		<div className="ow-chat-header">
 			<div className="ow-header-actions">
-				<button className="ow-btn-back">
-					<Icon iconId={"arrow-left"} />
-				</button>
+				{/* 				
+					TODO:
+					<button className="ow-btn-back">
+						<Icon iconId={"arrow-left"} />
+					</button> 
+				*/}
 				<button
 					ref={switchModelButtonRef}
 					className="ow-model-info-select"
