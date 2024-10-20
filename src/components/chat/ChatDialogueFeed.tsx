@@ -1,7 +1,14 @@
 import { useConversation } from "hooks/useConversation";
 import { useLatestCreateTimeMap } from "hooks/useLatestCreateTimeMap";
 import { IMessageNode } from "interfaces/IConversation";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { ChatMessageBubble } from "./ChatMessageBubble";
 
 export const ChatDialogueFeed: React.FC = () => {
@@ -13,6 +20,9 @@ export const ChatDialogueFeed: React.FC = () => {
 		null
 	);
 	const boundaryRef = useRef<HTMLDivElement>(null);
+	const endOfBoundaryRef = useRef<HTMLDivElement>(null);
+
+	const [isAtBottom, setIsAtBottom] = useState(true);
 
 	const path = useMemo(() => {
 		if (!conversation?.current_node) return [];
@@ -137,9 +147,43 @@ export const ChatDialogueFeed: React.FC = () => {
 		editingMessageId,
 	]);
 
+	useLayoutEffect(() => {
+		const timer = setTimeout(() => {
+			if (endOfBoundaryRef.current) {
+				endOfBoundaryRef.current.scrollIntoView({ behavior: "smooth" });
+			}
+		}, 0);
+
+		return () => clearTimeout(timer);
+	}, [path]);
+
+	const handleScroll = useCallback(() => {
+		const boundary = boundaryRef.current;
+		if (!boundary) return;
+		const { scrollTop, scrollHeight, clientHeight } = boundary;
+		const threshold = 50;
+		const atBottom = scrollHeight - scrollTop - clientHeight <= threshold;
+		setIsAtBottom(atBottom);
+	}, []);
+
+	useEffect(() => {
+		const boundary = boundaryRef.current;
+		if (!boundary) return;
+		boundary.addEventListener("scroll", handleScroll);
+		handleScroll();
+		return () => {
+			boundary.removeEventListener("scroll", handleScroll);
+		};
+	}, [handleScroll]);
+
 	return (
-		<div ref={boundaryRef} className="ow-chat-dialogue-feed">
+		<div
+			ref={boundaryRef}
+			className="ow-chat-dialogue-feed"
+			style={{ overflowY: "auto", height: "100%" }}
+		>
 			{renderMessages}
+			<div ref={endOfBoundaryRef} />
 		</div>
 	);
 };
