@@ -13,7 +13,7 @@ export default class Weaver extends Plugin {
 
 		// TODO:
 		// Create new instance of Events class for custom events
-		// this.events = new Events();
+		this.events = new Events();
 
 		// Register the Weaver view
 		this.registerView(
