@@ -1,41 +1,33 @@
 import {
 	autoUpdate,
-	flip,
 	FloatingFocusManager,
-	offset,
-	shift,
-	useFloating,
+	Middleware,
+	Placement,
+	useFloating
 } from "@floating-ui/react";
 import React, { useEffect } from "react";
 
 interface PopoverProps {
 	referenceElement: React.RefObject<HTMLElement>;
-	boundaryElement: React.RefObject<HTMLElement>;
-	content: React.ReactNode;
+	renderContent: () => React.ReactNode;
+	placement: Placement
+	middleware?: Array<Middleware | null | undefined | false>;
 	isOpen: boolean;
 	onClose: () => void;
 }
 
 export const Popover: React.FC<PopoverProps> = ({
 	referenceElement,
-	boundaryElement,
-	content,
+	renderContent,
+	placement,
+	middleware,
 	isOpen,
 	onClose,
 }) => {
 	const { refs, floatingStyles, context } = useFloating({
 		whileElementsMounted: autoUpdate,
-		placement: "top-start",
-		middleware: [
-			offset(0),
-			flip({
-				fallbackPlacements: ["bottom-start"],
-				boundary: boundaryElement.current || undefined,
-			}),
-			shift({
-				boundary: boundaryElement.current || undefined,
-			}),
-		],
+		placement: placement,
+		middleware: middleware
 	});
 
 	useEffect(() => {
@@ -76,7 +68,7 @@ export const Popover: React.FC<PopoverProps> = ({
 				style={floatingStyles}
 				className="popover-content"
 			>
-				{content}
+				{renderContent()}
 			</div>
 		</FloatingFocusManager>
 	);

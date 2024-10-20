@@ -44,8 +44,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	const [renderedContent, setRenderedContent] = useState<{
 		__html: string;
 	} | null>(null);
-	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] =
-		useState(false);
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
 	const regenerateButtonRef = useRef<HTMLButtonElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
 

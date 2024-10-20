@@ -1,13 +1,13 @@
 // Styles core
 @import url('./core/general.scss');
 
-// Styles components
+// Component style
+// Primitives
+@import url('./components/popover.scss');
+
 // Chat
 @import url('./components/chat.scss');
 @import url('./components/chatHeader.scss');
 @import url('./components/chatDialogueFeed.scss');
 @import url('./components/chatUserInput.scss');
 @import url('./components/chatModelSwitcher.scss');
-
-@import url('./components/popover.scss');
-@import url('./components/modelSwitcher.scss');

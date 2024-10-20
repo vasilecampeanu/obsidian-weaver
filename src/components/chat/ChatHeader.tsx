@@ -2,7 +2,7 @@ import { Icon } from "components/primitives/Icon";
 import { EChatModels } from "enums/EProviders";
 import { useConversation } from "hooks/useConversation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ModelSwitcher } from "./ModelSwitcher";
+import { ChatModelSwitcher } from "./ChatModelSwitcher";
 
 interface ChatHeaderProps {}
 
@@ -10,6 +10,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	const { conversation, updateConversationTitle, updateConversationModel } = useConversation();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editableTitle, setEditableTitle] = useState<string>("");
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
+	
+	const switchModelButtonRef = useRef<HTMLButtonElement>(null);	
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -57,49 +60,67 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 		}
 	};
 
+	const togglePopover = () => {
+		setIsChatModelSwitcherOpen((prev) => !prev);
+	};
+
 	return (
 		<div className="ow-chat-header">
-			<div className="ow-user-header-actions">
+			<div className="ow-header-actions">
 				<button className="ow-btn-back">
 					<Icon iconId={"arrow-left"} />
 				</button>
-				<ModelSwitcher
-					currentModel={
-						conversation?.default_model_slug as EChatModels
-					}
-					onSelect={handleModelSelect}
+				<button
+					ref={switchModelButtonRef}
+					className="ow-model-info-select"
+					onClick={togglePopover}
 				>
-					<button
-						className="ow-model-info-select"
-						aria-label="Select model"
-					>
-						<span className="icon">
-							<Icon iconId={"sparkles"} />
-						</span>
-						<span className="model-name">
-							{conversation?.default_model_slug ? conversation.default_model_slug.toUpperCase() : "SELECT MODEL"}
-						</span>
-						<span className="icon">
-							<Icon iconId={"chevron-down"} />
-						</span>
-					</button>
-				</ModelSwitcher>
+					<span className="icon">
+						<Icon iconId={"sparkles"} />
+					</span>
+					<span className="model-name">
+						{conversation?.default_model_slug
+							? conversation.default_model_slug.toUpperCase()
+							: "SELECT MODEL"}
+					</span>
+					<span className="icon">
+						<Icon iconId={"chevron-down"} />
+					</span>
+				</button>
+				<ChatModelSwitcher
+					referenceElement={switchModelButtonRef}
+					placement="bottom-start"
+					isChatModelSwitcherOpen={isChatModelSwitcherOpen}
+					setIsChatModelSwitcherOpen={setIsChatModelSwitcherOpen}
+					onSelect={handleModelSelect}
+				/>
 			</div>
-			<div className="ow-chat-title" onDoubleClick={handleDoubleClick}>
-				{isEditing ? (
-					<input
-						ref={inputRef}
-						type="text"
-						value={editableTitle}
-						onChange={handleChange}
-						onKeyDown={handleKeyDown}
-						onBlur={handleBlur}
-						className="ow-chat-title-input"
-						aria-label="Edit conversation title"
-					/>
-				) : (
-					conversation?.title
-				)}
+			<div className="ow-chat-titlebar">
+				<div className="ow-chat-title-container">
+					{isEditing ? (
+						<input
+							ref={inputRef}
+							type="text"
+							value={editableTitle}
+							onChange={handleChange}
+							onKeyDown={handleKeyDown}
+							onBlur={handleBlur}
+							className="ow-chat-title-input"
+							aria-label="Edit conversation title"
+							style={{ width: "100%" }}
+						/>
+					) : (
+						<div
+							className="ow-chat-title"
+							onDoubleClick={handleDoubleClick}
+						>
+							{conversation?.title}
+						</div>
+					)}
+				</div>
+				<button className="ow-chat-title-options">
+					<Icon iconId={"ellipsis"} />
+				</button>
 			</div>
 		</div>
 	);
