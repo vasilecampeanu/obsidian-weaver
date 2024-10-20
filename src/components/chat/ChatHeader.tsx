@@ -14,10 +14,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editableTitle, setEditableTitle] = useState<string>("");
 
-	const switchModelButtonRef = useRef<HTMLButtonElement>(null);	
+	const switchModelButtonRef = useRef<HTMLButtonElement>(null);
 	const optionsButtonRef = useRef<HTMLButtonElement>(null);
 
 	const inputRef = useRef<HTMLInputElement>(null);
+	const isRenamingRef = useRef(false);
 
 	useEffect(() => {
 		if (isEditing && inputRef.current) {
@@ -55,12 +56,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	};
 
 	const handleBlur = () => {
+		if (isRenamingRef.current) {
+			return;
+		}
 		handleSubmit();
 	};
 
 	const handleModelSelect = async (model: EChatModels) => {
 		if (model !== conversation?.default_model_slug) {
-			updateConversationModel(model);
+			await updateConversationModel(model);
 		}
 	};
 
@@ -73,9 +77,17 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	};
 
 	const handleRename = () => {
-		console.log("Rename action triggered");
+		if (conversation?.title) {
+			isRenamingRef.current = true;
+			setEditableTitle(conversation.title);
+			setIsEditing(true);
+			setTimeout(() => {
+				isRenamingRef.current = false;
+				if (inputRef.current) inputRef.current.focus();
+			}, 0);
+		}
 	};
-	
+
 	const handleDelete = () => {
 		console.log("Delete action triggered");
 	};
@@ -130,11 +142,11 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 							className="ow-chat-title"
 							onDoubleClick={handleDoubleClick}
 						>
-							{conversation?.title}
+							{conversation?.title || "Untitled Conversation"}
 						</div>
 					)}
 				</div>
-				<button 
+				<button
 					ref={optionsButtonRef}
 					className="ow-chat-title-options"
 					onClick={toggleOptionsPopover}

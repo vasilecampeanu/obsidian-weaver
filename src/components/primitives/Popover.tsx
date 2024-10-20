@@ -58,7 +58,6 @@ export const Popover: React.FC<PopoverProps> = ({
 		};
 	}, [isOpen, refs, onClose]);
 	
-
 	if (!isOpen) return null;
 
 	return (
