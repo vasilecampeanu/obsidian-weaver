@@ -7,6 +7,7 @@ import {
 	writeConversation,
 } from 'helpers/ConversationIOController';
 import { IConversation, IMessageNode } from 'interfaces/IConversation';
+import { IUserSelection } from 'interfaces/IUserEvents';
 import { FileSystemAdapter } from 'obsidian';
 import { usePlugin } from 'providers/plugin/usePlugin';
 import { useStore } from 'providers/store/useStore';
@@ -81,16 +82,16 @@ export const useConversation = () => {
 
 	// Generate an assistant message based on a user message
 	const generateAssistantMessage = useCallback(
-		async (userMessage: string) => {
+		async (userMessage: string, selection?: IUserSelection | null) => {
 			if (!conversation) {
 				throw new Error('No conversation initialized');
 			}
-
+	
 			setIsGenerating(true);
-
+	
 			// Capture the current timestamp once for consistency
 			const now = Date.now() / 1000;
-
+	
 			// Create user message node
 			const userMessageNodeId = uuidv4();
 			const userMessageNode: IMessageNode = {
@@ -100,7 +101,10 @@ export const useConversation = () => {
 					author: { role: 'user', name: null, metadata: {} },
 					create_time: now,
 					update_time: now,
-					content: {
+					content: selection && selection.text ? {
+						content_type: 'text-with-user-selection',
+						parts: ['user-selection:', selection.text, userMessage],
+					} : {
 						content_type: 'text',
 						parts: [userMessage],
 					},
@@ -114,7 +118,7 @@ export const useConversation = () => {
 				parent: conversation.current_node,
 				children: [],
 			};
-
+	
 			// Add user message node to conversation
 			let updatedConversation: IConversation = {
 				...conversation,
@@ -134,14 +138,14 @@ export const useConversation = () => {
 				current_node: userMessageNodeId,
 				update_time: now,
 			};
-
+	
 			await updateConversation(updatedConversation);
-
+	
 			// Prepare conversation path up to user message
 			const conversationPath = getConversationPathToNode(updatedConversation, userMessageNodeId)
 				.filter((node) => node.message)
 				.map((node) => node.message!);
-
+	
 			// Create assistant message node with updated metadata
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
@@ -172,7 +176,7 @@ export const useConversation = () => {
 				parent: userMessageNodeId,
 				children: [],
 			};
-
+	
 			// Add assistant message node to conversation
 			updatedConversation = {
 				...updatedConversation,
@@ -187,13 +191,13 @@ export const useConversation = () => {
 				current_node: assistantMessageNodeId,
 				update_time: now,
 			};
-
+	
 			await updateConversation(updatedConversation);
-
+	
 			// Initialize AbortController for streaming
 			const controller = new AbortController();
 			setAbortController(controller);
-
+	
 			// Stream assistant response
 			await streamAssistantResponse(
 				updatedConversation,
@@ -203,7 +207,7 @@ export const useConversation = () => {
 			);
 		},
 		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
-	);
+	);	
 
 	// Regenerate an assistant message based on a previous assistant message
 	const regenerateAssistantMessage = useCallback(

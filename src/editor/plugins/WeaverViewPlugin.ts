@@ -36,9 +36,7 @@ export class WeaverViewPlugin implements PluginValue {
 		}
 	}
 
-	destroy(): void {
-		// TODO: Perform any necessary cleanup here
-	}
+	destroy(): void {}
 }
 
 // Factory function to create the WeaverViewPlugin

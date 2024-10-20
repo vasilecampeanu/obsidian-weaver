@@ -26,112 +26,6 @@
 				box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
 				font-size: var(--font-ui-small);
 				position: relative;
-
-				.ow-rendered-content
-				{
-					p:first-child
-					{
-						margin-top: 0;
-					}
-
-					p:last-child
-					{
-						margin-bottom: 0;
-					}
-				}
-
-				table 
-				{
-					width: 100%;
-					border-collapse: separate;
-					border-spacing: 0;
-					border: 2px solid var(--prompt-border-color);
-					border-radius: 10px;
-					overflow: hidden;
-
-					td, th 
-					{
-						padding: 10px;
-						border: 1px solid var(--prompt-border-color);
-						font-weight: bold;
-						text-align: left;
-					}
-					
-					th
-					{
-						background-color: rgba(151, 151, 151, 0.8);
-					}
-
-					td
-					{
-						background-color: rgba(151, 151, 151, 0.2);
-					}
-				}
-
-				pre
-				{
-					margin: 0px;
-					border-radius: 5px;
-					position: relative;
-		
-					code
-					{
-						overflow-wrap: break-word;
-						white-space: pre-wrap;
-						tab-size: 4;
-					}
-		
-					.copy-code-button
-					{
-						margin: 6px;
-						padding: 6px 8px;
-						height: auto;
-						background-color: transparent;
-						box-shadow: none;
-						color: var(--text-muted);
-						font-size: var(--font-ui-smaller);
-						font-family: var(--font-interface);
-						position: absolute;
-						top: 0;
-						right: 0;
-						display: none;
-		
-						&:hover
-						{
-							background-color: var(--interactive-normal);
-						}
-					}
-		
-					&:hover .copy-code-button
-					{
-						display: block;
-					}
-				}
-		
-				code:not([class]):not([lang]) 
-				{
-					color: var(--code-normal);
-					font-family: var(--font-monospace);
-					background-color: var(--code-background);
-					border-radius: var(--radius-s);
-					font-size: var(--code-size);
-					padding: 0.1em 0.25em;
-		
-					background: none;
-					word-wrap: break-word;
-		
-					word-break: normal;
-					text-align: left;
-					word-spacing: normal;
-					
-					-webkit-hyphens: none;
-					-moz-hyphens: none;
-					-ms-hyphens: none;
-					hyphens: none;
-					
-					font-family: var(--font-monospace);
-					line-height: var(--line-height-normal);
-				}
 			}
 		}
 
@@ -259,6 +153,30 @@
 					max-width: 85%;
 					background-color: var(--interactive-accent);
 					align-self: flex-end;
+
+					.text-with-user-selection
+					{
+						display: flex;
+						flex-direction: column;
+						gap: 5px;
+
+						.ow-user-selection
+						{
+							display: flex;
+							flex-direction: column;
+							gap: 5px;
+							background-color: #3A3A3B;
+							border: 1px solid var(--prompt-border-color);
+							padding: 10px;
+							border-radius: 10px;
+
+							span
+							{
+								font-size: var(--font-ui-medium);
+								font-weight: bold;
+							}
+						}
+					}
 				}
 
 				.ow-user-actions

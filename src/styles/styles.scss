@@ -4,11 +4,14 @@
 // Component style
 // Primitives
 @import url('./components/popover.scss');
+@import url('./components/primitives/markdownContent.scss');
 
 // Chat
 @import url('./components/chat.scss');
 @import url('./components/chatHeader.scss');
 @import url('./components/chatDialogueFeed.scss');
 @import url('./components/chatUserInput.scss');
+
 @import url('./components/chatModelSwitcher.scss');
 @import url('./components/chatOptions.scss');
+@import url('./components/chatSelectedTextModal.scss');

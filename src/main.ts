@@ -1,3 +1,4 @@
+import { createWeaverViewPlugin } from 'editor/plugins/WeaverViewPlugin';
 import { VIEW_WEAVER, WeaverView } from 'editor/views/WeaverView';
 import { Events, Plugin, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from 'settings';
@@ -11,7 +12,6 @@ export default class Weaver extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new WeaverSettingTab(this.app, this));
 
-		// TODO:
 		// Create new instance of Events class for custom events
 		this.events = new Events();
 
@@ -21,9 +21,8 @@ export default class Weaver extends Plugin {
 			(leaf) => new WeaverView(leaf, this)
 		);
 
-		// TODO:
 		// Register the Editor Extension and pass the custom Events instance
-		// this.registerEditorExtension(createWeaverViewPlugin(this));
+		this.registerEditorExtension(createWeaverViewPlugin(this));
 
 		// Register event listeners for custom events
 		this.registerEventListeners();

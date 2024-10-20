@@ -10,6 +10,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
 const MAX_CHARACTERS = 2000;
 const TEXTAREA_LINE_HEIGHT = 14;
@@ -29,7 +30,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [isFocused, setIsFocused] = useState<boolean>(false);
 	const [isPinned, setIsPinned] = useState<boolean>(false);
 
-	const [userSelection, setUserSelection] = useState<IUserSelection>();
+	const [userSelection, setUserSelection] = useState<IUserSelection | null>(null);
 
 	const plugin = usePlugin();
 	const conversation = useConversation();
@@ -72,8 +73,12 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 			setUserInputMessage("");
 			setCharCount(0);
 
+			const selection = userSelection;
+			setUserSelection(null);
+
 			// Generate assistant response
-			await conversation?.generateAssistantMessage(userInputMessage);
+			await conversation?.generateAssistantMessage(userInputMessage, selection);
+
 		} catch (error) {
 			console.error("Error sending message:", error);
 		}
@@ -127,12 +132,12 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 	return (
 		<div className="ow-chat-user-input">
-			{/*
-				TODO: 
-				{userSelection && (
-					<ChatSelectedTextModal userSelection={userSelection} />
-				)} 
-			 */}
+			{userSelection && (
+				<ChatSelectedTextModal 
+					userSelection={userSelection} 
+					setUserSelection={setUserSelection}
+				/>
+			)} 
 			<div className="ow-chat-user-input-inner-wrapper">
 				<div className="ow-user-actions">
 					<AnimatePresence>

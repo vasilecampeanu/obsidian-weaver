@@ -1,10 +1,9 @@
 import { ChatGPTIcon } from "components/icons/ChatGPTIcon";
 import { Icon } from "components/primitives/Icon";
+import { MarkdownContent } from "components/primitives/MarkdownContent";
 import { motion } from "framer-motion";
 import { useConversation } from "hooks/useConversation";
 import { IMessageNode } from "interfaces/IConversation";
-import { Component, MarkdownRenderer } from "obsidian";
-import { usePlugin } from "providers/plugin/usePlugin";
 import React, { useEffect, useRef, useState } from "react";
 import { ChatModelSwitcher } from "./ChatModelSwitcher";
 
@@ -33,18 +32,13 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	setEditingMessageId,
 	boundaryRef,
 }) => {
-	const app = usePlugin().app;
-
-	const { regenerateAssistantMessage, editUserMessage, isGenerating } =
-		useConversation();
+	const { regenerateAssistantMessage, editUserMessage, isGenerating } = useConversation();
 	const [isCopied, setIsCopied] = useState(false);
 	const [editedContent, setEditedContent] = useState(
 		messageNode.message?.content.parts.join("\n") || ""
 	);
-	const [renderedContent, setRenderedContent] = useState<{
-		__html: string;
-	} | null>(null);
-	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] =
+		useState(false);
 	const regenerateButtonRef = useRef<HTMLButtonElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
 
@@ -57,42 +51,6 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 			setEditedContent(message?.content.parts.join("\n") || "");
 		}
 	}, [isEditing, message]);
-
-	useEffect(() => {
-		if (!message) return;
-
-		let isMounted = true;
-		const container = document.createElement("div");
-		const context = new Component();
-
-		MarkdownRenderer.render(
-			app,
-			message.content.parts.join("\n"),
-			container,
-			"",
-			context
-		)
-			.then(() => {
-				if (isMounted) {
-					setRenderedContent({ __html: container.innerHTML });
-				}
-				context.unload();
-			})
-			.catch((error) => {
-				console.error("Markdown rendering failed:", error);
-				if (isMounted) {
-					setRenderedContent({
-						__html: "<p>Error rendering content.</p>",
-					});
-				}
-				context.unload();
-			});
-
-		return () => {
-			isMounted = false;
-			context.unload();
-		};
-	}, [message, app]);
 
 	useEffect(() => {
 		if (isEditing && textareaRef.current) {
@@ -134,7 +92,9 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 
 	return (
 		<div
-			className={`ow-chat-message-bubble ${message.author.role} ${isLatest ? "latest" : ""} ${isEditing ? "editing" : ""}`}
+			className={`ow-chat-message-bubble ${message.author.role} ${
+				isLatest ? "latest" : ""
+			} ${isEditing ? "editing" : ""}`}
 		>
 			<div className="ow-message">
 				<div className="ow-message-content">
@@ -143,7 +103,9 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 							<textarea
 								ref={textareaRef}
 								value={editedContent}
-								onChange={(e) => setEditedContent(e.target.value)}
+								onChange={(e) =>
+									setEditedContent(e.target.value)
+								}
 								className="ow-edit-textarea"
 								rows={1}
 							/>
@@ -168,22 +130,26 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 								<ChatGPTIcon />
 							</div>
 							<div className="ow-parts">
-								<div
-									className="ow-rendered-content"
-									dangerouslySetInnerHTML={
-										renderedContent || { __html: "" }
-									}
-								/>
+								<MarkdownContent content={message.content.parts.join("\n")} />
 								{isGenerating && isLatest && <>#</>}
 							</div>
 						</>
 					) : (
-						<div
-							className="ow-rendered-content"
-							dangerouslySetInnerHTML={
-								renderedContent || { __html: "" }
-							}
-						/>
+						<>
+							{message.content.content_type === 'text-with-user-selection' ? (
+								<div className="text-with-user-selection">
+									<div className="ow-user-selection">
+										<span>Selected text</span>
+										<MarkdownContent content={message.content.parts[1]} />
+									</div>
+									<div className="ow-user-text">
+										<MarkdownContent content={message.content.parts[2]} />	
+									</div>
+								</div>
+							) : (
+								<MarkdownContent content={message.content.parts.join("\n")} />
+							)}
+						</>
 					)}
 				</div>
 				{message.author.role === "user" && !isEditing && (

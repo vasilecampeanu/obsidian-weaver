@@ -53,7 +53,7 @@ export interface IAuthor {
 
 // Interface for the content of a message
 export interface IContent {
-	content_type: 'text';
+	content_type: 'text' | 'text-with-user-selection';
 	parts: string[];
 }
 
