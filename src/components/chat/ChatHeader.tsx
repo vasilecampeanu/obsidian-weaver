@@ -3,16 +3,20 @@ import { EChatModels } from "enums/EProviders";
 import { useConversation } from "hooks/useConversation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatModelSwitcher } from "./ChatModelSwitcher";
+import { ChatOptions } from "./ChatOptions";
 
 interface ChatHeaderProps {}
 
 export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	const { conversation, updateConversationTitle, updateConversationModel } = useConversation();
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
+	const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editableTitle, setEditableTitle] = useState<string>("");
-	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
-	
+
 	const switchModelButtonRef = useRef<HTMLButtonElement>(null);	
+	const optionsButtonRef = useRef<HTMLButtonElement>(null);
+
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -60,8 +64,20 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 		}
 	};
 
-	const togglePopover = () => {
+	const toggleSwitchModelPopover = () => {
 		setIsChatModelSwitcherOpen((prev) => !prev);
+	};
+
+	const toggleOptionsPopover = () => {
+		setIsOptionsOpen((prev) => !prev);
+	};
+
+	const handleRename = () => {
+		console.log("Rename action triggered");
+	};
+	
+	const handleDelete = () => {
+		console.log("Delete action triggered");
 	};
 
 	return (
@@ -73,7 +89,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 				<button
 					ref={switchModelButtonRef}
 					className="ow-model-info-select"
-					onClick={togglePopover}
+					onClick={toggleSwitchModelPopover}
 				>
 					<span className="icon">
 						<Icon iconId={"sparkles"} />
@@ -118,9 +134,21 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 						</div>
 					)}
 				</div>
-				<button className="ow-chat-title-options">
+				<button 
+					ref={optionsButtonRef}
+					className="ow-chat-title-options"
+					onClick={toggleOptionsPopover}
+				>
 					<Icon iconId={"ellipsis"} />
 				</button>
+				<ChatOptions
+					referenceElement={optionsButtonRef}
+					placement="bottom-end"
+					isChatOptionsOpen={isOptionsOpen}
+					setIsChatOptionsOpen={setIsOptionsOpen}
+					onRename={handleRename}
+					onDelete={handleDelete}
+				/>
 			</div>
 		</div>
 	);

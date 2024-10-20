@@ -58,7 +58,7 @@ export const ChatModelSwitcher: React.FC<ChatModelSwitcherProps> = ({
 				role="listbox"
 			>
 				<li className="ow-model-switcher-header" aria-disabled="true">
-					Switch model
+					Switch Model
 				</li>
 				<hr />
 				{Object.values(EChatModels).map((model) => (

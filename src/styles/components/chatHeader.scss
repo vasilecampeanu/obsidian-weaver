@@ -64,10 +64,13 @@
 			min-width: 0;
 			padding-left: 2px;
 			font-size: var(--font-ui-medium);
+			font-weight: bold;
+			user-select: text;
 
 			input
 			{
 				font-size: var(--font-ui-medium);
+				font-weight: bold;
 			}
 		}
 
