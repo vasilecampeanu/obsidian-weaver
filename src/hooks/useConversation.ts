@@ -35,20 +35,22 @@ export const useConversation = () => {
 
 	const adapter = useMemo(() => plugin.app.vault.adapter as FileSystemAdapter, [plugin.app.vault]);
 
-	const initConversation = async (title: string = 'Untitled') => {
-		if (plugin.settings.loadLastConversation && previousConversationId) {
-			try {
-				await loadConversation(previousConversationId);
-				return;
-			} catch (error) {
-				console.error(`Failed to load conversation with ID ${previousConversationId}:`, error);
+	//#region Conversation general
+
+	const loadConversation = useCallback(
+		async (conversationId: string) => {
+			const loadedConversation = await getConversation(adapter, plugin.settings.weaverDirectory, conversationId);
+
+			if (!loadedConversation) {
+				throw new Error(`Conversation with ID ${conversationId} not found`);
 			}
-		}
 
-		await createNewConversation(title);
-	};
+			setConversation(loadedConversation);
+			setPreviousConversationId(loadedConversation.id);
+		},
+		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
+	);
 
-	// Create a new conversation and set it in the store
 	const createNewConversation = useCallback(
 		async (title: string = 'Untitled') => {
 			const newConversation = await createConversation(adapter, plugin.settings.model, plugin.settings.weaverDirectory, title);
@@ -59,7 +61,18 @@ export const useConversation = () => {
 		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
 	);
 
-	// Save the conversation to the file system
+	const initConversation = useCallback(async (title: string = 'Untitled') => {
+		if (plugin.settings.loadLastConversation && previousConversationId) {
+			try {
+				await loadConversation(previousConversationId);
+				return;
+			} catch (error) {
+				console.error(`Failed to load conversation with ID ${previousConversationId}:`, error);
+			}
+		}
+		await createNewConversation(title);
+	}, [plugin.settings.loadLastConversation, previousConversationId, loadConversation, createNewConversation]);
+
 	const saveConversation = useCallback(
 		async (updatedConversation: IConversation) => {
 			try {
@@ -71,7 +84,6 @@ export const useConversation = () => {
 		[adapter, plugin.settings.weaverDirectory]
 	);
 
-	// Update the conversation in the store and save it
 	const updateConversation = useCallback(
 		async (updatedConversation: IConversation) => {
 			setConversation(updatedConversation);
@@ -80,18 +92,20 @@ export const useConversation = () => {
 		[setConversation, saveConversation]
 	);
 
+	//#endregion
+
 	// Generate an assistant message based on a user message
 	const generateAssistantMessage = useCallback(
 		async (userMessage: string, selection?: IUserSelection | null) => {
 			if (!conversation) {
 				throw new Error('No conversation initialized');
 			}
-	
+
 			setIsGenerating(true);
-	
+
 			// Capture the current timestamp once for consistency
 			const now = Date.now() / 1000;
-	
+
 			// Create user message node
 			const userMessageNodeId = uuidv4();
 			const userMessageNode: IMessageNode = {
@@ -118,7 +132,7 @@ export const useConversation = () => {
 				parent: conversation.current_node,
 				children: [],
 			};
-	
+
 			// Add user message node to conversation
 			let updatedConversation: IConversation = {
 				...conversation,
@@ -138,14 +152,14 @@ export const useConversation = () => {
 				current_node: userMessageNodeId,
 				update_time: now,
 			};
-	
+
 			await updateConversation(updatedConversation);
-	
+
 			// Prepare conversation path up to user message
 			const conversationPath = getConversationPathToNode(updatedConversation, userMessageNodeId)
 				.filter((node) => node.message)
 				.map((node) => node.message!);
-	
+
 			// Create assistant message node with updated metadata
 			const assistantMessageNodeId = uuidv4();
 			const assistantMessageNode: IMessageNode = {
@@ -153,8 +167,8 @@ export const useConversation = () => {
 				message: {
 					id: assistantMessageNodeId,
 					author: {
-						role: 'assistant', 
-						name: null, 
+						role: 'assistant',
+						name: null,
 						metadata: {}
 					},
 					create_time: now,
@@ -176,7 +190,7 @@ export const useConversation = () => {
 				parent: userMessageNodeId,
 				children: [],
 			};
-	
+
 			// Add assistant message node to conversation
 			updatedConversation = {
 				...updatedConversation,
@@ -191,13 +205,13 @@ export const useConversation = () => {
 				current_node: assistantMessageNodeId,
 				update_time: now,
 			};
-	
+
 			await updateConversation(updatedConversation);
-	
+
 			// Initialize AbortController for streaming
 			const controller = new AbortController();
 			setAbortController(controller);
-	
+
 			// Stream assistant response
 			await streamAssistantResponse(
 				updatedConversation,
@@ -207,7 +221,7 @@ export const useConversation = () => {
 			);
 		},
 		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
-	);	
+	);
 
 	// Regenerate an assistant message based on a previous assistant message
 	const regenerateAssistantMessage = useCallback(
@@ -247,8 +261,8 @@ export const useConversation = () => {
 				message: {
 					id: assistantMessageNodeId,
 					author: {
-						role: 'assistant', 
-						name: null, 
+						role: 'assistant',
+						name: null,
 						metadata: {}
 					},
 					create_time: now,
@@ -482,21 +496,6 @@ export const useConversation = () => {
 		[]
 	);
 
-	// Load a conversation by its ID
-	const loadConversation = useCallback(
-		async (conversationId: string) => {
-			const loadedConversation = await getConversation(adapter, plugin.settings.weaverDirectory, conversationId);
-
-			if (!loadedConversation) {
-				throw new Error(`Conversation with ID ${conversationId} not found`);
-			}
-
-			setConversation(loadedConversation);
-			setPreviousConversationId(loadedConversation.id);
-		},
-		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
-	);
-
 	// Stop the ongoing message generation
 	const stopMessageGeneration = useCallback(() => {
 		if (abortController) {
@@ -614,8 +613,8 @@ export const useConversation = () => {
 				message: {
 					id: assistantMessageNodeId,
 					author: {
-						role: 'assistant', 
-						name: null, 
+						role: 'assistant',
+						name: null,
 						metadata: {}
 					},
 					create_time: now,

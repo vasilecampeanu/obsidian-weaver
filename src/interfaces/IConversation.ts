@@ -51,9 +51,12 @@ export interface IAuthor {
 	metadata: any;
 }
 
+// Expected message content types
+export type IContentType = 'text' | 'text-with-user-selection';
+
 // Interface for the content of a message
 export interface IContent {
-	content_type: 'text' | 'text-with-user-selection';
+	content_type: IContentType;
 	parts: string[];
 }
 
