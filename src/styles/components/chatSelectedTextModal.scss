@@ -22,4 +22,30 @@
 		max-height: 350px;
 		overflow: auto;
 	}
+
+	.ow-actions
+	{
+		display: flex;
+		justify-content: end;
+
+		.ow-btn
+		{
+			all: unset;
+			padding: 10px 15px;
+			border-radius: 25px;
+			color: black;
+			cursor: default;
+
+			&.cancel
+			{
+				background-color: var(--background-secondary);
+				color: var(--text-normal);
+			}
+
+			&:hover
+			{
+				opacity: .75;
+			}
+		}
+	}
 }

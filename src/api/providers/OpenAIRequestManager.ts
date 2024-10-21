@@ -41,7 +41,9 @@ export class OpenAIRequestManager {
 				console.error('Request aborted');
 				throw new Error('Request was aborted');
 			}
+
 			console.error('Error in sendMessageStream:', error);
+
 			throw new Error('Failed to send message stream to OpenAI API');
 		}
 	}

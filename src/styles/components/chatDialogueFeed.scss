@@ -271,6 +271,11 @@
 										background-color: var(--background-secondary);
 										color: var(--text-normal);
 									}
+
+									&:hover
+									{
+										opacity: .75;
+									}
 								}
 							}
 						}

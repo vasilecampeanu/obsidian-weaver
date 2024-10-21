@@ -1,5 +1,3 @@
-// components/WeaverView.tsx
-
 import { Plugin } from "components/Plugin";
 import Weaver from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
@@ -29,7 +27,7 @@ export class WeaverView extends ItemView {
     }
 
     getIcon(): string {
-        return "drama";
+        return "drafting-compass";
     }
 
     async onOpen() {
