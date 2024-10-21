@@ -137,8 +137,8 @@ export const useConversation = () => {
 				updatedConversation,
 				userMessageNode.id
 			)
-			.filter((node) => node.message)
-			.map((node) => node.message!);
+				.filter((node) => node.message)
+				.map((node) => node.message!);
 
 			// Create assistant message node
 			const assistantMessageNode = createAssistantMessageNode(
@@ -170,7 +170,6 @@ export const useConversation = () => {
 		[conversation, setIsGenerating, setAbortController, openAIManager, updateConversation]
 	);
 
-	// Regenerate an assistant message based on a previous assistant message
 	const regenerateAssistantMessage = useCallback(
 		async (messageId: string, model?: EChatModels) => {
 			if (!conversation) {
@@ -179,10 +178,6 @@ export const useConversation = () => {
 
 			setIsGenerating(true);
 
-			// Capture the current timestamp once for consistency
-			const now = Date.now() / 1000;
-
-			// Retrieve the assistant message node to regenerate
 			const assistantNodeToRegenerate = conversation.mapping[messageId];
 
 			if (!assistantNodeToRegenerate || assistantNodeToRegenerate.message?.author.role !== 'assistant') {
@@ -201,60 +196,31 @@ export const useConversation = () => {
 				throw new Error('Parent node is not a user message');
 			}
 
-			// Create a new assistant message node with updated metadata
-			const assistantMessageNodeId = uuidv4();
-			const assistantMessageNode: IMessageNode = {
-				id: assistantMessageNodeId,
-				message: {
-					id: assistantMessageNodeId,
-					author: {
-						role: 'assistant',
-						name: null,
-						metadata: {}
-					},
-					create_time: now,
-					update_time: now,
-					content: {
-						content_type: 'text',
-						parts: [''],
-					},
-					status: 'in_progress',
-					end_turn: false,
-					weight: 1.0,
-					metadata: {
-						default_model_slug: conversation.default_model_slug,
-						model_slug: model
-					},
-					recipient: 'all',
-					channel: null,
-				},
-				parent: userMessageNodeId,
-				children: [],
-			};
+			// Create new assistant message node
+			const assistantMessageNode = createAssistantMessageNode(
+				userMessageNodeId,
+				conversation.default_model_slug,
+				model
+			);
 
-			// Add assistant message node to conversation
-			let updatedConversation: IConversation = {
-				...conversation,
-				mapping: {
-					...conversation.mapping,
-					[assistantMessageNodeId]: assistantMessageNode,
-					[userMessageNodeId]: {
-						...conversation.mapping[userMessageNodeId],
-						children: [...conversation.mapping[userMessageNodeId].children, assistantMessageNodeId],
-					},
-				},
-				current_node: assistantMessageNodeId,
-				update_time: now,
-			};
+			// Update conversation with new assistant message node
+			let updatedConversation = updateConversationMapping(
+				conversation,
+				assistantMessageNode,
+				userMessageNodeId
+			);
 
 			await updateConversation(updatedConversation);
 
-			// Prepare conversation path up to user message node
-			const conversationPath = getConversationPathToNode(updatedConversation, userMessageNodeId)
+			// Prepare conversation path
+			const conversationPath = getConversationPathToNode(
+				updatedConversation,
+				userMessageNodeId
+			)
 				.filter((node) => node.message)
 				.map((node) => node.message!);
 
-			// Initialize AbortController for streaming
+			// Initialize AbortController
 			const controller = new AbortController();
 			setAbortController(controller);
 
