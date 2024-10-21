@@ -13,6 +13,7 @@ import { usePlugin } from 'providers/plugin/usePlugin';
 import { useStore } from 'providers/store/useStore';
 import { useCallback, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { createAssistantMessageNode, createUserMessageNode, updateConversationMapping } from './conversationUtils';
 
 export const useConversation = () => {
 	const plugin = usePlugin();
@@ -94,7 +95,8 @@ export const useConversation = () => {
 
 	//#endregion
 
-	// Generate an assistant message based on a user message
+	// TODO: https://chatgpt.com/c/671660ac-c5e8-8011-b468-6aa05bfae070
+
 	const generateAssistantMessage = useCallback(
 		async (userMessage: string, selection?: IUserSelection | null) => {
 			if (!conversation) {
@@ -103,112 +105,57 @@ export const useConversation = () => {
 
 			setIsGenerating(true);
 
-			// Capture the current timestamp once for consistency
-			const now = Date.now() / 1000;
+			let userMessageNode: IMessageNode;
 
-			// Create user message node
-			const userMessageNodeId = uuidv4();
-			const userMessageNode: IMessageNode = {
-				id: userMessageNodeId,
-				message: {
-					id: userMessageNodeId,
-					author: { role: 'user', name: null, metadata: {} },
-					create_time: now,
-					update_time: now,
-					content: selection && selection.text ? {
-						content_type: 'text-with-user-selection',
-						parts: ['user-selection:', selection.text, userMessage],
-					} : {
-						content_type: 'text',
-						parts: [userMessage],
-					},
-					status: 'finished_successfully',
-					end_turn: true,
-					weight: 1.0,
-					metadata: {},
-					recipient: 'all',
-					channel: null,
-				},
-				parent: conversation.current_node,
-				children: [],
-			};
+			if (!selection) {
+				userMessageNode = createUserMessageNode(
+					[userMessage],
+					'text',
+					conversation.current_node
+				);
+			} else {
+				userMessageNode = createUserMessageNode(
+					['user-selection:', selection.text, userMessage],
+					'text-with-user-selection',
+					conversation.current_node
+				);
+			}
 
-			// Add user message node to conversation
-			let updatedConversation: IConversation = {
-				...conversation,
-				mapping: {
-					...conversation.mapping,
-					[userMessageNodeId]: userMessageNode,
-					...(conversation.current_node && {
-						[conversation.current_node]: {
-							...conversation.mapping[conversation.current_node],
-							children: [
-								...conversation.mapping[conversation.current_node].children,
-								userMessageNodeId,
-							],
-						},
-					}),
-				},
-				current_node: userMessageNodeId,
-				update_time: now,
-			};
+			let updatedConversation: IConversation;
+
+			// Update conversation with user message node
+			updatedConversation = updateConversationMapping(
+				conversation,
+				userMessageNode,
+				conversation.current_node
+			);
 
 			await updateConversation(updatedConversation);
 
-			// Prepare conversation path up to user message
-			const conversationPath = getConversationPathToNode(updatedConversation, userMessageNodeId)
-				.filter((node) => node.message)
-				.map((node) => node.message!);
+			// Get conversation path
+			const conversationPath = getConversationPathToNode(
+				updatedConversation,
+				userMessageNode.id
+			)
+			.filter((node) => node.message)
+			.map((node) => node.message!);
 
-			// Create assistant message node with updated metadata
-			const assistantMessageNodeId = uuidv4();
-			const assistantMessageNode: IMessageNode = {
-				id: assistantMessageNodeId,
-				message: {
-					id: assistantMessageNodeId,
-					author: {
-						role: 'assistant',
-						name: null,
-						metadata: {}
-					},
-					create_time: now,
-					update_time: now,
-					content: {
-						content_type: 'text',
-						parts: [''],
-					},
-					status: 'in_progress',
-					end_turn: false,
-					weight: 1.0,
-					metadata: {
-						default_model_slug: updatedConversation.default_model_slug,
-						model_slug: updatedConversation.default_model_slug,
-					},
-					recipient: 'all',
-					channel: null,
-				},
-				parent: userMessageNodeId,
-				children: [],
-			};
+			// Create assistant message node
+			const assistantMessageNode = createAssistantMessageNode(
+				userMessageNode.id,
+				updatedConversation.default_model_slug
+			);
 
-			// Add assistant message node to conversation
-			updatedConversation = {
-				...updatedConversation,
-				mapping: {
-					...updatedConversation.mapping,
-					[assistantMessageNodeId]: assistantMessageNode,
-					[userMessageNodeId]: {
-						...updatedConversation.mapping[userMessageNodeId],
-						children: [...updatedConversation.mapping[userMessageNodeId].children, assistantMessageNodeId],
-					},
-				},
-				current_node: assistantMessageNodeId,
-				update_time: now,
-			};
+			// Update conversation with assistant message node
+			updatedConversation = updateConversationMapping(
+				updatedConversation,
+				assistantMessageNode,
+				userMessageNode.id
+			);
 
 			await updateConversation(updatedConversation);
 
-			// Initialize AbortController for streaming
+			// Initialize AbortController
 			const controller = new AbortController();
 			setAbortController(controller);
 
