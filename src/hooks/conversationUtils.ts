@@ -70,7 +70,7 @@ export const createAssistantMessageNode = (
 export const updateConversationMapping = (
 	conversation: IConversation,
 	newNode: IMessageNode,
-	parentNodeId: string | null
+	parentId: string | null
 ): IConversation => {
 	const now = Date.now() / 1000;
 
@@ -79,11 +79,11 @@ export const updateConversationMapping = (
 		mapping: {
 			...conversation.mapping,
 			[newNode.id]: newNode,
-			...(parentNodeId && {
-				[parentNodeId]: {
-					...conversation.mapping[parentNodeId],
+			...(parentId && {
+				[parentId]: {
+					...conversation.mapping[parentId],
 					children: [
-						...conversation.mapping[parentNodeId].children,
+						...conversation.mapping[parentId].children,
 						newNode.id,
 					],
 				},
@@ -91,6 +91,27 @@ export const updateConversationMapping = (
 		},
 		current_node: newNode.id,
 		update_time: now,
+	};
+};
+
+export const updateAssistantNode = (
+	assistantMessageNode: IMessageNode,
+	content: string,
+	status: 'in_progress' | 'finished_successfully' | 'aborted' | 'error' = 'in_progress',
+	endTurn: boolean = false
+): IMessageNode => {
+	return {
+		...assistantMessageNode,
+		message: {
+			...assistantMessageNode.message!,
+			content: {
+				...assistantMessageNode.message!.content,
+				parts: [content],
+			},
+			status,
+			end_turn: endTurn,
+			update_time: Date.now() / 1000,
+		},
 	};
 };
 
