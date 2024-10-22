@@ -1,0 +1,144 @@
+.ow-chat-user-input
+{
+	position: relative;
+	display: flex;
+	gap: 5px;
+	flex: 0 0 auto;
+	flex-direction: column;
+	overflow: visible;
+
+	.ow-chat-user-input-inner-wrapper
+	{
+		position: relative;
+		display: flex;
+		flex: 1;
+		flex-direction: row;
+		gap: 10px;
+		overflow: visible;
+	
+		.ow-user-actions 
+		{
+			flex: 0 0 40px; 
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+		}
+		
+		.ow-btn.create-new-chat 
+		{
+			all: unset;
+			height: 40px;
+			width: 40px;
+			border-radius: 50%;
+			background-color: var(--interactive-accent);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+			margin-top: auto;
+		}
+		
+		.ow-chat-user-input-form-wrapper
+		{
+			position: relative;
+			z-index: 2;
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+			background-color: var(--interactive-normal);
+			border: 1px solid var(--prompt-border-color);
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;	
+			border-radius: 20px;
+			padding: 14px;
+			overflow: hidden;
+			margin-left: 0;
+			width: calc(100% - 50px);
+	
+			form
+			{
+				display: flex;
+	
+				.ow-textarea
+				{
+                    all: unset;
+                    width: 100%;
+                    resize: none;
+                    line-height: 14px;
+                    font-size: 14px;
+                    white-space: pre-wrap;
+                    overflow-wrap: break-word;
+				}
+	
+				.ow-btn.submit
+				{
+					all: unset;
+					align-self: flex-start;
+
+					padding: 6px;
+					border-radius: 50%;
+					background-color: var(--text-normal);	
+
+					svg
+					{
+						width: 14px;
+						height: 14px;
+						color: black;
+						fill: black;
+						stroke-width: 3;
+					}
+
+					&:hover
+					{
+						opacity: .9;
+					}
+				}
+			}
+	
+			.ow-inline-input-utilities
+			{
+				display: flex;
+				gap: 5px;
+
+				.ow-btn.paperclip
+				{
+					all: unset;
+				}
+
+				.ow-input-character-counter
+				{
+					font-size: var(--font-ui-small);
+					color: var(--text-muted);
+				}
+
+				.ow-btn.pin-input
+				{
+					all: unset;
+					margin-left: auto;
+
+					svg
+					{
+						transform: rotate(45deg);
+						width: 14px;
+						height: 14px;
+						color: var(--text-muted);
+					}
+
+					&:hover
+					{
+						svg
+						{
+							fill: var(--text-muted);
+						}
+					}
+
+					&.pinned
+					{
+						svg
+						{
+							fill: var(--text-muted);
+						}
+					}
+				}
+			}
+		}	
+	}	
+}

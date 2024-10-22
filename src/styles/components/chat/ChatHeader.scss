@@ -1,0 +1,98 @@
+.ow-chat-header
+{
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	gap: 5px;
+
+	.ow-header-actions
+	{
+		display: flex;
+
+		.ow-btn-back
+		{
+			all: unset;
+			padding: 5px;
+			border-radius: 5px;
+
+			&:hover
+			{
+				background-color: var(--background-modifier-hover); 
+			}
+		}
+
+		.ow-model-info-select
+		{
+			all: unset;
+			display: flex;
+			gap: 5px;
+			padding: 5px;
+			border-radius: 5px;
+	
+			.icon 
+			{
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+		
+			.model-name 
+			{
+				font-size: 14px;
+				font-weight: 500;
+			}	
+	
+			&:hover
+			{
+				background-color: var(--background-modifier-hover);	
+			}
+		}	
+	}
+
+	.ow-chat-titlebar
+	{
+		display: flex;
+		align-items: center;
+		width: 100%;
+		gap: 5px;
+		height: 40px;
+
+		.ow-chat-title-container
+		{
+			flex: 1;
+			min-width: 0;
+			padding-left: 2px;
+			font-size: var(--font-ui-medium);
+			font-weight: bold;
+			user-select: text;
+
+			input
+			{
+				font-size: var(--font-ui-medium);
+				font-weight: bold;
+			}
+		}
+
+		.ow-chat-title
+		{
+			width: 100%;
+			cursor: text;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.ow-chat-title-options
+		{
+			all: unset;
+			padding: 5px;
+			border-radius: 5px;
+
+			&:hover
+			{
+				background-color: var(--background-modifier-hover); 
+			}
+		}
+	}
+}

@@ -1,0 +1,72 @@
+.ow-chat-options 
+{
+	.ow-chat-options-menu 
+	{
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		background-color: var(--background-secondary);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		border: 1px solid var(--prompt-border-color);
+		border-radius: 12px;
+		list-style: none;
+		padding: 10px;
+		min-width: 200px;
+		z-index: 1000;
+
+		.ow-chat-options-header 
+		{
+			font-weight: bold;
+			color: var(--text-muted);
+		}
+
+		hr 
+		{
+			margin: 5px 0;
+			border: none;
+			border-top: 1px solid var(--border-color);
+		}
+
+		.ow-chat-options-item 
+		{
+			padding: 8px 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.2s ease;
+			display: flex;
+			align-items: center;
+
+			&:hover,
+			&:focus 
+			{
+				background-color: var(--background-modifier-hover);
+				outline: none;
+			}
+
+			.option-item-content 
+			{
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				width: 100%;
+			}
+
+			.option-icon 
+			{
+				width: 20px;
+				height: 20px;
+				color: var(--icon-color);
+			}
+
+			&.delete
+			{
+				color: var(--color-red);
+
+				svg
+				{
+					color: var(--color-red);
+				}
+			}
+		}
+	}
+}

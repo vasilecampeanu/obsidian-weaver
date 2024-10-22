@@ -1,11 +1,20 @@
-@import './components/Variables.scss';
-@import './components/General.scss';
+// Styles core
+@import url('./core/Variables.scss');
+@import url('./core/General.scss');
 
-@import './components/Thread.scss';
-@import './components/ThreadListItem.scss';
+// Component style
+// Primitives
+@import url('./components/primitives/Popover.scss');
+@import url('./components/primitives/MarkdownContent.scss');
 
-@import './components/ConversationHeader.scss';
-@import './components/ConversationDialogue.scss';
-@import './components/ConversationMessageBubble.scss';
-@import './components/ConversationMessageBubbleContent.scss';
-@import './components/ConversationInputArea.scss';
+// Chat tab
+@import url('./components/chat/Chat.scss');
+@import url('./components/chat/ChatHeader.scss');
+@import url('./components/chat/ChatDialogueFeed.scss');
+@import url('./components/chat/ChatUserInput.scss');
+@import url('./components/chat/ChatModelSwitcher.scss');
+@import url('./components/chat/ChatOptions.scss');
+@import url('./components/chat/ChatSelectedTextModal.scss');
+
+// Conversation tab
+@import url('./components/conversationlist/ConversationList.scss');

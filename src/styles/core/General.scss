@@ -1,0 +1,26 @@
+.workspace-leaf-content[data-type="weaver-view"]
+{
+	.view-content
+	{
+		padding: 5px 10px 10px 10px;
+
+		.obsidian-weaver
+		{
+			height: 100%;
+		}		
+	}
+}
+
+.ow-icon
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+
+	svg
+	{
+		place-self: center;
+	}
+}

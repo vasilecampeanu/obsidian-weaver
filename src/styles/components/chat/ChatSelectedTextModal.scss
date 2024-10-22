@@ -1,0 +1,51 @@
+.ow-selected-text-modal
+{
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	user-select: text;
+	padding: 10px;
+	border-radius: 10px;
+	background-color: var(--interactive-normal);
+	border: 1px solid var(--interactive-accent);
+	box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+	font-size: var(--font-ui-small);
+	
+	.ow-modal-title
+	{
+		font-weight: bold;
+		font-size: var(--font-ui-medium);
+	}
+
+	.ow-user-selection
+	{
+		max-height: 350px;
+		overflow: auto;
+	}
+
+	.ow-actions
+	{
+		display: flex;
+		justify-content: end;
+
+		.ow-btn
+		{
+			all: unset;
+			padding: 10px 15px;
+			border-radius: 25px;
+			color: black;
+			cursor: default;
+
+			&.cancel
+			{
+				background-color: var(--background-secondary);
+				color: var(--text-normal);
+			}
+
+			&:hover
+			{
+				opacity: .75;
+			}
+		}
+	}
+}

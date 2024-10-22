@@ -1,0 +1,75 @@
+.ow-chat-model-switcher
+{
+	.ow-model-switcher-menu
+	{
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		background-color: var(--background-secondary);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		border: 1px solid var(--prompt-border-color);
+		border-radius: 15px;
+		list-style: none;
+		padding: 10px;
+		min-width: 300px;
+
+		.ow-model-switcher-header
+		{
+			padding: 10px;
+			font-weight: bold;
+			color: var(--text-muted);
+		}
+
+		hr
+		{
+			margin: 0px;
+			margin: 5px 10px;
+		}
+
+		.ow-model-switcher-item 
+		{
+			padding: 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.2s ease;
+
+			&:hover 
+			{
+				background-color: var(--background-modifier-hover);
+			}
+
+			.model-item-content
+			{
+				display: flex;
+				flex-direction: column;
+
+				.model-name
+				{
+					font-weight: bold;
+				}
+
+				.model-description
+				{
+					color: var(--text-muted);
+				}
+			}
+
+			&.try-again-current
+			{
+				display: flex;
+				flex-direction: row;
+				
+				.model-item-content
+				{
+					flex: 1;
+					width: 100%;
+				}
+
+				.ow-icon
+				{
+					align-self: center;
+				}
+			}
+		}
+	}
+}

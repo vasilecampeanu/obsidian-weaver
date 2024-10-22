@@ -1,177 +1,74 @@
-import { FileSystemAdapter, Notice, Plugin, Workspace } from 'obsidian';
-import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from './settings';
-import { WEAVER_THREAD_VIEW } from './constants';
-import { FileIOManager } from 'utils/FileIOManager';
-import { WeaverThreadView } from 'views/WeaverThreadView';
-import { WeaverImporter } from 'utils/WeaverImporter';
-import { ThreadManager } from 'utils/ThreadManager';
-import { WeaverHealthManager } from 'utils/WeaverHealthManager';
-import { eventEmitter } from 'utils/EventEmitter';
-import LocalJsonModal from 'modals/ImportModal';
-import { MigrationAssistant } from 'utils/MigrationAssistant';
-import { ConversationManager } from 'utils/ConversationManager';
+import { createWeaverViewPlugin } from 'editor/plugins/WeaverViewPlugin';
+import { VIEW_WEAVER, WeaverView } from 'editor/views/WeaverView';
+import { Events, Plugin, WorkspaceLeaf } from 'obsidian';
+import { DEFAULT_SETTINGS, WeaverSettings, WeaverSettingTab } from 'settings';
 
 export default class Weaver extends Plugin {
 	public settings: WeaverSettings;
-	public workspace: Workspace;
-	public isRenamingFromInside: boolean = false;
+	public events: Events;
 
-	async onload() {
-		// Loading message
-		await this.messageOnLoad();
-
-		// Settings
+	public async onload() {
+		// Load settings early
 		await this.loadSettings();
+		this.addSettingTab(new WeaverSettingTab(this.app, this));
 
-		// Listeners
-		await this.registerEventListeners();
+		// Create new instance of Events class for custom events
+		this.events = new Events();
 
-		// Register views
-		this.registerView(WEAVER_THREAD_VIEW, (leaf) => new WeaverThreadView(leaf, this));
-
-		// Bind user interface elements
-		await this.registerUserInteractions();
-			
-		// Bind plugin components
-		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
-
-		// Weaver health
-		await this.ensureWeaverHealth();
-	}	
-
-	async onunload() {
-		new Notice('Weaver disabled!');
-	}
-
-	async messageOnLoad() {
-		console.log('obsidian-weaver loading...');
-	}
-
-	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData(),
+		// Register the Weaver view
+		this.registerView(
+			VIEW_WEAVER, 
+			(leaf) => new WeaverView(leaf, this)
 		);
+
+		// Register the Editor Extension and pass the custom Events instance
+		this.registerEditorExtension(createWeaverViewPlugin(this));
+
+		// Register event listeners for custom events
+		this.registerEventListeners();
+
+		// Register plugin commands
+		this.registerCommands();
 	}
 
-	async saveSettings() {
+	public async onunload() {
+		// Detach all Weaver views
+		this.app.workspace.detachLeavesOfType(VIEW_WEAVER);
+	}
+
+	private async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	public async saveSettings() {
 		await this.saveData(this.settings);
 	}
 
-	private async ensureWeaverHealth() {
-		setTimeout(async () => {	
-			// Ensure the folder exists
-			await FileIOManager.ensureWeaverFolderPathExists(this);
-			await FileIOManager.ensureFolderPathExists(this, "threads/base");
-
-			// Check for external renames in the background
-			// await WeaverHealthManager.checkForExternalRename(this);
-
-			// Check for legacy data
-			await MigrationAssistant.migrateData(this);
-
-			if (this.settings.systemRolePrompt !== this.settings.balancedSystemRolePrompt) {
-				this.settings.systemRolePrompt = this.settings.balancedSystemRolePrompt;
-				this.saveSettings();
-			}
-
-			// Refresh thread view
-			eventEmitter.emit('reloadThreadViewEvent');
-		}, 500);
-	}
-
-	private async registerEventListeners() {
-		this.registerEvent(
-			this.app.vault.on('rename', async (item, oldPath) => {
-				// Check if the path has an extension
-				const hasExtension = /\.[^/.]+$/;
-
-				// Check if the path contains "bins/weaver"
-				if (item.path.startsWith(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
-					if (item.path.endsWith(".json")) {
-						// Extract the new title from the new file name (assuming it is the file name without the extension)
-						const newFileName = item.path.split('/').pop() ?? '';
-						const newTitle = newFileName.replace('.json', '');
-
-						// Update the conversation title
-						await ConversationManager.updateConversationTitleByPath(this, item.path, newTitle);
-
-						// Reload thread thread view
-						eventEmitter.emit('reloadThreadViewEvent');
-					}
-				}
-			})
-		);
-
-		this.registerEvent(
-			this.app.vault.on('delete', async (item) => {
-				// Check if the path has an extension
-				const hasExtension = /\.[^/.]+$/;
-
-				// Check if the path contains "bins/weaver"
-				if (item.path.startsWith(this.settings.weaverFolderPath) && !this.isRenamingFromInside) {
-					if (item.path.endsWith(".json")) {
-						// Reload thread thread view
-						eventEmitter.emit('reloadThreadViewEvent');
-					}
-				}
-			})
-		);
-	}
-
-	private async openWeaverThreadView() {
-		let leafs = this.app.workspace.getLeavesOfType(WEAVER_THREAD_VIEW);
-
-		if (leafs.length == 0) {
-			let leaf = this.app.workspace.getRightLeaf(false);
-			await leaf.setViewState({ type: WEAVER_THREAD_VIEW });
-			this.app.workspace.revealLeaf(leaf);
-		} else {
-			leafs.forEach((leaf) => this.app.workspace.revealLeaf(leaf));
-		}
+	private registerEventListeners(): void {
+		// TODO: Register events
 	}
 
 	private registerCommands() {
 		this.addCommand({
-			id: 'open-weaver-thread-view',
-			name: 'Open Thread View',
-			callback: () => this.openWeaverThreadView(),
-			hotkeys: [],
-		});
-
-		this.addCommand({
-			id: 'weaver:importConversations',
-			name: 'Import conversations from local JSON',
-			checkCallback: (checking) => {
-				if (checking) { return true; }
-				new LocalJsonModal(this).open();
-			}
+			id: 'open-weaver-view',
+			name: 'Open Weaver',
+			callback: () => this.activateView(),
 		});
 	}
 
-	private registerRibbonIcons() {
-		const ribbonIconEl = this.addRibbonIcon(
-			'git-branch-plus',
-			'Open weaver thread',
-			(evt: MouseEvent) => {
-				this.openWeaverThreadView();
-			},
-		);
+	public async activateView() {
+		const { workspace } = this.app;
 
-		ribbonIconEl.addClass('obsidian-weaver-ribbon-icon');
-	}
+		let leaf: WorkspaceLeaf | null = null;
+		const existingLeaves = workspace.getLeavesOfType(VIEW_WEAVER);
 
-	private async registerUserInteractions() {
-		this.registerCommands();
-		this.registerRibbonIcons();
-	}
-
-	private async onLayoutReady(): Promise<void> {
-		if (this.settings.openOnStartUp) {
-			this.openWeaverThreadView();
+		if (existingLeaves.length > 0) {
+			leaf = existingLeaves[0];
+		} else {
+			leaf = workspace.getRightLeaf(false);
+			await leaf?.setViewState({ type: VIEW_WEAVER, active: true });
 		}
 
-		this.addSettingTab(new WeaverSettingTab(this.app, this));
+		workspace.revealLeaf(leaf!);
 	}
 }
