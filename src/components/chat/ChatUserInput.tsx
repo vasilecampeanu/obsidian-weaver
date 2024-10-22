@@ -153,6 +153,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 									duration: 0.2,
 									ease: "easeInOut",
 								}}
+								onClick={() => conversation.initConversation(true)}
 							>
 								<Icon
 									iconId="message-circle-plus"

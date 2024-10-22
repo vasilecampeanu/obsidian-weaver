@@ -4,7 +4,7 @@ import { throttle } from 'helpers/Async';
 import {
 	createConversation,
 	getConversation,
-	writeConversation,
+	writeConversation
 } from 'helpers/ConversationIOController';
 import { IContentType, IConversation, IMessageNode } from 'interfaces/IConversation';
 import { IUserSelection } from 'interfaces/IUserEvents';
@@ -35,31 +35,43 @@ export const useConversation = () => {
 
 	const adapter = useMemo(() => plugin.app.vault.adapter as FileSystemAdapter, [plugin.app.vault]);
 
-	const initConversation = async (title: string = 'Untitled') => {
-		if (plugin.settings.loadLastConversation && previousConversationId) {
-			try {
-				await loadConversation(previousConversationId);
-				return;
-			} catch (error) {
-				console.error(`Failed to load conversation with ID ${previousConversationId}:`, error);
+	//#region Conversation General
+
+	const loadConversation = useCallback(
+		async (conversationId: string) => {
+			const loadedConversation = await getConversation(adapter, plugin.settings.weaverDirectory, conversationId);
+
+			if (!loadedConversation) {
+				throw new Error(`Conversation with ID ${conversationId} not found`);
 			}
-		}
 
-		await createNewConversation(title);
-	};
+			setConversation(loadedConversation);
+			setPreviousConversationId(loadedConversation.id);
+		}, [adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
+	);
 
-	// Create a new conversation and set it in the store
 	const createNewConversation = useCallback(
 		async (title: string = 'Untitled') => {
 			const newConversation = await createConversation(adapter, plugin.settings.model, plugin.settings.weaverDirectory, title);
 			setConversation(newConversation);
 			setPreviousConversationId(newConversation.id);
 			return newConversation;
-		},
-		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
+		}, [adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
 	);
 
-	// Save the conversation to the file system
+	const initConversation = useCallback(
+		async (createnew: boolean = false, title: string = 'Untitled') => {
+			if (plugin.settings.loadLastConversation && previousConversationId && !createnew) {
+				try {
+					await loadConversation(previousConversationId);
+					return;
+				} catch (error) {
+					console.error(`Failed to load conversation with ID ${previousConversationId}:`, error);
+				}
+			}
+			await createNewConversation(title);
+	}, [plugin.settings.loadLastConversation, previousConversationId, loadConversation, createNewConversation]);
+
 	const saveConversation = useCallback(
 		async (updatedConversation: IConversation) => {
 			try {
@@ -71,7 +83,6 @@ export const useConversation = () => {
 		[adapter, plugin.settings.weaverDirectory]
 	);
 
-	// Update the conversation in the store and save it
 	const updateConversation = useCallback(
 		async (updatedConversation: IConversation) => {
 			setConversation(updatedConversation);
@@ -79,6 +90,8 @@ export const useConversation = () => {
 		},
 		[setConversation, saveConversation]
 	);
+
+	//#endregion
 
 	// Generate an assistant message based on a user message
 	const generateAssistantMessage = useCallback(
@@ -480,21 +493,6 @@ export const useConversation = () => {
 			return path;
 		},
 		[]
-	);
-
-	// Load a conversation by its ID
-	const loadConversation = useCallback(
-		async (conversationId: string) => {
-			const loadedConversation = await getConversation(adapter, plugin.settings.weaverDirectory, conversationId);
-
-			if (!loadedConversation) {
-				throw new Error(`Conversation with ID ${conversationId} not found`);
-			}
-
-			setConversation(loadedConversation);
-			setPreviousConversationId(loadedConversation.id);
-		},
-		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
 	);
 
 	// Stop the ongoing message generation

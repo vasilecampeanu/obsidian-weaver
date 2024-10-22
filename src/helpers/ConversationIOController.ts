@@ -5,6 +5,15 @@ import { FileSystemAdapter } from 'obsidian';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Creates a new conversation and saves it to the conversations directory.
+ *
+ * @param adapter - The FileSystemAdapter instance from Obsidian.
+ * @param model - The chat model to be used for the conversation.
+ * @param weaverDirectory - The root directory where the 'conversations' folder resides.
+ * @param title - The title of the conversation.
+ * @returns A promise that resolves to the newly created IConversation object.
+ */
 export const createConversation = async (
 	adapter: FileSystemAdapter,
 	model: EChatModels,
@@ -51,6 +60,14 @@ export const createConversation = async (
 	return conversation;
 };
 
+/**
+ * Writes (updates) an existing conversation to the conversations directory.
+ *
+ * @param adapter - The FileSystemAdapter instance from Obsidian.
+ * @param weaverDirectory - The root directory where the 'conversations' folder resides.
+ * @param conversation - The IConversation object to be written.
+ * @returns A promise that resolves when the write operation is complete.
+ */
 export const writeConversation = async (
 	adapter: FileSystemAdapter,
 	weaverDirectory: string,
@@ -60,6 +77,14 @@ export const writeConversation = async (
 	await writeJsonFile(adapter, path.join(conversationsDir, `${conversation.id}.json`), conversation);
 };
 
+/**
+ * Retrieves a specific conversation by its ID from the conversations directory.
+ *
+ * @param adapter - The FileSystemAdapter instance from Obsidian.
+ * @param weaverDirectory - The root directory where the 'conversations' folder resides.
+ * @param conversationId - The unique identifier of the conversation to retrieve.
+ * @returns A promise that resolves to the IConversation object if found, or null otherwise.
+ */
 export const getConversation = async (
 	adapter: FileSystemAdapter,
 	weaverDirectory: string,
@@ -67,4 +92,51 @@ export const getConversation = async (
 ): Promise<IConversation | null> => {
 	const conversationsDir = path.join(weaverDirectory, 'conversations');
 	return await readJsonFile<IConversation>(adapter, path.join(conversationsDir, `${conversationId}.json`));
+};
+
+/**
+ * Retrieves all conversation objects from the 'conversations' directory.
+ *
+ * @param adapter - The FileSystemAdapter instance from Obsidian.
+ * @param weaverDirectory - The root directory where the 'conversations' folder resides.
+ * @returns A promise that resolves to an array of IConversation objects.
+ */
+export const getAllConversations = async (
+	adapter: FileSystemAdapter,
+	weaverDirectory: string
+): Promise<IConversation[]> => {
+	const conversationsDir = path.join(weaverDirectory, 'conversations');
+
+	// Check if the 'conversations' directory exists
+	const exists = await adapter.exists(conversationsDir);
+	if (!exists) {
+		console.error(`Conversations directory does not exist: ${conversationsDir}`);
+		return [];
+	}
+
+	try {
+		// List all items in the 'conversations' directory
+		const folderContent = await adapter.list(conversationsDir);
+
+		// Filter out only JSON files which represent conversations
+		const jsonFiles = folderContent.files.filter(filePath => filePath.endsWith('.json'));
+
+		// Map each JSON file path to a promise that resolves to an IConversation object
+		const conversationPromises = jsonFiles.map(async (filePath) => {
+			try {
+				const conversation = await readJsonFile<IConversation>(adapter, filePath);
+				return conversation;
+			} catch (error) {
+				console.error(`Failed to read conversation from ${filePath}:`, error);
+				return null;
+			}
+		});
+
+		// Await all promises and filter out any null results due to read errors
+		const conversations = await Promise.all(conversationPromises);
+		return conversations.filter((convo): convo is IConversation => convo !== null);
+	} catch (error) {
+		console.error(`Error reading conversations from ${conversationsDir}:`, error);
+		return [];
+	}
 };

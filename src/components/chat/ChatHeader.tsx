@@ -1,6 +1,7 @@
 import { Icon } from "components/primitives/Icon";
 import { EChatModels } from "enums/EProviders";
 import { useConversation } from "hooks/useConversation";
+import { useTab } from "providers/tab/TabContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatModelSwitcher } from "./ChatModelSwitcher";
 import { ChatOptions } from "./ChatOptions";
@@ -13,6 +14,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editableTitle, setEditableTitle] = useState<string>("");
+	const { switchToConversationList } = useTab();
 
 	const switchModelButtonRef = useRef<HTMLButtonElement>(null);
 	const optionsButtonRef = useRef<HTMLButtonElement>(null);
@@ -95,7 +97,10 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 	return (
 		<div className="ow-chat-header">
 			<div className="ow-header-actions">
-				<button className="ow-btn-back">
+				<button 
+					className="ow-btn-back"
+					onClick={switchToConversationList}
+				>
 					<Icon iconId={"arrow-left"} />
 				</button> 
 				<button
