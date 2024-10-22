@@ -6,7 +6,7 @@ import {
 	getConversation,
 	writeConversation,
 } from 'helpers/ConversationIOController';
-import { IConversation, IMessageNode } from 'interfaces/IConversation';
+import { IContentType, IConversation, IMessageNode } from 'interfaces/IConversation';
 import { IUserSelection } from 'interfaces/IUserEvents';
 import { FileSystemAdapter } from 'obsidian';
 import { usePlugin } from 'providers/plugin/usePlugin';
@@ -536,7 +536,7 @@ export const useConversation = () => {
 
 	// Edit a user message and generate a new assistant response
 	const editUserMessage = useCallback(
-		async (messageId: string, newContent: string) => {
+		async (messageId: string, contentType: IContentType, content: string[]) => {
 			if (!conversation) {
 				throw new Error('No conversation initialized');
 			}
@@ -571,8 +571,8 @@ export const useConversation = () => {
 					create_time: now,
 					update_time: now,
 					content: {
-						content_type: 'text',
-						parts: [newContent],
+						content_type: contentType,
+						parts: [...content],
 					},
 					status: 'finished_successfully',
 					end_turn: true,

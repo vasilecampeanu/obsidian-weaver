@@ -34,11 +34,8 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 }) => {
 	const { regenerateAssistantMessage, editUserMessage, isGenerating } = useConversation();
 	const [isCopied, setIsCopied] = useState(false);
-	const [editedContent, setEditedContent] = useState(
-		messageNode.message?.content.parts.join("\n") || ""
-	);
-	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] =
-		useState(false);
+	const [editedContent, setEditedContent] = useState("");
+	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
 	const regenerateButtonRef = useRef<HTMLButtonElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
 
@@ -48,7 +45,11 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 
 	useEffect(() => {
 		if (!isEditing) {
-			setEditedContent(message?.content.parts.join("\n") || "");
+			if (!(message?.content.content_type === "text-with-user-selection")) {
+				setEditedContent(message?.content.parts.join("\n") || "");
+			} else {
+				setEditedContent(message?.content.parts[2] || "");
+			}
 		}
 	}, [isEditing, message]);
 
@@ -82,7 +83,19 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 			return;
 		}
 
-		await editUserMessage(messageNode.id, editedContent.trim());
+		if (message.content.content_type === "text-with-user-selection") {
+			const updatedParts = [...message.content.parts];
+			updatedParts[2] = editedContent.trim();
+
+			await editUserMessage(messageNode.id, message.content.content_type, updatedParts);
+		} else {
+			await editUserMessage(
+				messageNode.id,
+				message.content.content_type,
+				[editedContent.trim()]
+			);
+		}
+
 		setEditingMessageId(null);
 	};
 
@@ -92,9 +105,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 
 	return (
 		<div
-			className={`ow-chat-message-bubble ${message.author.role} ${
-				isLatest ? "latest" : ""
-			} ${isEditing ? "editing" : ""}`}
+			className={`ow-chat-message-bubble ${message.author.role} ${isLatest ? "latest" : ""} ${isEditing ? "editing" : ""}`}
 		>
 			<div className="ow-message">
 				<div className="ow-message-content">
@@ -130,24 +141,32 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 								<ChatGPTIcon />
 							</div>
 							<div className="ow-parts">
-								<MarkdownContent content={message.content.parts.join("\n")} />
+								<MarkdownContent
+									content={message.content.parts.join("\n")}
+								/>
 								{isGenerating && isLatest && <>#</>}
 							</div>
 						</>
 					) : (
 						<>
-							{message.content.content_type === 'text-with-user-selection' ? (
+							{message.content.content_type === "text-with-user-selection" ? (
 								<div className="text-with-user-selection">
 									<div className="ow-user-selection">
 										<span>Selected text</span>
-										<MarkdownContent content={message.content.parts[1]} />
+										<MarkdownContent
+											content={message.content.parts[1]}
+										/>
 									</div>
 									<div className="ow-user-text">
-										<MarkdownContent content={message.content.parts[2]} />	
+										<MarkdownContent
+											content={message.content.parts[2]}
+										/>
 									</div>
 								</div>
 							) : (
-								<MarkdownContent content={message.content.parts.join("\n")} />
+								<MarkdownContent
+									content={message.content.parts.join("\n")}
+								/>
 							)}
 						</>
 					)}
