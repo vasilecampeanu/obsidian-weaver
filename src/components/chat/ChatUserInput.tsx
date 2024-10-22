@@ -12,7 +12,7 @@ import {
 } from "react";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
-const MAX_CHARACTERS = 2000;
+const MAX_CHARACTERS = 4200;
 const TEXTAREA_LINE_HEIGHT = 14;
 
 const buttonVariants = {

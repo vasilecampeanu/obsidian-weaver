@@ -11,7 +11,7 @@ const TabContext = createContext<TabContextProps | undefined>(undefined);
 export const TabProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [currentTab, setCurrentTab] = useState("conversationList");
+	const [currentTab, setCurrentTab] = useState("chat");
 
 	const switchToChat = () => setCurrentTab("chat");
 	const switchToConversationList = () => setCurrentTab("conversationList");

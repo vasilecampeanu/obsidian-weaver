@@ -1,0 +1,56 @@
+.ow-conversation-list
+{
+	.ow-conversation-list-header 
+	{
+		display: flex;
+		width: 100%;
+		justify-content: space-between; 
+		align-items: center; 
+	
+		.ow-title 
+		{
+			padding: 10px 0;
+			font-weight: bold;
+			font-size: var(--font-ui-medium);
+			text-transform: uppercase;
+		}
+	
+		.ow-actions 
+		{
+			.ow-btn.new
+			{
+				all: unset;
+				padding: 5px;
+				border-radius: 5px;
+	
+				&:hover
+				{
+					background-color: var(--background-modifier-hover); 
+				}
+			}
+		}
+	}
+
+	.ow-list
+	{
+		display: flex;
+		flex-direction: column;
+
+		.ow-conversation-preview-card
+		{
+			padding: 10px;
+			border-radius: 10px;
+
+			.ow-conversation-date
+			{
+				font-size: var(--font-ui-small);
+				color: var(--text-muted);
+			}
+
+			&:hover
+			{
+				background-color: var(--interactive-normal);
+			}
+		}
+	}
+}
