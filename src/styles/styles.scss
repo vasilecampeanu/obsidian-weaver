@@ -3,17 +3,17 @@
 
 // Component style
 // Primitives
-@import url('./components/popover.scss');
-@import url('./components/primitives/markdownContent.scss');
+@import url('./components/primitives/Popover.scss');
+@import url('./components/primitives/MarkdownContent.scss');
 
-// Chat
-@import url('./components/chat.scss');
-@import url('./components/chatHeader.scss');
-@import url('./components/chatDialogueFeed.scss');
-@import url('./components/chatUserInput.scss');
+// Chat tab
+@import url('./components/chat/Chat.scss');
+@import url('./components/chat/ChatHeader.scss');
+@import url('./components/chat/ChatDialogueFeed.scss');
+@import url('./components/chat/ChatUserInput.scss');
+@import url('./components/chat/ChatModelSwitcher.scss');
+@import url('./components/chat/ChatOptions.scss');
+@import url('./components/chat/ChatSelectedTextModal.scss');
 
-@import url('./components/chatModelSwitcher.scss');
-@import url('./components/chatOptions.scss');
-@import url('./components/chatSelectedTextModal.scss');
-
-@import url('./components/conversationList.scss');
+// Conversation tab
+@import url('./components/conversationlist/ConversationList.scss');

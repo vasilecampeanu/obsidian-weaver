@@ -93,58 +93,54 @@ export const ChatDialogueFeed: React.FC = () => {
 	);
 
 	const renderMessages = useMemo(() => {
-		if (!path.length) return null;
+			if (!path.length) return null;
 
-		const lastAssistantIndex = path
-			.map((node, index) => ({ node, index }))
-			.reverse()
-			.find(
-				({ node }) => node.message?.author.role === "assistant"
-			)?.index;
+			const lastAssistantIndex = path
+				.map((node, index) => ({ node, index }))
+				.reverse()
+				.find(
+					({ node }) => node.message?.author.role === "assistant"
+				)?.index;
 
-		return path.map((node, index) => {
-			const parentNode = node.parent
-				? conversation?.mapping[node.parent] || null
-				: null;
-			const siblings = getSortedSiblings(parentNode);
-			const hasBranches = siblings.length > 1;
-			const currentBranchIndex = siblings.findIndex(
-				(sibling) => sibling.id === node.id
-			);
-			const totalBranches = siblings.length;
+			return path.map((node, index) => {
+				const parentNode = node.parent
+					? conversation?.mapping[node.parent] || null
+					: null;
+				const siblings = getSortedSiblings(parentNode);
+				const hasBranches = siblings.length > 1;
+				const currentBranchIndex = siblings.findIndex(
+					(sibling) => sibling.id === node.id
+				);
+				const totalBranches = siblings.length;
 
-			const handlePrevBranch = () =>
-				handleBranchNavigation(siblings, currentBranchIndex, "prev");
-			const handleNextBranch = () =>
-				handleBranchNavigation(siblings, currentBranchIndex, "next");
+				const handlePrevBranch = () =>
+					handleBranchNavigation(siblings, currentBranchIndex, "prev");
+				const handleNextBranch = () =>
+					handleBranchNavigation(siblings, currentBranchIndex, "next");
 
-			const isLatest =
-				node.message?.author.role === "assistant" &&
-				index === lastAssistantIndex;
+				const isLatest =
+					node.message?.author.role === "assistant" &&
+					index === lastAssistantIndex;
 
-			return (
-				<ChatMessageBubble
-					key={node.id}
-					messageNode={node}
-					hasBranches={hasBranches}
-					currentBranchIndex={currentBranchIndex}
-					totalBranches={totalBranches}
-					onPrevBranch={handlePrevBranch}
-					onNextBranch={handleNextBranch}
-					isLatest={isLatest}
-					isEditing={editingMessageId === node.id}
-					setEditingMessageId={setEditingMessageId}
-					boundaryRef={boundaryRef}
-				/>
-			);
-		});
-	}, [
-		path,
-		getSortedSiblings,
-		handleBranchNavigation,
-		conversation,
-		editingMessageId,
-	]);
+				return (
+					<ChatMessageBubble
+						key={node.id}
+						messageNode={node}
+						hasBranches={hasBranches}
+						currentBranchIndex={currentBranchIndex}
+						totalBranches={totalBranches}
+						onPrevBranch={handlePrevBranch}
+						onNextBranch={handleNextBranch}
+						isLatest={isLatest}
+						isEditing={editingMessageId === node.id}
+						setEditingMessageId={setEditingMessageId}
+						boundaryRef={boundaryRef}
+					/>
+				);
+			});
+		}, 
+		[path, getSortedSiblings, handleBranchNavigation, conversation, editingMessageId]
+	);
 
 	useEffect(() => {
 		const handleScrollToEnd = () => {

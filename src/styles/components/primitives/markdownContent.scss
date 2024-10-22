@@ -1,3 +1,24 @@
+.ow-user-selection
+{
+	.ow-rendered-md-content
+	{
+		padding: 10px;
+		border-radius: 10px;
+		background-color: var(--titlebar-background-focused);	
+	}	
+}
+
+.ow-message-content
+{
+	.ow-user-selection
+	{
+		.ow-rendered-md-content
+		{
+			// background-color: #3A3A3B;
+		}	
+	}	
+}
+
 .ow-rendered-md-content
 {
 	p:first-child
