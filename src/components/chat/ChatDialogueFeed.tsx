@@ -4,7 +4,6 @@ import { IMessageNode } from "interfaces/IConversation";
 import React, {
 	useCallback,
 	useEffect,
-	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -147,14 +146,16 @@ export const ChatDialogueFeed: React.FC = () => {
 		editingMessageId,
 	]);
 
-	useLayoutEffect(() => {
-		const timer = setTimeout(() => {
+	useEffect(() => {
+		const handleScrollToEnd = () => {
 			if (endOfBoundaryRef.current) {
 				endOfBoundaryRef.current.scrollIntoView({ behavior: "smooth" });
 			}
-		}, 0);
+		};
 
-		return () => clearTimeout(timer);
+		const debounceTimer = setTimeout(handleScrollToEnd, 300);
+
+		return () => clearTimeout(debounceTimer);
 	}, [path]);
 
 	const handleScroll = useCallback(() => {
@@ -183,7 +184,7 @@ export const ChatDialogueFeed: React.FC = () => {
 			style={{ overflowY: "auto", height: "100%" }}
 		>
 			{renderMessages}
-			<div ref={endOfBoundaryRef} />
+			<div ref={endOfBoundaryRef} id="anchor" />
 		</div>
 	);
 };

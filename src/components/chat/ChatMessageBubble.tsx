@@ -86,7 +86,6 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 		if (message.content.content_type === "text-with-user-selection") {
 			const updatedParts = [...message.content.parts];
 			updatedParts[2] = editedContent.trim();
-
 			await editUserMessage(messageNode.id, message.content.content_type, updatedParts);
 		} else {
 			await editUserMessage(
