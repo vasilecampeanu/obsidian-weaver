@@ -140,3 +140,34 @@ export const getAllConversations = async (
 		return [];
 	}
 };
+
+/**
+ * Deletes a conversation by its ID from the conversations directory.
+ *
+ * @param adapter - The FileSystemAdapter instance from Obsidian.
+ * @param weaverDirectory - The root directory where the 'conversations' folder resides.
+ * @param conversationId - The unique identifier of the conversation to delete.
+ * @returns A promise that resolves when the delete operation is complete.
+ */
+export const deleteConversation = async (
+	adapter: FileSystemAdapter,
+	weaverDirectory: string,
+	conversationId: string
+): Promise<void> => {
+	const conversationsDir = path.join(weaverDirectory, 'conversations');
+	const conversationFilePath = path.join(conversationsDir, `${conversationId}.json`);
+
+	// Check if the conversation file exists before attempting to delete
+	const exists = await adapter.exists(conversationFilePath);
+	if (!exists) {
+		console.error(`Conversation file does not exist: ${conversationFilePath}`);
+		return;
+	}
+
+	try {
+		await adapter.remove(conversationFilePath);
+		console.log(`Deleted conversation: ${conversationId}`);
+	} catch (error) {
+		console.error(`Failed to delete conversation ${conversationId}:`, error);
+	}
+};

@@ -3,6 +3,7 @@ import { EChatModels } from 'enums/EProviders';
 import { throttle } from 'helpers/Async';
 import {
 	createConversation,
+	deleteConversation,
 	getConversation,
 	writeConversation
 } from 'helpers/ConversationIOController';
@@ -47,7 +48,8 @@ export const useConversation = () => {
 
 			setConversation(loadedConversation);
 			setPreviousConversationId(loadedConversation.id);
-		}, [adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
+		}, 
+		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
 	);
 
 	const createNewConversation = useCallback(
@@ -56,7 +58,26 @@ export const useConversation = () => {
 			setConversation(newConversation);
 			setPreviousConversationId(newConversation.id);
 			return newConversation;
-		}, [adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
+		}, 
+		[adapter, plugin.settings.weaverDirectory, setConversation, setPreviousConversationId]
+	);
+
+	// New function to delete a conversation
+	const deleteConversationById = useCallback(
+		async (conversationId: string) => {
+			try {
+				await deleteConversation(adapter, plugin.settings.weaverDirectory, conversationId);
+				if (conversationId === previousConversationId) {
+					setPreviousConversationId(null); // Reset previous ID if deleted
+				}
+				// Optionally, you can reset the current conversation
+				setConversation(null);
+				console.log(`Deleted conversation with ID: ${conversationId}`);
+			} catch (error) {
+				console.error(`Failed to delete conversation with ID ${conversationId}:`, error);
+			}
+		}, 
+		[adapter, plugin.settings.weaverDirectory, previousConversationId]
 	);
 
 	const initConversation = useCallback(
@@ -70,7 +91,9 @@ export const useConversation = () => {
 				}
 			}
 			await createNewConversation(title);
-	}, [plugin.settings.loadLastConversation, previousConversationId, loadConversation, createNewConversation]);
+		}, 
+		[plugin.settings.loadLastConversation, previousConversationId, loadConversation, createNewConversation]
+	);
 
 	const saveConversation = useCallback(
 		async (updatedConversation: IConversation) => {
@@ -707,6 +730,7 @@ export const useConversation = () => {
 		isGenerating,
 		initConversation,
 		createNewConversation,
+		deleteConversationById,
 		generateAssistantMessage,
 		regenerateAssistantMessage,
 		loadConversation,

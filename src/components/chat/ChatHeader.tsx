@@ -9,7 +9,7 @@ import { ChatOptions } from "./ChatOptions";
 interface ChatHeaderProps {}
 
 export const ChatHeader: React.FC<ChatHeaderProps> = () => {
-	const { conversation, updateConversationTitle, updateConversationModel } = useConversation();
+	const { conversation, updateConversationTitle, updateConversationModel, deleteConversationById } = useConversation();
 	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
 	const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
@@ -90,8 +90,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = () => {
 		}
 	};
 
-	const handleDelete = () => {
-		console.log("Delete action triggered");
+	const handleDelete = async () => {
+		switchToConversationList();	
+		await deleteConversationById(conversation?.id!)
 	};
 
 	return (
