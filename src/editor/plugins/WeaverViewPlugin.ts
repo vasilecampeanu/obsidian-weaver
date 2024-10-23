@@ -20,19 +20,21 @@ export class WeaverViewPlugin implements PluginValue {
 	}
 
 	private handleUserSelection(): void {
-		const { state } = this.view;
-		const { from, to } = state.selection.main;
-
-		if (!this.lastSelection || this.lastSelection.from !== from || this.lastSelection.to !== to) {
-			if (from !== to) {
-				const text = state.doc.sliceString(from, to);
-				const file = this.plugin.app.workspace.getActiveFile();
-
-				const eventData: IUserSelection = { text, file };
-				this.plugin.events.trigger('selection-changed', eventData);
+		if (this.plugin.settings.sendSelectionToChat) {
+			const { state } = this.view;
+			const { from, to } = state.selection.main;
+	
+			if (!this.lastSelection || this.lastSelection.from !== from || this.lastSelection.to !== to) {
+				if (from !== to) {
+					const text = state.doc.sliceString(from, to);
+					const file = this.plugin.app.workspace.getActiveFile();
+	
+					const eventData: IUserSelection = { text, file };
+					this.plugin.events.trigger('selection-changed', eventData);
+				}
+	
+				this.lastSelection = { from, to };
 			}
-
-			this.lastSelection = { from, to };
 		}
 	}
 

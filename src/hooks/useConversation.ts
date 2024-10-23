@@ -54,7 +54,13 @@ export const useConversation = () => {
 
 	const createNewConversation = useCallback(
 		async (title: string = 'Untitled') => {
-			const newConversation = await createConversation(adapter, plugin.settings.model, plugin.settings.weaverDirectory, title);
+			const newConversation = await createConversation(
+				adapter, 
+				plugin.settings.model, 
+				plugin.settings.systemPrompt,
+				plugin.settings.weaverDirectory, 
+				title
+			);
 			setConversation(newConversation);
 			setPreviousConversationId(newConversation.id);
 			return newConversation;

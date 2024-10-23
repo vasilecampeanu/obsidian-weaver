@@ -17,7 +17,7 @@ export default class Weaver extends Plugin {
 
 		// Register the Weaver view
 		this.registerView(
-			VIEW_WEAVER, 
+			VIEW_WEAVER,
 			(leaf) => new WeaverView(leaf, this)
 		);
 
@@ -29,6 +29,15 @@ export default class Weaver extends Plugin {
 
 		// Register plugin commands
 		this.registerCommands();
+
+		// Do things after layout is ready
+		this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+	}
+
+	private async onLayoutReady(): Promise<void> {
+		if (this.settings.openOnStartup) {
+			this.activateView();
+		}
 	}
 
 	public async onunload() {

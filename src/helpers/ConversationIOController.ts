@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const createConversation = async (
 	adapter: FileSystemAdapter,
 	model: EChatModels,
+	systemPrompt: string,
 	weaverDirectory: string,
 	title: string
 ): Promise<IConversation> => {
@@ -58,7 +59,7 @@ export const createConversation = async (
 			update_time: null,
 			content: {
 				content_type: 'text',
-				parts: ["As an AI assistant integrated with Obsidian.md, provide responses formatted in Markdown. Use $ ... $ for inline LaTeX and $$ ... $$ on separate lines for block LaTeX."]
+				parts: [systemPrompt]
 			},
 			status: 'finished_successfully',
 			end_turn: true,

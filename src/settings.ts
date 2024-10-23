@@ -7,7 +7,10 @@ export interface WeaverSettings {
 	weaverDirectory: string,
 	weaverContextStorage: string,
 	loadLastConversation: boolean,
-	model: EChatModels
+	model: EChatModels,
+	systemPrompt: string,
+	openOnStartup: boolean,
+	sendSelectionToChat: boolean
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -17,7 +20,10 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 		return `${this.weaverDirectory}/context.json`;
 	},
 	loadLastConversation: true,
-	model: EChatModels.GPT_4
+	model: EChatModels.GPT_4o,
+	systemPrompt: 'As an AI assistant integrated with Obsidian.md, provide responses formatted in Markdown. Use $ ... $ for inline LaTeX and $$ ... $$ on separate lines for block LaTeX.',
+	openOnStartup: true,
+	sendSelectionToChat: false
 };
 
 export class WeaverSettingTab extends PluginSettingTab {
@@ -34,6 +40,19 @@ export class WeaverSettingTab extends PluginSettingTab {
 		containerEl.empty();
 		containerEl.createEl('h1', { text: 'Weaver Settings' });
 
+		containerEl.createEl('h2', { text: 'General' });
+
+		new Setting(containerEl)
+			.setName('Open Weaver on Startup')
+			.setDesc('Automatically open the Weaver view when Obsidian starts.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.openOnStartup)
+				.onChange(async (value) => {
+					this.plugin.settings.openOnStartup = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
 		containerEl.createEl('h2', {
 			text: 'OpenAI'
 		});
@@ -41,12 +60,12 @@ export class WeaverSettingTab extends PluginSettingTab {
 		let inputEl: TextComponent;
 		new Setting(containerEl)
 			.setName('API Key')
-			.setDesc('You can get an API key from your OpenAI account.')
+			.setDesc('Enter your OpenAI API Key to enable AI functionalities. You can obtain an API Key from your OpenAI account.')
 			.addText(text => text
-				.setPlaceholder('Enter your API Key')
+				.setPlaceholder('sk-XXXXXXXXXXXXXXXXXXXX')
 				.setValue(this.plugin.settings.apiKey)
 				.onChange(async (value) => {
-					this.plugin.settings.apiKey = value;
+					this.plugin.settings.apiKey = value.trim();
 					await this.plugin.saveSettings();
 				})
 				.then((textEl) => {
@@ -57,7 +76,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Model')
-			.setDesc('This allows you to choose which model the chat view should utilize.')
+			.setDesc('Select the default AI model for new chat conversations.')
 			.addDropdown((dropdown) => {
 				Object.values(EChatModels).forEach((model) => {
 					const label = model.toUpperCase().replace(/_/g, ' ');
@@ -69,5 +88,36 @@ export class WeaverSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			});
+
+		containerEl.createEl('h2', {
+			text: 'Model Configuration'
+		});
+
+		new Setting(containerEl)
+			.setName('System Prompt')
+			.setDesc('Define the initial instructions or context for the AI assistant. This prompt will guide the behavior and responses of the model.')
+			.addTextArea(text => text
+				.setPlaceholder('e.g., "You are a helpful assistant that summarizes markdown notes."')
+				.setValue(this.plugin.settings.systemPrompt)
+				.onChange(async (value) => {
+					this.plugin.settings.systemPrompt = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		containerEl.createEl('h2', {
+			text: 'Experimental'
+		});
+
+		new Setting(containerEl)
+			.setName('Send Selection to Chat')
+			.setDesc('When in editing mode, send the selected text to the chat interface for context.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.sendSelectionToChat)
+				.onChange(async (value) => {
+					this.plugin.settings.sendSelectionToChat = value;
+					await this.plugin.saveSettings();
+				})
+			);
 	}
 }
