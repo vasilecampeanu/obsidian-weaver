@@ -65,9 +65,8 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 		};
 	}, []);
 
-	const handleSubmit = async (event: React.FormEvent) => {
-		event.preventDefault();
-
+	// Extracted submission logic into a separate function
+	const submitMessage = async () => {
 		try {
 			// Do this early
 			setUserInputMessage("");
@@ -77,11 +76,18 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 			setUserSelection(null);
 
 			// Generate assistant response
-			await conversation?.generateAssistantMessage(userInputMessage, selection);
-
+			await conversation?.generateAssistantMessage(
+				userInputMessage,
+				selection
+			);
 		} catch (error) {
 			console.error("Error sending message:", error);
 		}
+	};
+
+	const handleSubmit = async (event: React.FormEvent) => {
+		event.preventDefault();
+		await submitMessage();
 	};
 
 	const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -128,16 +134,23 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 		}, 0);
 	};
 
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault();
+			submitMessage();
+		}
+	};
+
 	const isExpanded = isHovered || isFocused || userInputMessage.length > 0 || isPinned;
 
 	return (
 		<div className="ow-chat-user-input">
 			{userSelection && (
-				<ChatSelectedTextModal 
-					userSelection={userSelection} 
+				<ChatSelectedTextModal
+					userSelection={userSelection}
 					setUserSelection={setUserSelection}
 				/>
-			)} 
+			)}
 			<div className="ow-chat-user-input-inner-wrapper">
 				<div className="ow-user-actions">
 					<AnimatePresence>
@@ -185,6 +198,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 							onBlur={handleBlur}
 							onMouseEnter={() => setIsHovered(true)}
 							onMouseLeave={() => setIsHovered(false)}
+							onKeyDown={handleKeyDown}
 							initial={{
 								height: `${2 * TEXTAREA_LINE_HEIGHT}px`,
 							}}

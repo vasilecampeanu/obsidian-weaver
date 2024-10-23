@@ -47,7 +47,28 @@ export const createConversation = async (
 	const systemNodeId = uuidv4();
 	const systemMessageNode: IMessageNode = {
 		id: systemNodeId,
-		message: null,
+		message: {
+			id: systemNodeId,
+			author: {
+				role: 'system',
+				name: null,
+				metadata: {}
+			},
+			create_time: null,
+			update_time: null,
+			content: {
+				content_type: 'text',
+				parts: ["As an AI assistant integrated with Obsidian.md, provide responses formatted in Markdown. Use $ ... $ for inline LaTeX and $$ ... $$ on separate lines for block LaTeX."]
+			},
+			status: 'finished_successfully',
+			end_turn: true,
+			weight: 0.0,
+			metadata: {
+				is_visually_hidden_from_conversation: true
+			},
+			recipient: 'all',
+			channel: null
+		},
 		parent: null,
 		children: [],
 	};

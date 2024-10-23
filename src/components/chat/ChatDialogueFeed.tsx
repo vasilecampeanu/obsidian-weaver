@@ -113,14 +113,12 @@ export const ChatDialogueFeed: React.FC = () => {
 				);
 				const totalBranches = siblings.length;
 
-				const handlePrevBranch = () =>
-					handleBranchNavigation(siblings, currentBranchIndex, "prev");
-				const handleNextBranch = () =>
-					handleBranchNavigation(siblings, currentBranchIndex, "next");
+				const handlePrevBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "prev");
+				const handleNextBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "next");
 
-				const isLatest =
-					node.message?.author.role === "assistant" &&
-					index === lastAssistantIndex;
+				const isLatest = node.message?.author.role === "assistant" && index === lastAssistantIndex;
+
+				if (node.message?.metadata.is_visually_hidden_from_conversation === true) return
 
 				return (
 					<ChatMessageBubble
