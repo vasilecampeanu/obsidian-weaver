@@ -72,13 +72,17 @@ export const useConversation = () => {
 	const deleteConversationById = useCallback(
 		async (conversationId: string) => {
 			try {
-				await deleteConversation(adapter, plugin.settings.weaverDirectory, conversationId);
+				await deleteConversation(
+					adapter, 
+					plugin.settings.weaverDirectory, 
+					conversationId
+				);
+
 				if (conversationId === previousConversationId) {
-					setPreviousConversationId(null); // Reset previous ID if deleted
+					setPreviousConversationId(null);
 				}
-				// Optionally, you can reset the current conversation
+
 				setConversation(null);
-				console.log(`Deleted conversation with ID: ${conversationId}`);
 			} catch (error) {
 				console.error(`Failed to delete conversation with ID ${conversationId}:`, error);
 			}

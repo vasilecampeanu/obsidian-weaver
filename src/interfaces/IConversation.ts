@@ -3,6 +3,7 @@ import { EChatModels } from "enums/EProviders";
 // Interface representing the entire conversation
 export interface IConversation {
 	title: string;
+	version: string,
 	create_time: number;
 	update_time: number;
 	mapping: { [key: string]: IMessageNode };

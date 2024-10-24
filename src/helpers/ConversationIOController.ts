@@ -27,6 +27,7 @@ export const createConversation = async (
 
 	const conversation: IConversation = {
 		title,
+		version: "1.0.0",
 		create_time: now,
 		update_time: now,
 		mapping: {},
@@ -181,13 +182,14 @@ export const deleteConversation = async (
 
 	// Check if the conversation file exists before attempting to delete
 	const exists = await adapter.exists(conversationFilePath);
+
 	if (!exists) {
 		console.error(`Conversation file does not exist: ${conversationFilePath}`);
 		return;
 	}
 
 	try {
-		await adapter.remove(conversationFilePath);
+		await adapter.trashLocal(conversationFilePath);
 		console.log(`Deleted conversation: ${conversationId}`);
 	} catch (error) {
 		console.error(`Failed to delete conversation ${conversationId}:`, error);
