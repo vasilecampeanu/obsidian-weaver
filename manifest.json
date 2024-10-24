@@ -1,10 +1,11 @@
 {
 	"id": "obsidian-weaver",
 	"name": "Weaver",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "Building in progress.",
+	"description": "Weaver is an Obsidian plugin that introduces a chat interface for seamless communication with AI assistants directly within your note-taking environment.",
 	"author": "Vasile Câmpeanu",
-	"authorUrl": "https://twitter.com/vasilecampeanu",
+	"authorUrl": "https://x.com/vasilecampeanu",
+	"helpUrl": "https://github.com/vasilecampeanu/obsidian-weaver",
 	"isDesktopOnly": true
 }
