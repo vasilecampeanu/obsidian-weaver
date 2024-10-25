@@ -9,7 +9,7 @@ interface ConversationListProps {}
 export const ConversationList: React.FC<ConversationListProps> = () => {
 	const { conversations, loading, error } = useConversationList();
 	const { switchToChat } = useTab();
-	const { conversation, loadConversation, initConversation } = useConversation();
+	const { loadConversation, initConversation } = useConversation();
 
 	const sortedConversations = [...conversations].sort(
 		(a, b) =>

@@ -3,14 +3,14 @@ import {
 	FloatingFocusManager,
 	Middleware,
 	Placement,
-	useFloating
+	useFloating,
 } from "@floating-ui/react";
 import React, { useEffect } from "react";
 
 interface PopoverProps {
 	referenceElement: React.RefObject<HTMLElement>;
 	renderContent: () => React.ReactNode;
-	placement: Placement
+	placement: Placement;
 	middleware?: Array<Middleware | null | undefined | false>;
 	isOpen: boolean;
 	onClose: () => void;
@@ -27,7 +27,7 @@ export const Popover: React.FC<PopoverProps> = ({
 	const { refs, floatingStyles, context } = useFloating({
 		whileElementsMounted: autoUpdate,
 		placement: placement,
-		middleware: middleware
+		middleware: middleware,
 	});
 
 	useEffect(() => {
@@ -46,18 +46,36 @@ export const Popover: React.FC<PopoverProps> = ({
 				onClose();
 			}
 		};
-	
+
 		if (isOpen) {
 			document.addEventListener("mousedown", handleClickOutside);
 		} else {
 			document.removeEventListener("mousedown", handleClickOutside);
 		}
-	
+
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
-	}, [isOpen, refs, onClose]);
-	
+	}, [isOpen, refs, onClose, referenceElement]);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				onClose();
+			}
+		};
+
+		if (isOpen) {
+			document.addEventListener("keydown", handleKeyDown);
+		} else {
+			document.removeEventListener("keydown", handleKeyDown);
+		}
+
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [isOpen, onClose]);
+
 	if (!isOpen) return null;
 
 	return (

@@ -20,7 +20,9 @@ export const ChatSelectedTextModal: React.FC<ChatSelectedTextProps> = ({
 				<button 
 					className="ow-btn cancel"
 					onClick={() => {setUserSelection(null)}}
-				>Cancel</button>
+				>
+					Cancel
+				</button>
 			</div>
 		</div>
 	);

@@ -12,7 +12,6 @@ import {
 } from "react";
 import { ChatSelectedTextModal } from "./ChatSelectedTextModal";
 
-const MAX_CHARACTERS = 4200;
 const TEXTAREA_LINE_HEIGHT = 14;
 
 const buttonVariants = {
@@ -25,6 +24,7 @@ interface ChatUserInputProps {}
 
 export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	const [userInputMessage, setUserInputMessage] = useState<string>("");
+	const [wordCount, setWordCount] = useState<number>(0);
 	const [charCount, setCharCount] = useState<number>(0);
 	const [isHovered, setIsHovered] = useState<boolean>(false);
 	const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -65,11 +65,11 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 		};
 	}, []);
 
-	// Extracted submission logic into a separate function
 	const submitMessage = async () => {
 		try {
 			// Do this early
 			setUserInputMessage("");
+			setWordCount(0);
 			setCharCount(0);
 
 			const selection = userSelection;
@@ -90,32 +90,28 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 		await submitMessage();
 	};
 
-	const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-		let value = event.target.value;
+	const countWords = (text: string): number => {
+		return text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+	};
 
-		if (value.length > MAX_CHARACTERS) {
-			value = value.slice(0, MAX_CHARACTERS);
-		}
+	const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+		const value = event.target.value;
 
 		setUserInputMessage(value);
 		setCharCount(value.length);
+		setWordCount(countWords(value));
 	};
 
 	const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
-		event.preventDefault();
-
 		const pasteData = event.clipboardData.getData("text");
-		const remainingChars = MAX_CHARACTERS - userInputMessage.length;
-
-		if (remainingChars <= 0) {
-			return;
-		}
-
-		const trimmedData = pasteData.slice(0, remainingChars);
-		const newValue = userInputMessage + trimmedData;
+		const currentValue = userInputMessage;
+		const newValue = currentValue + pasteData;
 
 		setUserInputMessage(newValue);
 		setCharCount(newValue.length);
+		setWordCount(countWords(newValue));
+
+		event.preventDefault();
 	};
 
 	const handleFocus = () => {
@@ -192,7 +188,6 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 							value={userInputMessage}
 							onChange={handleChange}
 							onPaste={handlePaste}
-							maxLength={MAX_CHARACTERS}
 							className="ow-textarea"
 							onFocus={handleFocus}
 							onBlur={handleBlur}
@@ -232,15 +227,20 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 						)}
 					</form>
 					<div className="ow-inline-input-utilities">
-						<div
-							className={`ow-input-character-counter ${
-								charCount > MAX_CHARACTERS
-									? "ow-character-limit-exceeded"
-									: ""
-							}`}
-						>
-							{charCount}/{MAX_CHARACTERS}
-						</div>
+						{userInputMessage.length > 0 && (plugin.settings.enableWordCounter || plugin.settings.enableCharacterCounter)? (
+							<div className="ow-input-counters">
+								{plugin.settings.enableWordCounter ? (
+									<div className="ow-input-word-counter">
+										{wordCount}
+									</div>
+								): null}
+								{plugin.settings.enableCharacterCounter ? (
+									<div className="ow-input-character-counter">
+										{charCount}
+									</div>
+								) : null}
+							</div>
+						): null}
 						<button
 							className={`ow-btn pin-input ${
 								isPinned ? "pinned" : ""

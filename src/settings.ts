@@ -10,7 +10,9 @@ export interface WeaverSettings {
 	model: EChatModels,
 	systemPrompt: string,
 	openOnStartup: boolean,
-	sendSelectionToChat: boolean
+	sendSelectionToChat: boolean,
+	enableCharacterCounter: boolean,
+	enableWordCounter: boolean
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
@@ -23,7 +25,9 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	model: EChatModels.GPT_4o,
 	systemPrompt: 'As an AI assistant integrated with Obsidian.md, provide responses formatted in Markdown. Use $ ... $ for inline LaTeX and $$ ... $$ on separate lines for block LaTeX.',
 	openOnStartup: true,
-	sendSelectionToChat: false
+	sendSelectionToChat: false,
+	enableWordCounter: false,
+	enableCharacterCounter: true,
 };
 
 export class WeaverSettingTab extends PluginSettingTab {
@@ -49,6 +53,28 @@ export class WeaverSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.openOnStartup)
 				.onChange(async (value) => {
 					this.plugin.settings.openOnStartup = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName('Enable Word Counter')
+			.setDesc('Toggle the display of the word counter in the chat input area.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableWordCounter)
+				.onChange(async (value) => {
+					this.plugin.settings.enableWordCounter = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName('Enable Character Counter')
+			.setDesc('Toggle the display of the character counter in the chat input area.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableCharacterCounter)
+				.onChange(async (value) => {
+					this.plugin.settings.enableCharacterCounter = value;
 					await this.plugin.saveSettings();
 				})
 			);

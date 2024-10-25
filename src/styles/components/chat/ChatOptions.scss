@@ -17,6 +17,7 @@
 		.ow-chat-options-header 
 		{
 			font-weight: bold;
+			font-size: var(--font-ui-medium);
 			color: var(--text-muted);
 		}
 
@@ -35,6 +36,7 @@
 			transition: background-color 0.2s ease;
 			display: flex;
 			align-items: center;
+			font-size: var(--font-ui-small);
 
 			&:hover,
 			&:focus 

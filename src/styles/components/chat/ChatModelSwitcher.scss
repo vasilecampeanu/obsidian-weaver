@@ -11,12 +11,13 @@
 		border-radius: 15px;
 		list-style: none;
 		padding: 10px;
-		min-width: 300px;
+		min-width: 250px;
 
 		.ow-model-switcher-header
 		{
 			padding: 10px;
 			font-weight: bold;
+			font-size: var(--font-ui-medium);
 			color: var(--text-muted);
 		}
 
@@ -45,11 +46,13 @@
 
 				.model-name
 				{
+					font-size: var(--font-ui-medium);
 					font-weight: bold;
 				}
 
 				.model-description
 				{
+					font-size: var(--font-ui-small);
 					color: var(--text-muted);
 				}
 			}

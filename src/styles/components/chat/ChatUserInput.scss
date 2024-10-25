@@ -35,6 +35,11 @@
 			background-color: var(--interactive-accent);
 			box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
 			margin-top: auto;
+
+			&:hover
+			{
+				opacity: .9 !important;
+			}
 		}
 		
 		.ow-chat-user-input-form-wrapper
@@ -96,15 +101,19 @@
 			.ow-inline-input-utilities
 			{
 				display: flex;
+				align-content: center;
 				gap: 5px;
+				height: 18px;
 
 				.ow-btn.paperclip
 				{
 					all: unset;
 				}
 
-				.ow-input-character-counter
+				.ow-input-counters
 				{
+					display: flex;
+					gap: 5px;
 					font-size: var(--font-ui-small);
 					color: var(--text-muted);
 				}
