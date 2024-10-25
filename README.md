@@ -1,5 +1,7 @@
 # Obsidian Weaver
 
+![showcase](docs/showcase-01.png)
+
 Weaver is an [Obsidian](https://obsidian.md) plugin that integrates a ChatGPT-like interface into your note-taking workflow. This plugin makes it easy to access AI-generated suggestions and insights within Obsidian, helping you improve your writing and brainstorming process.
 
 ## Features
