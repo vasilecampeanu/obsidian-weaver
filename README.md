@@ -1,4 +1,4 @@
-# Obsidian Weaver
+# Weaver
 
 ![showcase](docs/showcase-01.png)
 
@@ -13,13 +13,13 @@ Weaver is an [Obsidian](https://obsidian.md) plugin that integrates a ChatGPT-li
 
 ## Installation
 
-The plugin is not yet available in the plugin library but will be soon. Until then, you can follow the methods below to install the plugin.
+The plugin is not yet available in the plugin library but will be soon. Until then, you can follow the methods below to install it.
 
-## Brat
+### Brat
 
 You can also install Weaver using the community plugin [obsidian42-brat](https://github.com/TfTHacker/obsidian42-brat).
 
-## Manual
+### Manual
 
 1.  Go to the [releases](https://github.com/vasilecampeanu/obsidian-weaver/releases) and download `main.js`, `manifest.json`, and `styles.css` of the latest version.
 2.  Put the files in `YourObsidianVault/.obsidian/plugins/obsidian-weaver/`
