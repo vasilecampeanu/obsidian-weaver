@@ -1,4 +1,5 @@
 import { Icon } from "components/primitives/Icon";
+import { AnimatePresence, motion } from "framer-motion";
 import { useConversation } from "hooks/useConversation";
 import { useLatestCreateTimeMap } from "hooks/useLatestCreateTimeMap";
 import { IMessageNode } from "interfaces/IConversation";
@@ -116,20 +117,12 @@ export const ChatDialogueFeed: React.FC = () => {
 			);
 			const totalBranches = siblings.length;
 
-			const handlePrevBranch = () =>
-				handleBranchNavigation(siblings, currentBranchIndex, "prev");
-			const handleNextBranch = () =>
-				handleBranchNavigation(siblings, currentBranchIndex, "next");
+			const handlePrevBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "prev");
+			const handleNextBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "next");
 
-			const isLatest =
-				node.message?.author.role === "assistant" &&
-				index === lastAssistantIndex;
+			const isLatest = node.message?.author.role === "assistant" && index === lastAssistantIndex;
 
-			if (
-				node.message?.metadata.is_visually_hidden_from_conversation ===
-				true
-			)
-				return;
+			if (node.message?.metadata.is_visually_hidden_from_conversation === true) return null;
 
 			return (
 				<ChatMessageBubble
@@ -147,13 +140,7 @@ export const ChatDialogueFeed: React.FC = () => {
 				/>
 			);
 		});
-	}, [
-		path,
-		getSortedSiblings,
-		handleBranchNavigation,
-		conversation,
-		editingMessageId,
-	]);
+	}, [path, getSortedSiblings, handleBranchNavigation, conversation, editingMessageId]);
 
 	useEffect(() => {
 		const handleScrollToEnd = () => {
@@ -186,29 +173,38 @@ export const ChatDialogueFeed: React.FC = () => {
 		};
 	}, [handleScroll]);
 
+	const warningVariants = {
+		initial: { opacity: 0, y: 0 },
+		animate: { opacity: 1, y: 0 },
+		exit:    { opacity: 0, y: 0 },
+	};
+
 	return (
 		<div
 			ref={boundaryRef}
 			className="ow-chat-dialogue-feed"
 			style={{ overflowY: "auto", height: "100%" }}
 		>
-			{path.length === 1 ? (
-				<>
-					{plugin.settings.apiKey.trim() === "" ? (
-						<div className="ow-info warning">
-							<div className="ow-info-title">
-								<Icon iconId="triangle-alert" />
-								<span>
-									API Key Required
-								</span>
-							</div>
-							<div className="ow-info-msg">
-								Please set your OpenAI API key in the plugin settings to enable chat functionality.
-							</div>
+			<AnimatePresence>
+				{path.length === 1 && plugin.settings.apiKey.trim() === "" && (
+					<motion.div
+						className="ow-info warning"
+						variants={warningVariants}
+						initial="initial"
+						animate="animate"
+						exit="exit"
+						transition={{ duration: 0.3 }}
+					>
+						<div className="ow-info-title">
+							<Icon iconId="triangle-alert" />
+							<span>API Key Required</span>
 						</div>
-					) : null}
-				</>
-			) : null}
+						<div className="ow-info-msg">
+							Please set your OpenAI API key in the plugin settings to enable chat functionality.
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 			{renderMessages}
 			<div ref={endOfBoundaryRef} id="anchor" />
 		</div>

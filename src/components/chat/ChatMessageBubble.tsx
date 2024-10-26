@@ -48,7 +48,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 			if (!(message?.content.content_type === "text-with-user-selection")) {
 				setEditedContent(message?.content.parts.join("\n") || "");
 			} else {
-				setEditedContent(message?.content.parts[2] || "");
+				setEditedContent(message?.content.parts[3] || "");
 			}
 		}
 	}, [isEditing, message]);
@@ -85,7 +85,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 
 		if (message.content.content_type === "text-with-user-selection") {
 			const updatedParts = [...message.content.parts];
-			updatedParts[2] = editedContent.trim();
+			updatedParts[3] = editedContent.trim();
 			await editUserMessage(messageNode.id, message.content.content_type, updatedParts);
 		} else {
 			await editUserMessage(
@@ -158,7 +158,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 									</div>
 									<div className="ow-user-text">
 										<MarkdownContent
-											content={message.content.parts[2]}
+											content={message.content.parts[3]}
 										/>
 									</div>
 								</div>

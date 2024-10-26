@@ -12,7 +12,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-		background-color: rgba(var(--callout-bug), .75);
+		background-color: rgba(var(--callout-bug), .35);
+		border: 1px solid var(--prompt-border-color) !important;
 		padding: 10px;
 		border-radius: 10px;
 
@@ -21,7 +22,7 @@
 			display: flex;
 			gap: 5px;
 			font-weight: bold;
-
+			color: rgba(var(--callout-bug), 1);
 			.ow-icon
 			{
 				justify-content: start;

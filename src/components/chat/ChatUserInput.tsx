@@ -67,33 +67,32 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	}, []);
 
 	const submitMessage = async () => {
-		try {
-			// Do this early
-			setUserInputMessage("");
-			setWordCount(0);
-			setCharCount(0);
-
-			const selection = userSelection;
-			setUserSelection(null);
-
-			// Generate assistant response
-			await conversation?.generateAssistantMessage(
-				userInputMessage,
-				selection
-			);
-		} catch (error) {
-			console.error("Error sending message:", error);
+		if ((plugin.settings.apiKey === '')) {
+			new Notice("Can't do that. Please set your OpenAI API key in the plugin settings to enable chat functionality.")
+		} else {
+			try {
+				// Do this early
+				setUserInputMessage("");
+				setWordCount(0);
+				setCharCount(0);
+	
+				const selection = userSelection;
+				setUserSelection(null);
+	
+				// Generate assistant response
+				await conversation?.generateAssistantMessage(
+					userInputMessage,
+					selection
+				);
+			} catch (error) {
+				console.error("Error sending message:", error);
+			}
 		}
 	};
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
-
-		if ((plugin.settings.apiKey === '')) {
-			new Notice("Can't do that. Please set your OpenAI API key in the plugin settings to enable chat functionality.")
-		} else {
-			await submitMessage();
-		}
+		await submitMessage();
 	};
 
 	const countWords = (text: string): number => {

@@ -40,7 +40,7 @@ export const createMessageNode = (
 
 export const buildParts = (selection: IUserSelection | null | undefined, userMessage: string): string[] => {
 	if (selection?.text) {
-		return ['user-selection:', selection.text, userMessage];
+		return ['user-selection: ', selection.text, ' user-input: ', userMessage];
 	}
 
 	return [userMessage];
