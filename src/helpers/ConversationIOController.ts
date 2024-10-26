@@ -27,7 +27,7 @@ export const createConversation = async (
 
 	const conversation: IConversation = {
 		title,
-		version: "1.0.0",
+		version: '1.0.0',
 		create_time: now,
 		update_time: now,
 		mapping: {},

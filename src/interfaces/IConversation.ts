@@ -1,6 +1,5 @@
 import { EChatModels } from "enums/EProviders";
 
-// Interface representing the entire conversation
 export interface IConversation {
 	title: string;
 	version: string,
@@ -22,7 +21,6 @@ export interface IConversation {
 	id: string;
 }
 
-// Interface for each node in the conversation mapping
 export interface IMessageNode {
 	id: string;
 	message: IMessage | null;
@@ -30,14 +28,13 @@ export interface IMessageNode {
 	children: string[];
 }
 
-// Interface representing a message
 export interface IMessage {
 	id: string;
 	author: IAuthor;
 	create_time: number | null;
 	update_time: number | null;
 	content: IContent;
-	status: string;
+	status: IMessageStatus;
 	end_turn: boolean | null;
 	weight: number;
 	metadata: IMetadata;
@@ -45,23 +42,21 @@ export interface IMessage {
 	channel: string | null;
 }
 
-// Interface for the author of a message
+export type IMessageStatus = 'in_progress' | 'finished_successfully' | 'aborted' | 'error';
+
 export interface IAuthor {
 	role: 'system' | 'user' | 'assistant';
 	name: string | null;
 	metadata: any;
 }
 
-// Expected message content types
 export type IContentType = 'text' | 'text-with-user-selection';
 
-// Interface for the content of a message
 export interface IContent {
 	content_type: IContentType;
 	parts: string[];
 }
 
-// Interface for metadata associated with a message
 export interface IMetadata {
 	is_visually_hidden_from_conversation?: boolean;
 	is_user_system_message?: boolean;

@@ -88,7 +88,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 			.setName('API Key')
 			.setDesc('Enter your OpenAI API Key to enable AI functionalities. You can obtain an API Key from your OpenAI account.')
 			.addText(text => text
-				.setPlaceholder('sk-XXXXXXXXXXXXXXXXXXXX')
+				.setPlaceholder('sk-proj-_XXXXXXXXXXXXXXXXXXXX')
 				.setValue(this.plugin.settings.apiKey)
 				.onChange(async (value) => {
 					this.plugin.settings.apiKey = value.trim();

@@ -32,7 +32,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 	setEditingMessageId,
 	boundaryRef,
 }) => {
-	const { regenerateAssistantMessage, editUserMessage, isGenerating } = useConversation();
+	const { generateAssistantMessage, editUserMessage, isGenerating } = useConversation();
 	const [isCopied, setIsCopied] = useState(false);
 	const [editedContent, setEditedContent] = useState("");
 	const [isChatModelSwitcherOpen, setIsChatModelSwitcherOpen] = useState(false);
@@ -239,9 +239,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 								setIsChatModelSwitcherOpen
 							}
 							currentModel={message.metadata.model_slug}
-							onSelect={(model) => {
-								regenerateAssistantMessage(message.id, model);
-							}}
+							onSelect={(model) => generateAssistantMessage('', null, message.id, model)}
 						/>
 					</div>
 				)}
