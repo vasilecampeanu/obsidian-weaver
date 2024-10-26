@@ -29,6 +29,8 @@
 		.ow-btn.create-new-chat 
 		{
 			all: unset;
+			display: flex;
+			justify-content: center;
 			height: 40px;
 			width: 40px;
 			border-radius: 50%;

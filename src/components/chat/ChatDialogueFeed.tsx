@@ -1,6 +1,8 @@
+import { Icon } from "components/primitives/Icon";
 import { useConversation } from "hooks/useConversation";
 import { useLatestCreateTimeMap } from "hooks/useLatestCreateTimeMap";
 import { IMessageNode } from "interfaces/IConversation";
+import { usePlugin } from "providers/plugin/usePlugin";
 import React, {
 	useCallback,
 	useEffect,
@@ -11,6 +13,7 @@ import React, {
 import { ChatMessageBubble } from "./ChatMessageBubble";
 
 export const ChatDialogueFeed: React.FC = () => {
+	const plugin = usePlugin();
 	const { conversation, navigateToNode } = useConversation();
 	const latestCreateTimeMap = useLatestCreateTimeMap(
 		conversation?.mapping || {}
@@ -93,52 +96,64 @@ export const ChatDialogueFeed: React.FC = () => {
 	);
 
 	const renderMessages = useMemo(() => {
-			if (!path.length) return null;
+		if (!path.length) return null;
 
-			const lastAssistantIndex = path
-				.map((node, index) => ({ node, index }))
-				.reverse()
-				.find(
-					({ node }) => node.message?.author.role === "assistant"
-				)?.index;
+		const lastAssistantIndex = path
+			.map((node, index) => ({ node, index }))
+			.reverse()
+			.find(
+				({ node }) => node.message?.author.role === "assistant"
+			)?.index;
 
-			return path.map((node, index) => {
-				const parentNode = node.parent
-					? conversation?.mapping[node.parent] || null
-					: null;
-				const siblings = getSortedSiblings(parentNode);
-				const hasBranches = siblings.length > 1;
-				const currentBranchIndex = siblings.findIndex(
-					(sibling) => sibling.id === node.id
-				);
-				const totalBranches = siblings.length;
+		return path.map((node, index) => {
+			const parentNode = node.parent
+				? conversation?.mapping[node.parent] || null
+				: null;
+			const siblings = getSortedSiblings(parentNode);
+			const hasBranches = siblings.length > 1;
+			const currentBranchIndex = siblings.findIndex(
+				(sibling) => sibling.id === node.id
+			);
+			const totalBranches = siblings.length;
 
-				const handlePrevBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "prev");
-				const handleNextBranch = () => handleBranchNavigation(siblings, currentBranchIndex, "next");
+			const handlePrevBranch = () =>
+				handleBranchNavigation(siblings, currentBranchIndex, "prev");
+			const handleNextBranch = () =>
+				handleBranchNavigation(siblings, currentBranchIndex, "next");
 
-				const isLatest = node.message?.author.role === "assistant" && index === lastAssistantIndex;
+			const isLatest =
+				node.message?.author.role === "assistant" &&
+				index === lastAssistantIndex;
 
-				if (node.message?.metadata.is_visually_hidden_from_conversation === true) return
+			if (
+				node.message?.metadata.is_visually_hidden_from_conversation ===
+				true
+			)
+				return;
 
-				return (
-					<ChatMessageBubble
-						key={node.id}
-						messageNode={node}
-						hasBranches={hasBranches}
-						currentBranchIndex={currentBranchIndex}
-						totalBranches={totalBranches}
-						onPrevBranch={handlePrevBranch}
-						onNextBranch={handleNextBranch}
-						isLatest={isLatest}
-						isEditing={editingMessageId === node.id}
-						setEditingMessageId={setEditingMessageId}
-						boundaryRef={boundaryRef}
-					/>
-				);
-			});
-		}, 
-		[path, getSortedSiblings, handleBranchNavigation, conversation, editingMessageId]
-	);
+			return (
+				<ChatMessageBubble
+					key={node.id}
+					messageNode={node}
+					hasBranches={hasBranches}
+					currentBranchIndex={currentBranchIndex}
+					totalBranches={totalBranches}
+					onPrevBranch={handlePrevBranch}
+					onNextBranch={handleNextBranch}
+					isLatest={isLatest}
+					isEditing={editingMessageId === node.id}
+					setEditingMessageId={setEditingMessageId}
+					boundaryRef={boundaryRef}
+				/>
+			);
+		});
+	}, [
+		path,
+		getSortedSiblings,
+		handleBranchNavigation,
+		conversation,
+		editingMessageId,
+	]);
 
 	useEffect(() => {
 		const handleScrollToEnd = () => {
@@ -177,6 +192,23 @@ export const ChatDialogueFeed: React.FC = () => {
 			className="ow-chat-dialogue-feed"
 			style={{ overflowY: "auto", height: "100%" }}
 		>
+			{path.length === 1 ? (
+				<>
+					{plugin.settings.apiKey.trim() === "" ? (
+						<div className="ow-info warning">
+							<div className="ow-info-title">
+								<Icon iconId="triangle-alert" />
+								<span>
+									API Key Required
+								</span>
+							</div>
+							<div className="ow-info-msg">
+								Please set your OpenAI API key in the plugin settings to enable chat functionality.
+							</div>
+						</div>
+					) : null}
+				</>
+			) : null}
 			{renderMessages}
 			<div ref={endOfBoundaryRef} id="anchor" />
 		</div>

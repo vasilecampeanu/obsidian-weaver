@@ -2,6 +2,7 @@ import { Icon } from "components/primitives/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { useConversation } from "hooks/useConversation";
 import { IUserSelection } from "interfaces/IUserEvents";
+import { Notice } from "obsidian";
 import { usePlugin } from "providers/plugin/usePlugin";
 import {
 	ChangeEvent,
@@ -87,7 +88,12 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
-		await submitMessage();
+
+		if ((plugin.settings.apiKey === '')) {
+			new Notice("Can't do that. Please set your OpenAI API key in the plugin settings to enable chat functionality.")
+		} else {
+			await submitMessage();
+		}
 	};
 
 	const countWords = (text: string): number => {
@@ -103,6 +109,8 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 	};
 
 	const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+		event.preventDefault();
+
 		const pasteData = event.clipboardData.getData("text");
 		const currentValue = userInputMessage;
 		const newValue = currentValue + pasteData;
@@ -110,8 +118,6 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 		setUserInputMessage(newValue);
 		setCharCount(newValue.length);
 		setWordCount(countWords(newValue));
-
-		event.preventDefault();
 	};
 
 	const handleFocus = () => {

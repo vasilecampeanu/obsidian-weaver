@@ -7,6 +7,33 @@
 	overflow-y: auto;
 	min-height: 0;
 
+	.ow-info.warning
+	{
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		background-color: rgba(var(--callout-bug), .75);
+		padding: 10px;
+		border-radius: 10px;
+
+		.ow-info-title
+		{
+			display: flex;
+			gap: 5px;
+			font-weight: bold;
+
+			.ow-icon
+			{
+				justify-content: start;
+
+				svg
+				{
+					stroke-width: 3;
+				}
+			}
+		}
+	}
+
 	.ow-chat-message-bubble
 	{
 		display: flex;
@@ -274,7 +301,7 @@
 
 									&:hover
 									{
-										opacity: .75;
+										opacity: .9;
 									}
 								}
 							}
