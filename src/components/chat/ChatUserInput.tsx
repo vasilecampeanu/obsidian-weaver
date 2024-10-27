@@ -199,9 +199,7 @@ export const ChatUserInput: React.FC<ChatUserInputProps> = () => {
 							onMouseEnter={() => setIsHovered(true)}
 							onMouseLeave={() => setIsHovered(false)}
 							onKeyDown={handleKeyDown}
-							initial={{
-								height: `${2 * TEXTAREA_LINE_HEIGHT}px`,
-							}}
+							initial={false}
 							animate={{
 								height: 
 									isPinned

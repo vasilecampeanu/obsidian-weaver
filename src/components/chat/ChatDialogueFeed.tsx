@@ -1,3 +1,4 @@
+import { autoUpdate, offset, useFloating } from "@floating-ui/react";
 import { Icon } from "components/primitives/Icon";
 import { AnimatePresence, motion } from "framer-motion";
 import { useConversation } from "hooks/useConversation";
@@ -27,6 +28,18 @@ export const ChatDialogueFeed: React.FC = () => {
 
 	const [isAtBottom, setIsAtBottom] = useState(true);
 
+	const { refs, floatingStyles } = useFloating({
+		whileElementsMounted: autoUpdate,
+		placement: "bottom-end",
+		middleware: [offset(-40)],
+	});
+
+	useEffect(() => {
+		if (boundaryRef.current) {
+			refs.setReference(boundaryRef.current);
+		}
+	}, [boundaryRef, refs]);
+	
 	const path = useMemo(() => {
 		if (!conversation?.current_node) return [];
 
@@ -179,6 +192,12 @@ export const ChatDialogueFeed: React.FC = () => {
 		exit:    { opacity: 0, y: 0 },
 	};
 
+	const scrollToBottom = useCallback(() => {
+		if (endOfBoundaryRef.current) {
+			endOfBoundaryRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}, []);
+	  
 	return (
 		<div
 			ref={boundaryRef}
@@ -206,6 +225,16 @@ export const ChatDialogueFeed: React.FC = () => {
 				)}
 			</AnimatePresence>
 			{renderMessages}
+			{!isAtBottom && (
+				<button
+					ref={refs.setFloating}
+					className="ow-floatting-btn"
+					style={floatingStyles}
+					onClick={scrollToBottom}
+				>
+					<Icon iconId={"arrow-down"} />
+				</button>
+			)}
 			<div ref={endOfBoundaryRef} id="anchor" />
 		</div>
 	);
