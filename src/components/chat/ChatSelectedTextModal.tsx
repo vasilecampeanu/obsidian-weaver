@@ -12,7 +12,7 @@ export const ChatSelectedTextModal: React.FC<ChatSelectedTextProps> = ({
 }) => {
 	return (
 		<div className="ow-selected-text-modal">
-			<div className="ow-modal-title">Selected text</div>
+			<div className="ow-modal-title">Selected content</div>
 			<div className="ow-user-selection">
 				<MarkdownContent content={userSelection.text} />
 			</div>

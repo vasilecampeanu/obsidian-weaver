@@ -137,7 +137,7 @@ export class WeaverSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Send Selection to Chat')
-			.setDesc('When in editing mode, send the selected text to the chat interface for context.')
+			.setDesc('When in editing mode, send the selected content to the chat interface for context.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.sendSelectionToChat)
 				.onChange(async (value) => {

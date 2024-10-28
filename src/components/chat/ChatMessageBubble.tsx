@@ -151,7 +151,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
 							{message.content.content_type === "text-with-user-selection" ? (
 								<div className="text-with-user-selection">
 									<div className="ow-user-selection">
-										<span>Selected text</span>
+										<span>Selected content</span>
 										<MarkdownContent
 											content={message.content.parts[1]}
 										/>
