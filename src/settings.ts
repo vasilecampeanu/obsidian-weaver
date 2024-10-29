@@ -12,14 +12,15 @@ export interface WeaverSettings {
 	openOnStartup: boolean,
 	sendSelectionToChat: boolean,
 	enableCharacterCounter: boolean,
-	enableWordCounter: boolean
+	enableWordCounter: boolean,
+	maxRecentItems: number
 }
 
 export const DEFAULT_SETTINGS: WeaverSettings = {
 	apiKey: "",
 	weaverDirectory: ".weaver",
 	get weaverContextStorage() {
-		return `${this.weaverDirectory}/context.json`;
+		return `${this.weaverDirectory}/store.json`;
 	},
 	loadLastConversation: true,
 	model: EChatModels.GPT_4o,
@@ -28,6 +29,7 @@ export const DEFAULT_SETTINGS: WeaverSettings = {
 	sendSelectionToChat: false,
 	enableWordCounter: false,
 	enableCharacterCounter: true,
+	maxRecentItems: 50
 };
 
 export class WeaverSettingTab extends PluginSettingTab {

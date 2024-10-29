@@ -1,5 +1,6 @@
 import { autoUpdate, offset, useFloating } from "@floating-ui/react";
 import { Icon } from "components/primitives/Icon";
+import { RecentItemsList } from "components/recentitems/RecentItemsList";
 import { AnimatePresence, motion } from "framer-motion";
 import { useConversation } from "hooks/useConversation";
 import { useLatestCreateTimeMap } from "hooks/useLatestCreateTimeMap";
@@ -224,8 +225,11 @@ export const ChatDialogueFeed: React.FC = () => {
 					</motion.div>
 				)}
 			</AnimatePresence>
+			{path.length === 1 && (
+				<RecentItemsList />
+			)}
 			{renderMessages}
-			{!isAtBottom && (
+			{(!isAtBottom && !(path.length === 1)) && (
 				<button
 					ref={refs.setFloating}
 					className="ow-floatting-btn"

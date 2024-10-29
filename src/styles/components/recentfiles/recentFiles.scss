@@ -1,0 +1,91 @@
+.ow-recent-items-list 
+{
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	.ow-recent-items-list-title 
+	{
+		display: flex;
+		gap: 5px;
+
+		svg 
+		{
+			stroke-width: 3;
+		}
+
+		span 
+		{
+			font-weight: bold;
+			text-transform: uppercase;
+		}
+	}
+
+	.ow-recent-items-list-container-wrapper 
+	{
+		// Existing or additional styles can go here
+	}
+
+	.ow-recent-items-list-container 
+	{
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+
+		.ow-recent-item 
+		{
+			padding: 10px;
+			border-radius: 10px;
+			background-color: var(--interactive-normal);
+			border: 1px solid var(--prompt-border-color) !important;
+
+			display: flex;
+			align-items: center;
+			gap: 8px;
+
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+
+			cursor: pointer;
+
+			&:hover 
+			{
+				background-color: var(--interactive-hover);
+			}
+
+			.ow-item-icon 
+			{
+				flex-shrink: 0;
+
+				svg 
+				{
+					width: 20px;
+					height: 20px;
+				}
+			}
+
+			.ow-item-text 
+			{
+				flex-grow: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+
+		.ow-recent-file-item 
+		{
+			display: flex;
+			gap: 5px;
+		}
+
+		.ow-recent-search-item 
+		{
+		}
+
+		.ow-recent-unknown-item 
+		{
+		}
+	}
+}
